@@ -1,0 +1,37 @@
+{
+    "app_title": "BaixaTube",
+    "language": "Language",
+    "media_type": "Media Type:",
+    "media_values": ["Video","Audio"],
+    "format": "Format:",
+    "quality": "Quality:",
+    "url_placeholder": "Paste YouTube link here",
+    "download": "Download",
+    "status": [
+        "Ready to download",
+        "Starting download...",
+        "Processing file...",
+        "Download error",
+        "Download complete!"
+    ],
+    "download_path": "Download Path:",
+    "folder_path": "Folder path...",
+    "select_folder": "Select Folder",
+    "ffmpeg_path":"FFMPEG path:",
+    "exe_path":"Executable path...",
+    "search_ffmpeg":"Search for ffmpeg.exe",
+    "downloading_progress": [
+        "Downloading... {percent}% | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
+        "Downloading... {percent}% | {speed} MB/s",
+        "Downloading... {percent}%"
+    ],
+    "errors": [
+        "Please enter a valid URL.",
+        "Please enter a valid folder.",
+        "Please enter a valid path to ffmpeg.exe."
+    ],
+    "success": [
+        "Download completed",
+        "Success"
+    ]
+}

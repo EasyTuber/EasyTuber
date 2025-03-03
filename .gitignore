@@ -1,0 +1,6 @@
+converter.py
+__pycache__/
+build/
+dist/
+Teste.py
+.vscode/
