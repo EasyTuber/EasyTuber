@@ -5,7 +5,7 @@
 Aplicativo: EasyTuber
 Descrição: Faça download de vídeos e áudios do Youtube
 Autor: Gabriel Frais
-Versão: 0.1.0-alpha
+Versão: 1.0.0-beta
 """
 
 import sys

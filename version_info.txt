@@ -14,14 +14,14 @@ VSVersionInfo(
       [
         StringTable(
           u'040904B0',
-          [StringStruct(u'CompanyName', u'Gabriel Frais'),
+          [StringStruct(u'CompanyName', u'EasyTuber'),
           StringStruct(u'FileDescription', u'Faça download de vídeos e áudios do Youtube'),
-          StringStruct(u'FileVersion', u'0.1.0-alpha'),
+          StringStruct(u'FileVersion', u'1.0.0-beta'),
           StringStruct(u'InternalName', u'EasyTuber'),
-          StringStruct(u'LegalCopyright', u'Copyright (c) 2025 Gabriel Frais'),
+          StringStruct(u'LegalCopyright', u'Copyright (c) 2025'),
           StringStruct(u'OriginalFilename', u'EasyTuber.exe'),
           StringStruct(u'ProductName', u'EasyTuber'),
-          StringStruct(u'ProductVersion', u'0.1.0-alpha')])
+          StringStruct(u'ProductVersion', u'1.0.0-beta')])
       ]), 
     VarFileInfo([VarStruct(u'Translation', [1046, 1200])])  # 1046 = Português (Brasil)
   ]

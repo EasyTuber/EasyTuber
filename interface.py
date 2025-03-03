@@ -510,8 +510,8 @@ class MainApplication(ctk.CTk):
                             )[0].format(
                                 percent=f"{percentage:.1%}",
                                 speed=f"{speed_mb:.1f}",
-                                eta_min=f"{eta_min}",
-                                eta_sec=f"{eta_sec}",
+                                eta_min=f"{eta_min:.0f}",
+                                eta_sec=f"{eta_sec:.0f}",
                             )
                         else:
                             status_text = self.translator.get_text(

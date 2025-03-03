@@ -1,5 +1,5 @@
 {
-    "app_title": "BaixaTube",
+    "app_title": "EasyTuber",
     "language": "Language",
     "media_type": "Media Type:",
     "media_values": ["Video","Audio"],
@@ -21,9 +21,9 @@
     "exe_path":"Executable path...",
     "search_ffmpeg":"Search for ffmpeg.exe",
     "downloading_progress": [
-        "Downloading... {percent}% | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
-        "Downloading... {percent}% | {speed} MB/s",
-        "Downloading... {percent}%"
+        "Downloading... {percent} | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
+        "Downloading... {percent} | {speed} MB/s",
+        "Downloading... {percent}"
     ],
     "errors": [
         "Please enter a valid URL.",

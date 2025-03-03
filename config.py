@@ -7,7 +7,7 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "0.1.0-alpha"
+        self.APP_VERSION = "1.0.0-beta"
         self.APP_AUTHOR = "Gabriel Frais"
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
 
