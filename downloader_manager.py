@@ -2,7 +2,7 @@ import yt_dlp
 import os
 
 
-class YoutubeDonwloader:
+class YoutubeDownloader:
     def __init__(self, app):
 
         self.app = app
@@ -167,7 +167,7 @@ class YoutubeDonwloader:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             ydl.download([self.url])
 
+        self.app.show_checkmark(self.app.translator.get_text("success")[0])
         self.app.status_label.configure(text=self.app.translator.get_text("status")[4])
         self.app.progress.set(1)
         self.app.download_button.configure(state="normal")
-        self.app.show_checkmark(self.app.translator.get_text("success")[0])

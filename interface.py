@@ -6,7 +6,7 @@ from PIL import Image
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 
-from downloader_manager import YoutubeDonwloader
+from downloader_manager import YoutubeDownloader
 from config import UserPreferences, DefaultConfig
 from language_manager import TranslationManager
 from utils import get_image_path, b64_to_image
@@ -20,7 +20,7 @@ class MainApplication(ctk.CTk):
         self.user_prefer = UserPreferences()
         self.translator = TranslationManager()
         self.default_config = DefaultConfig()
-        self.yt_dlp = YoutubeDonwloader(self)
+        self.yt_dlp = YoutubeDownloader(self)
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
         self.geometry(

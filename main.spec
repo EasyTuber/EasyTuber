@@ -4,7 +4,7 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=[
         ('Data/config/*.json', 'Data/config'),
@@ -12,7 +12,7 @@ a = Analysis(
         ('Data/languages/*.json', 'Data/languages'),
         ('Data/images/*.ico', 'Data/images'),
         ],
-    hiddenimports=['interface', 'config', 'utils', 'language_manager', 'donwloader_manager', 'yt_dlp'],
+    hiddenimports=['interface', 'config', 'utils', 'language_manager', 'downloader_manager'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
