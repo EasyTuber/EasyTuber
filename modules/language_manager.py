@@ -1,7 +1,6 @@
 import os
 import json
-from config import UserPreferences
-from utils import resource_path
+from modules import UserPreferences, resource_path
 
 
 class TranslationManager:
