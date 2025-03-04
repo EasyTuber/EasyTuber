@@ -8,6 +8,7 @@ Autor: Gabriel Frais
 Versão: 2.0.0-beta
 """
 
+import sys
 from interface import MainApplication
 import customtkinter as ctk
 

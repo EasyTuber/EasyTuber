@@ -6,12 +6,10 @@ from PIL import Image
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 
-from ytdlp import YoutubeDonwloader
+from downloader_manager import YoutubeDonwloader
 from config import UserPreferences, DefaultConfig
 from language_manager import TranslationManager
 from utils import get_image_path, b64_to_image
-
-# TODO mudar o icone
 
 
 class MainApplication(ctk.CTk):
