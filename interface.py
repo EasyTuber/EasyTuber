@@ -1,5 +1,3 @@
-import os
-import yt_dlp
 import threading
 import webbrowser
 import customtkinter as ctk
@@ -8,6 +6,7 @@ from PIL import Image
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 
+from ytdlp import YoutubeDonwloader
 from config import UserPreferences, DefaultConfig
 from language_manager import TranslationManager
 from utils import get_image_path, b64_to_image
@@ -23,6 +22,7 @@ class MainApplication(ctk.CTk):
         self.user_prefer = UserPreferences()
         self.translator = TranslationManager()
         self.default_config = DefaultConfig()
+        self.yt_dlp = YoutubeDonwloader(self)
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
         self.geometry(
@@ -473,124 +473,6 @@ class MainApplication(ctk.CTk):
             self.formato_var.set("mp4")
             self.qualidade_frame.grid(row=0, column=3)
 
-    # Atualiza a barra de progresso e o status de download
-    def update_progress(self, d):
-        if d["status"] == "downloading":
-            try:
-                # Obtém o total de bytes
-                total_bytes = d.get("total_bytes")
-
-                # Se total_bytes não estiver disponível, tenta total_bytes_estimate
-                if total_bytes is None:
-                    total_bytes = d.get("total_bytes_estimate", 0)
-
-                # Obtém os bytes baixados
-                downloaded_bytes = d.get("downloaded_bytes", 0)
-
-                # Calcula a porcentagem
-                if total_bytes > 0:
-                    percentage = downloaded_bytes / total_bytes
-                    # Atualiza a barra de progresso
-                    self.progress.set(percentage)
-
-                    # Calcula velocidade em MB/s
-                    speed = d.get("speed", 0)
-                    if speed:
-                        speed_mb = speed / 1024 / 1024  # Converte para MB/s
-
-                        # Calcula tempo restante
-                        eta = d.get("eta", 0)
-                        if eta:
-                            eta_min = eta // 60
-                            eta_sec = eta % 60
-
-                            # Atualiza o texto de status com todas as informações
-                            status_text = self.translator.get_text(
-                                "downloading_progress"
-                            )[0].format(
-                                percent=f"{percentage:.1%}",
-                                speed=f"{speed_mb:.1f}",
-                                eta_min=f"{eta_min:.0f}",
-                                eta_sec=f"{eta_sec:.0f}",
-                            )
-                        else:
-                            status_text = self.translator.get_text(
-                                "downloading_progress"
-                            )[1].format(
-                                percent=f"{percentage:.1%}", speed=f"{speed_mb:.1f}"
-                            )
-                    else:
-                        status_text = self.translator.get_text("downloading_progress")[
-                            2
-                        ].format(percent=f"{percentage:.1%}")
-
-                    self.status_label.configure(text=status_text)
-
-                self.update_idletasks()
-            except Exception as e:
-                print(f"Erro ao atualizar progresso: {str(e)}")
-                pass
-
-        elif d["status"] == "finished":
-            self.status_label.configure(text=self.translator.get_text("status")[2])
-            self.progress.set(1)
-
-        elif d["status"] == "error":
-            self.status_label.configure(text=self.translator.get_text("status")[3])
-            self.progress.set(0)
-            self.download_button.configure(state="normal")
-
-    # Obtem as opções selecionadas
-    def get_format_options(self):
-        midia = self.midia_var.get()
-        formato = self.formato_var.get()
-        playlist = self.playlist_check_var.get()
-        qualidade = self.qualidade_var.get().replace("p", "")
-        download_path = self.download_path_entry.get()
-
-        # Configurações base comuns
-        options = {
-            "ffmpeg_location": self.ffmpeg_path_entry.get(),
-        }
-
-        # Configurações específicas para playlist
-        if playlist == "on":
-            options.update(
-                {
-                    "outtmpl": os.path.join(
-                        download_path,
-                        "%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s",
-                    ),  # Cria pasta com nome da playlist
-                    "ignoreerrors": True,  # Continua mesmo se um vídeo falhar
-                    "playlist": True,
-                    "yes_playlist": True,
-                }
-            )
-        else:
-            options["outtmpl"] = os.path.join(download_path, "%(title)s.%(ext)s")
-
-        if midia in self.translator.get_text("media_values")[1]:
-            options.update(
-                {
-                    "format": "bestaudio/best",
-                    "postprocessors": [
-                        {
-                            "key": "FFmpegExtractAudio",
-                            "preferredcodec": formato,
-                            "preferredquality": "192",
-                        }
-                    ],
-                }
-            )
-        else:
-            options.update(
-                {
-                    "format": f"bestvideo[ext={formato}][height<={qualidade}]+bestaudio[ext=m4a]/best[ext={formato}][height<={qualidade}]/best[height<={qualidade}]/best",
-                }
-            )
-
-        return options
-
     # Baixar arquivo
     def download_arquivo(self):
         url = self.url_entry.get()
@@ -612,27 +494,10 @@ class MainApplication(ctk.CTk):
             self.status_label.configure(text=self.translator.get_text("status")[3])
             return
 
+        self.yt_dlp.start_download()
+
         try:
-            ydl_opts = {
-                "progress_hooks": [self.update_progress],
-                "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
-            }
-
-            # Adiciona opções de formato
-            ydl_opts.update(self.get_format_options())
-
-            # Mostra a barra de progresso e o status
-            self.progress.grid(row=0, column=0, sticky="ew", pady=(10, 0), padx=10)
-            self.status_label.grid(row=1, column=0, pady=(5, 0))
-
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
-
-            self.status_label.configure(text=self.translator.get_text("status")[4])
-            self.progress.set(1)
-            self.download_button.configure(state="normal")
-            self.show_checkmark(self.translator.get_text("success")[0])
-
+            self.yt_dlp.start_download()
         except Exception as e:
             self.show_error(f"Erro ao baixar: {str(e)}")
             self.download_button.configure(state="normal")

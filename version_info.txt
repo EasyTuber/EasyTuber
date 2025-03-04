@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(0, 1, 0, 1),
-    prodvers=(0, 1, 0, 1),
+    filevers=(2, 0, 0, 3),
+    prodvers=(2, 0, 0, 3),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -16,13 +16,13 @@ VSVersionInfo(
           u'040904B0',
           [StringStruct(u'CompanyName', u'EasyTuber'),
           StringStruct(u'FileDescription', u'Faça download de vídeos e áudios do Youtube'),
-          StringStruct(u'FileVersion', u'1.0.0-beta'),
+          StringStruct(u'FileVersion', u'2.0.0-beta'),
           StringStruct(u'InternalName', u'EasyTuber'),
           StringStruct(u'LegalCopyright', u'Copyright (c) 2025'),
           StringStruct(u'OriginalFilename', u'EasyTuber.exe'),
           StringStruct(u'ProductName', u'EasyTuber'),
-          StringStruct(u'ProductVersion', u'1.0.0-beta')])
+          StringStruct(u'ProductVersion', u'2.0.0-beta')])
       ]), 
-    VarFileInfo([VarStruct(u'Translation', [1046, 1200])])  # 1046 = Português (Brasil)
+    VarFileInfo([VarStruct(u'Translation', [1046, 1200])])
   ]
 )

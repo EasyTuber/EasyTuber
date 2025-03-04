@@ -12,7 +12,7 @@ a = Analysis(
         ('Data/languages/*.json', 'Data/languages'),
         ('Data/images/*.ico', 'Data/images'),
         ],
-    hiddenimports=['interface', 'config', 'utils', 'language_manager'],
+    hiddenimports=['interface', 'config', 'utils', 'language_manager', 'ytdlp'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
