@@ -1,5 +1,5 @@
 import os
-from modules import read_config, save_config
+from .utils import read_config, save_config
 
 
 class DefaultConfig:

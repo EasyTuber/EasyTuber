@@ -1,6 +1,7 @@
 import os
 import json
-from modules import UserPreferences, resource_path
+from .config import UserPreferences
+from .utils import resource_path
 
 
 class TranslationManager:
@@ -21,7 +22,9 @@ class TranslationManager:
     def load_languages(self):
         # Diretório onde estão os arquivos de tradução
         language_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "Data", "languages"
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "Data",
+            "languages",
         )
 
         # Carregar cada arquivo de idioma disponível
@@ -42,6 +45,12 @@ class TranslationManager:
             return self.languages["pt_BR"][key]
         # Retorna a chave se não encontrar tradução
         return key
+
+    # Retorna em todos os idiomas
+    def get_translates(self, key):
+        return [
+            lang_dict[key] for lang_dict in self.languages.values() if key in lang_dict
+        ]
 
     def change_language(self, language_code):
         """Altera o idioma atual"""

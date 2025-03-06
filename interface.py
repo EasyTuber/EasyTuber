@@ -26,6 +26,10 @@ class MainApplication(ctk.CTk):
         self.default_config = DefaultConfig()
         self.yt_dlp = YoutubeDownloader(self)
 
+        # Variaveis de tradução
+        self.localized_audio = self.translator.get_translates("audio")
+        self.localized_video = self.translator.get_translates("video")
+
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
         self.geometry(
             f"{self.default_config.DEFAULT_WINDOW_WIDTH}x{self.default_config.DEFAULT_WINDOW_HEIGHT}"
@@ -377,20 +381,17 @@ class MainApplication(ctk.CTk):
         # Obter código do idioma
         language_code = self.available_languages_inverted[language_name]
 
-        # Valor atual
-        current_value = self.translator.get_text("media_values")
-
         # Alterar idioma
         if self.translator.change_language(language_code):
             # Atualizar todos os textos da interface
-            self.update_interface_texts(current_value)
+            self.update_interface_texts()
 
-    def update_interface_texts(self, current_value):
+    def update_interface_texts(self):
         self.language_label.configure(text=self.translator.get_text("language") + ":")
         self.midia_label.configure(text=self.translator.get_text("media_type"))
         self.midia_var.set(
             self.translator.get_text("media_values")[0]
-            if self.midia_var.get() == current_value[0]
+            if self.midia_var.get() in self.localized_video
             else self.translator.get_text("media_values")[1]
         )
         self.midia_SegButton.configure(values=self.translator.get_text("media_values"))
@@ -435,7 +436,7 @@ class MainApplication(ctk.CTk):
         self.midia_var.set(self.user_prefer.get("midia"))
         self.qualidade_var.set(self.user_prefer.get("quality"))
         self.switch_var.set(self.user_prefer.get("theme"))
-        if self.midia_var.get() in self.translator.get_text("media_values")[1]:
+        if self.midia_var.get() in self.localized_audio:
             self.midia_selected(self.midia_var.get())
         self.formato_var.set(self.user_prefer.get("format"))
         self.language_var.set(
@@ -466,11 +467,11 @@ class MainApplication(ctk.CTk):
 
     # Muda as opções de extensão de acordo do tipo de multimida selecionado
     def midia_selected(self, valor):
-        if valor in self.translator.get_text("media_values")[1]:
+        if valor in self.localized_audio:
             self.formato_OptionMenu.configure(values=["mp3", "m4a", "aac"])
             self.formato_var.set("mp3")
             self.qualidade_frame.grid_remove()
-        elif valor in self.translator.get_text("media_values")[0]:
+        elif valor in self.localized_video:
             self.formato_OptionMenu.configure(values=["mp4", "mkv", "webm"])
             self.formato_var.set("mp4")
             self.qualidade_frame.grid(row=0, column=3)

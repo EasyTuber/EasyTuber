@@ -40,10 +40,7 @@ class YoutubeDownloader:
                 self.options_ydlp["download_path"], "%(title)s.%(ext)s"
             )
 
-        if (
-            self.options_ydlp["midia"]
-            in self.app.translator.get_text("media_values")[1]
-        ):
+        if self.options_ydlp["midia"] in self.app.localized_audio:
             self.ydl_opts.update(
                 {
                     "format": "bestaudio/best",
