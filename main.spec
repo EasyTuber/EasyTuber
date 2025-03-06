@@ -4,7 +4,7 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=[
         ('Data/config/*.json', 'Data/config'),
@@ -12,7 +12,7 @@ a = Analysis(
         ('Data/languages/*.json', 'Data/languages'),
         ('Data/images/*.ico', 'Data/images'),
         ],
-    hiddenimports=['interface', 'config', 'utils', 'language_manager'],
+    hiddenimports=['interface', 'config', 'utils', 'language_manager', 'downloader_manager'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -45,6 +45,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='Data/images/icon.ico',  # TODO ícone do aplicativo
+    icon='Data/images/icon.ico',
     version='version_info.txt',
 )

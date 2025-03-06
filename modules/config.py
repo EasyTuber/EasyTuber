@@ -1,5 +1,5 @@
 import os
-from utils import read_config, save_config
+from .utils import read_config, save_config
 
 
 class DefaultConfig:
@@ -7,13 +7,12 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "1.0.0-beta"
+        self.APP_VERSION = "2.0.0-beta"
         self.APP_AUTHOR = "Gabriel Frais"
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
 
         # Configurações de aparência
         self.DEFAULT_THEME = "dark"  # ou "light", "system"
-        # TODO mudar dps
         self.DEFAULT_COLOR = "red"  # cor primária para elementos da interface
 
         # Configurações de tamanho da janela

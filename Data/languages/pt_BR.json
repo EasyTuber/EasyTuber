@@ -3,6 +3,8 @@
     "language": "Idioma",
     "media_type": "Tipo de Mídia:",
     "media_values": ["Vídeo","Áudio"],
+    "video": "Vídeo",
+    "audio": "Áudio",
     "format": "Formato:",
     "quality": "Qualidade:",
     "url_placeholder": "Cole o link do YouTube aqui",

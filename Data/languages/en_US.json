@@ -3,6 +3,8 @@
     "language": "Language",
     "media_type": "Media Type:",
     "media_values": ["Video","Audio"],
+    "video": "Video",
+    "audio": "Audio",
     "format": "Format:",
     "quality": "Quality:",
     "url_placeholder": "Paste YouTube link here",
