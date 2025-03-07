@@ -48,4 +48,4 @@ git push origin minha-nova-funcionalidade
 
 ## 📜 Licença  
 
-Este projeto é licenciado sob a licença [[GNU General Public License v3.0 (GPLv3](LICENSE).
+Este projeto é licenciado sob a licença [GNU General Public License v3.0 (GPLv3)](LICENSE).
