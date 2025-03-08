@@ -23,10 +23,6 @@ class DefaultConfig:
 
         # Configurações de idioma
         self.DEFAULT_LANGUAGE = "pt_BR"
-        self.AVAILABLE_LANGUAGES = {
-            "pt_BR": "Português (Brasil)",
-            "en_US": "English (US)",
-        }
 
 
 class UserPreferences:

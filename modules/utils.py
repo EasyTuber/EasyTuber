@@ -35,7 +35,7 @@ def resource_path(relative_path):
 def get_config_path(filename):
     """Retorna caminho para um arquivo de configuração, copiando-o se necessário"""
     app_dir = get_executable_dir()
-    config_dir = os.path.join(app_dir, "Data", "config")
+    config_dir = os.path.join(app_dir, "resources", "config")
 
     # Cria o diretório de configuração se não existir
     os.makedirs(config_dir, exist_ok=True)
@@ -45,7 +45,7 @@ def get_config_path(filename):
     # Se o arquivo não existir no diretório de configuração, copia do recurso empacotado
     if not os.path.exists(config_path):
         try:
-            source_path = resource_path(os.path.join("Data", "config", filename))
+            source_path = resource_path(os.path.join("resources", "config", filename))
             if os.path.exists(source_path):
                 shutil.copy2(source_path, config_path)
             else:
@@ -60,7 +60,7 @@ def get_config_path(filename):
 
 def get_image_path(filename):
     """Retorna caminho para um arquivo de imagem"""
-    return resource_path(os.path.join("Data", "images", filename))
+    return resource_path(os.path.join("resources", "images", filename))
 
 
 # Funções de utilidade para trabalhar com arquivos JSON

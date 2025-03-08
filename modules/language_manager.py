@@ -5,27 +5,21 @@ from .utils import resource_path
 
 
 class TranslationManager:
-    def __init__(self):
+    def __init__(self, app):
+
+        self.user_prefer = app.user_prefer
         self.languages = {}
-        self.user_prefer = UserPreferences()
+        self.load_languages()
+        self.available_languages = {v["id"]: v["name"] for v in self.languages.values()}
+
         try:
             self.current_language = self.user_prefer.get("language")
         except Exception as e:
             self.current_language = "pt_BR"  # Idioma padrão
-            print(f"Deu um erro: {str(e)}")
-        self.load_languages()
-
-    def get_language_path(filename):
-        """Retorna caminho para um arquivo de idioma"""
-        return resource_path(os.path.join("Data", "languages", filename))
 
     def load_languages(self):
         # Diretório onde estão os arquivos de tradução
-        language_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "Data",
-            "languages",
-        )
+        language_dir = resource_path(os.path.join("resources", "languages"))
 
         # Carregar cada arquivo de idioma disponível
         for filename in os.listdir(language_dir):

@@ -22,7 +22,7 @@ class MainApplication(ctk.CTk):
 
         # Inicializa o gerenciador de configurações
         self.user_prefer = UserPreferences()
-        self.translator = TranslationManager()
+        self.translator = TranslationManager(self)
         self.default_config = DefaultConfig()
         self.yt_dlp = YoutubeDownloader(self)
 
@@ -73,7 +73,7 @@ class MainApplication(ctk.CTk):
         self.language_label.grid(row=0, column=0, padx=(0, 5))
 
         # Dropdown para selecionar idioma
-        self.available_languages = self.default_config.AVAILABLE_LANGUAGES
+        self.available_languages = self.translator.available_languages
         self.available_languages_inverted = {
             v: k for k, v in self.available_languages.items()
         }
