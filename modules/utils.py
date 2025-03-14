@@ -32,6 +32,21 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
+def get_ffmpeg_path(filename="ffmpeg.exe"):
+    """Retorna caminho para o arquivo ffmpeg"""
+    return resource_path(os.path.join("resources", "bin", filename))
+
+
+def get_image_path(filename):
+    """Retorna caminho para um arquivo de imagem"""
+    return resource_path(os.path.join("resources", "images", filename))
+
+
+def get_theme_path(filename):
+    """Retorna caminho para o arquivo do tema"""
+    return resource_path(os.path.join("resources", "theme", filename))
+
+
 def get_config_path(filename):
     """Retorna caminho para um arquivo de configuração, copiando-o se necessário"""
     app_dir = get_executable_dir()
@@ -58,12 +73,6 @@ def get_config_path(filename):
     return config_path
 
 
-def get_image_path(filename):
-    """Retorna caminho para um arquivo de imagem"""
-    return resource_path(os.path.join("resources", "images", filename))
-
-
-# Funções de utilidade para trabalhar com arquivos JSON
 def read_config(filename):
     with open(get_config_path(filename), "r", encoding="utf-8") as f:
         return json.load(f)

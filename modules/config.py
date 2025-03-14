@@ -1,5 +1,5 @@
 import os
-from .utils import read_config, save_config
+from .utils import read_config, save_config, get_ffmpeg_path
 
 
 class DefaultConfig:
@@ -12,7 +12,7 @@ class DefaultConfig:
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
 
         # Configurações de aparência
-        self.DEFAULT_THEME = "dark"  # ou "light", "system"
+        self.DEFAULT_THEME = "system"  # ou "light", "system"
         self.DEFAULT_COLOR = "red"  # cor primária para elementos da interface
 
         # Configurações de tamanho da janela
@@ -24,6 +24,9 @@ class DefaultConfig:
         # Configurações de idioma
         self.DEFAULT_LANGUAGE = "pt_BR"
 
+        # Caminho padrão
+        self.FFMPEG_PATH = get_ffmpeg_path()
+
 
 class UserPreferences:
     def __init__(self):
@@ -31,12 +34,11 @@ class UserPreferences:
         # Configurações padrão
         self.default_config = {
             "download_path": os.path.expanduser("~/Downloads").replace("\\", "/"),
-            "ffmpeg_path": "",
             "language": "pt_BR",
             "midia": "Vídeo",
             "format": "mp4",
             "quality": "1080p",
-            "theme": "Dark",
+            "appearance": "Sistema",
         }
 
         # Carrega ou cria as configurações
