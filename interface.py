@@ -432,7 +432,7 @@ class MainApplication(ctk.CTk):
         self.download_button = ctk.CTkButton(
             self.main_frame_top,
             text=self.translator.get_text("download"),
-            command=self.start_download,
+            command=self.call_download,
             width=200,
             font=ctk.CTkFont(size=14),
         )
@@ -525,7 +525,7 @@ class MainApplication(ctk.CTk):
         self.search_button = ctk.CTkButton(
             self.url2_frame,
             text=self.translator.get_text("search"),
-            command=self.start_download,
+            command=self.call_download,
             width=100,
             font=ctk.CTkFont(size=14),
         )
@@ -702,7 +702,9 @@ class MainApplication(ctk.CTk):
             self.formato_var.set("mp4")
             self.qualidade_menu.configure(state="normal")
 
-    def teste(self):
+    def call_download(self):
+        self.disable_button()
+
         erros = []
         if not self.url1_entry.get():
             erros.append(self.translator.get_text("errors")[0])
@@ -712,54 +714,16 @@ class MainApplication(ctk.CTk):
         if erros:
             for erro in erros:
                 self.show_error(erro)  # Exibir cada erro
+            self.restore_button()
             return
+        else:
+            self.yt_dlp.start_download()
 
     def restore_button(self):
         self.download_button.configure(state="normal")
 
     def disable_button(self):
         self.download_button.configure(state="disabled")
-
-    # Baixar arquivo
-    def download_arquivo(self):
-        url = self.url1_entry.get()
-        output_dir = self.download_path_entry.get()
-
-        erros = []
-        if not url:
-            erros.append(self.translator.get_text("errors")[0])
-        if not output_dir:
-            erros.append(self.translator.get_text("errors")[1])
-
-        if erros:
-            for erro in erros:
-                self.show_error(erro)  # Exibir cada erro
-            self.download_button.configure(state="normal")
-            self.progress_popup.close_progress_popup()
-            self.progress_popup = None
-            return
-
-        try:
-            self.yt_dlp.start_download()
-        except Exception as e:
-            self.show_error(f"Erro ao baixar: {str(e)}")
-            self.download_button.configure(state="normal")
-            self.progress_popup.close_progress_popup()
-            self.progress_popup = None
-
-    def start_download(self):
-        self.download_button.configure(state="disabled")
-        self.progress_popup = None
-        self.progress_popup = CTkProgressPopup(
-            master=self,
-            title=self.translator.get_text("downloading"),
-            label=self.translator.get_text("status")[1],
-            message="",
-            side="right_bottom",
-        )
-        thread = threading.Thread(target=self.download_arquivo)
-        thread.daemon = True
-        thread.start()
 
     # Copia o caminho da pasta selecionada
     def download_path_select(self):

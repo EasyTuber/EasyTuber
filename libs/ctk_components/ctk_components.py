@@ -981,7 +981,8 @@ class CTkProgressPopup(ctk.CTkFrame):
         self.label.configure(text=label)
 
     def cancel_task(self):
-
+        self.root.yt_dlp.cancel_download.set()
+        self.root.restore_button()
         self.cancelled = True
         self.close_progress_popup()
 
