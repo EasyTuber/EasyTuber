@@ -46,6 +46,21 @@ class TranslationManager:
             lang_dict[key] for lang_dict in self.languages.values() if key in lang_dict
         ]
 
+    def get_all_translation_keys_list(self, category_key):
+        """Retorna uma lista de listas com todas as chaves correspondentes em cada idioma."""
+
+        # Criar um dicionário temporário para mapear valores universais aos seus nomes nos idiomas
+        translation_map = {}
+
+        for lang, translations in self.languages.items():
+            for key, value in translations[category_key].items():
+                if value not in translation_map:
+                    translation_map[value] = {}
+                translation_map[value][lang] = key
+
+        # Converter para uma lista de listas com apenas os valores das traduções
+        return [list(values.values()) for values in translation_map.values()]
+
     def change_language(self, language_code):
         """Altera o idioma atual"""
         if language_code in self.languages:

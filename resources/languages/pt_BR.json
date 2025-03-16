@@ -2,9 +2,11 @@
     "id": "pt_BR",
     "name": "Português (Brasil)",
     "app_title": "EasyTuber",
+    "interface": "Interface",
+    "appearance": "Aparência",
+    "appearance_values": {"Sistema": "System", "Claro": "Light", "Escuro": "Dark"},
     "language": "Idioma",
-    "appearance_mode": "Modo de Aparência",
-    "appearance_values": ["Sistema","Claro","Escuro"],
+
     "tabs_names": [
         "Download",
         "Opções Avançadas",

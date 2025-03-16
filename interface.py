@@ -100,11 +100,18 @@ class CustomTabview(ctk.CTkFrame):
         # Atualizar a aba atual
         self.current_tab = name
 
+    def update_button_text(self):
+        # Verificar se o botão existe
+        for index, name in enumerate(self.buttons):
+            new_text = self.master.translator.get_text("tabs_names")[index]
+            self.buttons[name].configure(text=new_text)
+
 
 class MainApplication(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        # region setup
         # Inicializa o gerenciador de configurações
         self.user_prefer = UserPreferences()
         self.translator = TranslationManager(self)
@@ -114,6 +121,9 @@ class MainApplication(ctk.CTk):
         # Variaveis de tradução
         self.localized_audio = self.translator.get_translates("audio")
         self.localized_video = self.translator.get_translates("video")
+        self.localized_appearance = self.translator.get_all_translation_keys_list(
+            "appearance_values"
+        )
 
         self.available_languages = self.translator.available_languages
         self.available_languages_inverted = {
@@ -139,97 +149,10 @@ class MainApplication(ctk.CTk):
         self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
 
         # Outras variaveis
-        self.progress_popup = None
 
-        """
-        # Frame superior para título e switch
-        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.header_frame.grid(
-            row=0, column=0, columnspan=3, sticky="ew", padx=10, pady=(0, 10)
-        )
-        self.header_frame.grid_columnconfigure(0, weight=1)
+        # endregion
 
-        # Frame para o switch de tema e idioma (direita superior)
-        self.config_frame = ctk.CTkFrame(self.header_frame, fg_color="transparent")
-        self.config_frame.grid(row=0, column=0, sticky="e")
-
-        self.language_frame = ctk.CTkFrame(self.config_frame, fg_color="transparent")
-        self.language_frame.grid(row=0, column=0, sticky="e", padx=10)
-
-        self.theme_frame = ctk.CTkFrame(self.config_frame, fg_color="transparent")
-        self.theme_frame.grid(row=0, column=1, sticky="e")
-
-        #! Idioma
-        small_font = ctk.CTkFont(size=10)
-
-        self.language_label = ctk.CTkLabel(
-            self.language_frame,
-            text=self.translator.get_text("language") + ":",
-            font=small_font,
-        )
-        self.language_label.grid(row=0, column=0, padx=(0, 5))
-
-        # Dropdown para selecionar idioma
-
-        self.language_var = ctk.StringVar(
-            value=self.available_languages[self.default_config.DEFAULT_LANGUAGE]
-        )
-
-        self.language_dropdown = ctk.CTkOptionMenu(
-            self.language_frame,
-            values=list(self.available_languages.values()),
-            variable=self.language_var,
-            command=self.change_language,
-            font=small_font,  # Aplicando a fonte menor
-            dropdown_font=small_font,  # Para definir a fonte dos itens no dropdown quando aberto
-            width=120,  # Largura reduzida
-            height=20,  # Altura reduzida
-        )
-        self.language_dropdown.grid(row=0, column=1, padx=(0, 10), pady=10)
-
-        # Imagens convertidas em BASE64
-        SUN_DARK = "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB2UlEQVR4nO2Zy0rDQBRAD8XUWgRRjLhQP0lrkf6Stf6FVv0O26VQrQutj4JrN+IbFIwM3EIMrTbJZDKWOXA3aZKb09vO4wYcDkfeHAMnTACBxL8ncCKWYV1FFoCSQREPmCcDiVegC/gGRHzgFHgE5tDINHAmD3QeU6YNtGKc70uOQHKqymglnOASWNadgJ85LjLKkbmMMYlRpU8yAEQppfjppsKXxG9DkhaBGnAI9IAXiZ4cq8k5YZaAd7mnMYnwt7gYOVYF+qGRalTcApuRa9W9dFQ3FQWgMYZANHbkWmvYTSAxiDqWUE0hMYhK3hJF+b2nFekPGQCMUtMgMYgtcuRIo0gzT5FrjSJqntHGLHD3SzK1AAzzpFFE3Svpc8QWaVki0kIzVxpF1CI0Nw40iuzlKTIxw68H3EzChIisYtNIfAHrWEIjhcg2FlGQJXncStRtWMZPAeXIscqY/xm1ItiIXKvaPto7Jn+htqMd4H7Irs6TEagpc8OzhGoo7Mtn0QdWE+CD6a1uuPnQkcqkxZOGXGCq+ZBly8ZE38xY38nPWqYsfd8kpY/7xsoPyaicM2hkFfg03MTuAh/ACppZM/xaoSQ5rSGpiHU4EduYmIq0s9hjOxwOYvEN8/+wasFeRkQAAAAASUVORK5CYII="
-        SUN_LIGHT = "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB60lEQVR4nO2Zy04CMRRAG8MgGhOiAeNC/SRFQ/wlQf/C53cISxMVFoIPEtdujPhKNPGYhrqgGqCl0ylkTjKbGdp7D53ptHeESElJSRTgDDgXkw4KMemQigRGcCMCLAE5XyJABCyathtF4g1oAMW4RYAicAk8A3njhAd0PAtcqZyaJjJAHagZSjRVLBkzsk58hAAtYMVpgL8xruOIEbuMN4kBQ288AejIPmxvXRcyMvC7HhTIAjvACdAGXtXRVufktazWZhn4UH36kdD+xYJ2bhvoMJx7YEtrW3AxumMBzAB7mFOVbUUoAPvYUxEhQO92GpdS0hJZdb+PS0efALyiZiBXlJMUOXUocpSkyK1DkbbLxBaAhwHB6trvuw5FurZ52IjUAhGpORs9FfDGoUjLaXKGIscORQ6SFJma6TcC7ib+hSiRq9gxJb6BDREC2K18f9kVoUBvGV+1GIlK4st4IAPMa+dKIz4zckWwqbXNO6+YjLjVvQAe9V2dmgDKcu2kChQv6pAFhUN1rS9h9QJ88rrV1YoPUibjoM9IFeT8FB/iLNn4qJt5qzsRt4x8qFXd13joTb9Y0S8jY85ZJ/5P52vAl+cidgP4BFaNEx7S+brnzwo5GVOEgq1IcKQioTFNI1J3vsdOSUkRpvwAz8P+cGfgIkcAAAAASUVORK5CYII="
-        MOON_DARK = "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAACgklEQVR4nO2aPWsUQRjHfxFUjOSaGLTKQbp8AP0EYiWeFtFrDIlNsMgXsEgQbAJa3CeIqEgknagEIqiFED+AeWmSoIj4gmgRMBodeeApzmN3Z2Zv93ZG84On2tln9387M8/Mfw72+T9ZAnaATeA50ALGgeNExjJgEuIX8AqYAgaIgANAA3iWIkjiGzAL1IiEM8BWhqAPQJNIOArMZ4gxwGIs3a0PuG4RswqMEAkzFjHvgFEi+TILFjHvgToR0A9sW8S8jmVGu2ARInGHSHjhIGaMCLjkIOStTt9Bc0gLok3MNSLgvoMQEXuEwLnqIETiCoFz0lHIUwKn7ihkDxgk8OJoHOM8AXPYQ8gtAmbIQ8hj/oHBboANAmbCQ8hnAua2h5DdNMtmWY2CqjgIfPQQ8j0pyY5eFLejKhoeIiQ+JSXZ1Iti2VTFS08ha7a9gFg2veacpwiJh0mJWm0Ntnq85q9ZvC6TEnNJyS53NJpXY6Bs5BkPcogwwNmkhCfUi21vKL5T2dzIKeJHlhmxknDDTElfpq8LEQZ4lJV8KuWmBV2VFkWti+5kNDL9YfFav6bcuK2WTRGzU56Bbdrije7vM5m1JJFp+qJLoo6K3chRJ0xKTLt+dhcnQ9rc0z32KWBYu58IPKar2AldO/ksO4wl1nXP4kSzwAcXGb+B03iyGMCLm46Qou3NgJ5PmEBixXNc/sWInk9ULWJDt8BdMarnE1WKqFMQdT2fqKI7DVEwMi3f7eHs1OpmTLgwppW1LBHreabYvPSrte9SOF1Dfpxpn2JXJGLtT6qhvJfj5X/qKrZZdjfyYVAXlTeBJ9pFvqhls6se1KpuT+d0UxTFHwL2IQd/AL1n87a26ZoXAAAAAElFTkSuQmCC"
-        MOON_LIGHT = "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAClElEQVR4nO2av2pUQRSHTwIqiWijQasspMsD6BNIKnFNEU2jxDRikRdIEQnYCFrsEygqotgFFUEhWgjJA6hJk4giogbRQjDxzyeHnYVlnbvzJ7t7ZzQfpNtM7rd3Zs6c30Rkh/8Q4BHwDVgDngI14CxwSHICeIydX8AycB7YJ6kD9ANVYJFivgIXgf2SA8AYsN5G6AMwKTkA7AWu0Z57uUy3PmDeIfMSGJEcAOYcMu+AUcnkzdxxyLwHKpI6wCDw2iHzIosdDRjHzQ3JAeCZh8yEpA5w2kPkrW7fkjLAblMQXcxK6gC3PURUdkBSBriAH9OSMsART5EnkjJAxVPkJ3BAEi+OvpyUVAH2eGvAVUkVYChA5IH8A4tdWZVUAabwZ0NSBbgeILJZFNlo2tFfikH9GXYBHwNEvtsG0dxJqZZiUX+GKmF8sg2i4ZmyWIpF/RmeB4q8cvUCYyVInCCcBdtAGmM2WO/lmV9bWEfWVcRl22BnWj6kuVNfj8KHu8Rx3DbgYZPFNjPfA5FLkRJbhWEEsGT5hbluvBnzJmIllPvtBtdU3IbmToMdXhOx06lBcT6sWSvwBTuaO413aHeKWdjNvNH+3vWHNNpvh27Tp5wD/V2xqxF1oogZ39fuk2ToZ26ZHvsoMGyaIk1CDppT7JQ5O4UcO1ysaM/i+w1Okia/gWO+M6Eho/cTqVELkmha+Ho/kQpLIeuyVWbE3E+Uzaq2wFESTTKj5n6iTInKtiRasia9nyhjOg11RKJlW77Zw92pFr0mPIUmTGXtFivBW+w2ZLTwzXoWTl/0y5nxLnYdFhoAzmmgbLLYUH7oKdYU4O5NoxA0UDb3gFeAh2aKfNbIxvxsmLq0oJ2dNkVZ/EPADhLHH3gYEDVS3/wQAAAAAElFTkSuQmCC"
-
-        # Define as imagens para os dois temas
-        self.sun_image = ctk.CTkImage(
-            light_image=b64_to_image(SUN_DARK),
-            dark_image=b64_to_image(SUN_LIGHT),
-            size=(12, 12),
-        )
-        self.moon_image = ctk.CTkImage(
-            light_image=b64_to_image(MOON_DARK),
-            dark_image=b64_to_image(MOON_LIGHT),
-            size=(8, 8),
-        )
-
-        # Label da imagem do sol
-        self.sun_label = ctk.CTkLabel(self.theme_frame, text="", image=self.sun_image)
-        self.sun_label.grid(row=0, column=0, padx=(0, 5))
-
-        # Um controle switch para mudar o tema
-        self.switch_var = ctk.StringVar(value="Dark")
-        self.switch = ctk.CTkSwitch(
-            self.theme_frame,
-            text="",
-            command=self.toggle_theme,
-            width=30,
-            height=16,
-            switch_height=12,
-            switch_width=24,
-            variable=self.switch_var,
-            onvalue="Dark",
-            offvalue="Light",
-        )
-        self.switch.grid(row=0, column=1)
-
-        # Label da imagem do sol
-        self.moon_label = ctk.CTkLabel(self.theme_frame, text="", image=self.moon_image)
-        self.moon_label.grid(row=0, column=2)
-        """
-
+        # region Logo e título
         #! Logo e título lado a lado
         # Frame para logo e título
         self.title_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -259,7 +182,9 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=24, weight="bold"),
         )
         self.title_label.grid(row=0, column=2)
+        # endregion
 
+        # region TabView
         #! Criar o tabview personalizado
         self.tabview = CustomTabview(self, fg_color="transparent")
         self.tabview.pack(fill="both", expand=True, padx=20, pady=(0, 20))
@@ -277,8 +202,10 @@ class MainApplication(ctk.CTk):
         self.tab4 = self.tabview.add(
             "tab4", self.translator.get_text("tabs_names")[3]
         )  # About
+        # endregion
 
-        # * Área principal do conteúdo
+        # region Área principal do conteúdo
+        #! Área principal do conteúdo
         self.main_frame = ctk.CTkFrame(self.tab1, fg_color="transparent")
         self.main_frame.pack(fill="both", expand=True, pady=10)
 
@@ -288,7 +215,7 @@ class MainApplication(ctk.CTk):
         self.main_frame_bottom = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.main_frame_bottom.pack(side="bottom", fill="x")
 
-        # Frame configuração de download
+        # * Frame configuração de download
         self.config_download_frame = ctk.CTkFrame(
             self.main_frame_top, fg_color="transparent"
         )
@@ -438,30 +365,6 @@ class MainApplication(ctk.CTk):
         )
         self.download_button.pack(side="top")
 
-        """
-        # * Frame de Status do Download
-        self.progress_download_frame = ctk.CTkFrame(
-            self.main_frame, fg_color="transparent"
-        )
-        self.progress_download_frame.grid(row=3, column=0, sticky="nsew", padx=20)
-        self.progress_download_frame.grid_columnconfigure(
-            0, weight=1
-        )  # Coluna central expandível
-        """
-
-        """
-        #! Barra de Progresso
-        self.progress = ctk.CTkProgressBar(self.progress_download_frame, height=10)
-        self.progress.set(0)
-
-        #! Status
-        self.status_label = ctk.CTkLabel(
-            self.progress_download_frame,
-            text=self.translator.get_text("status")[0],
-            font=ctk.CTkFont(size=12),
-        )
-        """
-
         #! Frame para seleção de pasta de donwload
         self.download_path_frame = ctk.CTkFrame(
             self.main_frame_bottom, fg_color="transparent"
@@ -492,7 +395,10 @@ class MainApplication(ctk.CTk):
         )
         self.download_path_button.grid(row=1, column=1, padx=10, pady=(2, 0))
 
-        # * Advanced Options
+        # endregion
+
+        #! Advanced Options
+        # region Janela de Opções Avançadas
         self.advced_frame = ctk.CTkFrame(self.tab2, fg_color="transparent")
         self.advced_frame.pack(fill="both", expand=True, pady=10)
 
@@ -505,6 +411,7 @@ class MainApplication(ctk.CTk):
         self.advced_frame_bottom.pack(side="bottom", fill="x")
 
         #! Frame de url
+        # region
         self.url2_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
         self.url2_frame.pack(
             side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(10, 10), padx=15
@@ -520,8 +427,10 @@ class MainApplication(ctk.CTk):
             placeholder_text=self.translator.get_text("url_placeholder"),
         )
         self.url2_entry.grid(row=0, column=1, sticky="nsew")
+        # endregion
 
-        # Botão de Pesquisar
+        #! Botão de Pesquisar
+        # region
         self.search_button = ctk.CTkButton(
             self.url2_frame,
             text=self.translator.get_text("search"),
@@ -530,6 +439,104 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=14),
         )
         self.search_button.grid(row=0, column=2, sticky="w", padx=10)
+        # endregion
+
+        # endregion
+
+        #! Settings
+        # region Janela de Configurações
+        self.settings_frame = ctk.CTkFrame(self.tab3, fg_color="transparent")
+        self.settings_frame.pack(fill="both", expand=True, pady=10)
+
+        self.settings_frame_top = ctk.CTkFrame(
+            self.settings_frame, fg_color="transparent"
+        )
+        self.settings_frame_top.pack(side="top", fill="both", padx=15)
+
+        self.settings_frame_bottom = ctk.CTkFrame(
+            self.settings_frame, fg_color="transparent"
+        )
+        self.settings_frame_bottom.pack(side="bottom", fill="x")
+
+        #! interface
+        # region INTERFACE
+        self.interface_label = ctk.CTkLabel(
+            self.settings_frame_top,
+            text=self.translator.get_text("interface"),
+            font=ctk.CTkFont(size=16, weight="bold"),
+        )
+        self.interface_label.pack(side="top")
+
+        self.interface_div = ctk.CTkFrame(
+            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
+        )
+        self.interface_div.pack(side="top", fill="x")
+
+        self.interface_frame = ctk.CTkFrame(
+            self.settings_frame_top, fg_color="transparent"
+        )
+        self.interface_frame.pack(side="top", fill="x", pady=10)
+
+        #! Aparência
+        # region APARÊNCIA
+        self.appearance_frame = ctk.CTkFrame(
+            self.interface_frame, fg_color="transparent"
+        )
+        self.appearance_frame.pack(side="left", expand=True, fill="x")
+
+        self.appearance_label = ctk.CTkLabel(
+            self.appearance_frame,
+            width=100,
+            text=self.translator.get_text("appearance") + ":",
+            anchor="e",
+        )
+        self.appearance_label.pack(side="left")
+
+        self.appearance_var = ctk.StringVar(value="Sistema")  # TODO pegar valor padrão
+
+        self.appearance_dropdown = ctk.CTkOptionMenu(
+            self.appearance_frame,
+            values=list(self.translator.get_text("appearance_values").keys()),
+            variable=self.appearance_var,
+            command=lambda choice: ctk.set_appearance_mode(
+                self.translator.get_text("appearance_values")[choice]
+            ),
+            width=120,
+        )
+        self.appearance_dropdown.pack(side="left", padx=(5, 0))
+
+        # endregion
+
+        #! Idioma
+        # region IDIOMA
+        self.language_frame = ctk.CTkFrame(self.interface_frame, fg_color="transparent")
+        self.language_frame.pack(side="left", expand=True, fill="x")
+
+        self.language_label = ctk.CTkLabel(
+            self.language_frame,
+            width=100,
+            text=self.translator.get_text("language") + ":",
+            anchor="e",
+        )
+        self.language_label.pack(side="left")
+
+        self.language_var = ctk.StringVar(
+            value=self.available_languages[self.default_config.DEFAULT_LANGUAGE]
+        )
+
+        self.language_dropdown = ctk.CTkOptionMenu(
+            self.language_frame,
+            values=list(self.available_languages.values()),
+            variable=self.language_var,
+            command=self.change_language,
+            width=180,
+        )
+        self.language_dropdown.pack(side="left", padx=(5, 0))
+
+        # endregion
+
+        # endregion
+        # endregion
 
         """
         #! Frame para seleção de arquivo .exe
@@ -577,15 +584,6 @@ class MainApplication(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         """
 
-    def change_language(self, language_name):
-        # Obter código do idioma
-        language_code = self.available_languages_inverted[language_name]
-
-        # Alterar idioma
-        if self.translator.change_language(language_code):
-            # Atualizar todos os textos da interface
-            self.update_interface_texts()
-
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -608,8 +606,26 @@ class MainApplication(ctk.CTk):
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
 
+    def change_language(self, language_name):
+        # Obter código do idioma
+        language_code = self.available_languages_inverted[language_name]
+
+        # Alterar idioma
+        if self.translator.change_language(language_code):
+            # Atualizar todos os textos da interface
+            self.update_interface_texts()
+
     def update_interface_texts(self):  # TODO Atualizar
-        self.language_label.configure(text=self.translator.get_text("language") + ":")
+        self.tabview.update_button_text()
+
+        # region Traduzir Download
+        self.playlist_entry_tooltip.configure(
+            message=self.translator.get_text("playlist_tolltip")
+        )
+        self.playlist_check_tooltip.configure(
+            message=self.translator.get_text("playlist_check_tolltip")
+        )
+
         self.midia_label.configure(text=self.translator.get_text("media_type"))
         self.midia_var.set(
             self.translator.get_text("media_values")[0]
@@ -623,7 +639,6 @@ class MainApplication(ctk.CTk):
             placeholder_text=self.translator.get_text("url_placeholder")
         )
         self.download_button.configure(text=self.translator.get_text("download"))
-        # self.status_label.configure(text=self.translator.get_text("status")[0])
         self.download_path_label.configure(
             text=self.translator.get_text("download_path")
         )
@@ -633,15 +648,24 @@ class MainApplication(ctk.CTk):
         self.download_path_button.configure(
             text=self.translator.get_text("select_folder")
         )
-        """
-        self.ffmpeg_path_label.configure(text=self.translator.get_text("ffmpeg_path"))
-        self.ffmpeg_path_entry.configure(
-            placeholder_text=self.translator.get_text("exe_path")
+
+        # endregion
+
+        # region Traduzir Config
+        self.language_label.configure(text=self.translator.get_text("language") + ":")
+        self.appearance_label.configure(
+            text=self.translator.get_text("appearance") + ":"
         )
-        self.ffmpeg_path_button.configure(
-            text=self.translator.get_text("search_ffmpeg")
+        self.appearance_dropdown.configure(
+            values=self.translator.get_text("appearance_values")
         )
-        """
+        for index, keys in enumerate(self.localized_appearance):
+            if self.appearance_var.get() in keys:
+                self.appearance_var.set(
+                    list(self.translator.get_text("appearance_values").keys())[index]
+                )
+
+        # endregion
 
     def load_saved_settings(self):
         """Carrega as configurações salvas nos widgets"""
@@ -689,7 +713,7 @@ class MainApplication(ctk.CTk):
 
     # Mudar tema
     def toggle_theme(self):
-        ctk.set_appearance_mode(self.switch_var.get())
+        ctk.set_appearance_mode(self.appearance_var.get())
 
     # Muda as opções de extensão de acordo do tipo de multimida selecionado
     def midia_selected(self, valor):

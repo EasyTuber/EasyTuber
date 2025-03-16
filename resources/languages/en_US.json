@@ -2,9 +2,11 @@
     "id": "en_US",
     "name": "English (US)",
     "app_title": "EasyTuber",
+    "interface": "Interface",
+    "appearance": "Appearance",
+    "appearance_values": {"System": "System", "Light": "Light", "Dark": "Dark"},
     "language": "Language",
-    "appearance_mode": "Appearance Mode",
-    "appearance_values": ["System","Light","Dark"],
+    
     "tabs_names": [
         "Download",
         "Advanced Options",
