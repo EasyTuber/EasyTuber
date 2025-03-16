@@ -152,8 +152,8 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
-        # region Logo e título
         #! Logo e título lado a lado
+        # region Logo e título
         # Frame para logo e título
         self.title_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.title_frame.pack(side="top", fill="x", pady=10)
@@ -184,8 +184,8 @@ class MainApplication(ctk.CTk):
         self.title_label.grid(row=0, column=2)
         # endregion
 
-        # region TabView
         #! Criar o tabview personalizado
+        # region TabView
         self.tabview = CustomTabview(self, fg_color="transparent")
         self.tabview.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
@@ -204,8 +204,8 @@ class MainApplication(ctk.CTk):
         )  # About
         # endregion
 
-        # region Área principal do conteúdo
         #! Área principal do conteúdo
+        # region Área principal do conteúdo
         self.main_frame = ctk.CTkFrame(self.tab1, fg_color="transparent")
         self.main_frame.pack(fill="both", expand=True, pady=10)
 
@@ -222,6 +222,7 @@ class MainApplication(ctk.CTk):
         self.config_download_frame.pack(side="top", expand=True, fill="x")
 
         #! Playlist
+        # region Playlist
         self.playlist_frame = ctk.CTkFrame(
             self.config_download_frame, fg_color="transparent"
         )
@@ -273,30 +274,32 @@ class MainApplication(ctk.CTk):
             follow=False,
             message=self.translator.get_text("playlist_tolltip"),
         )
+        # endregion
 
         #! Tipo de Mídia
-        self.midia_frame = ctk.CTkFrame(
+        # region Tipo de Mídia
+        self.media_frame = ctk.CTkFrame(
             self.config_download_frame, fg_color="transparent"
         )
-        self.midia_frame.pack(side="left", expand=True, padx=5)
+        self.media_frame.pack(side="left", expand=True, padx=5)
 
-        self.midia_label = ctk.CTkLabel(
-            self.midia_frame, text=self.translator.get_text("media_type")
+        self.media_label = ctk.CTkLabel(
+            self.media_frame, text=self.translator.get_text("media_type")
         )
-        self.midia_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
+        self.media_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
 
-        self.midia_var = ctk.StringVar(
-            value=self.translator.get_text("media_values")[0]
-        )
-        self.midia_SegButton = ctk.CTkSegmentedButton(
-            self.midia_frame,
+        self.media_var = ctk.StringVar(value=self.user_prefer.get("media"))
+        self.media_SegButton = ctk.CTkSegmentedButton(
+            self.media_frame,
             values=self.translator.get_text("media_values"),
-            variable=self.midia_var,
-            command=self.midia_selected,
+            variable=self.media_var,
+            command=self.media_selected,
         )
-        self.midia_SegButton.grid(row=1, column=0, sticky="ew")
+        self.media_SegButton.grid(row=1, column=0, sticky="ew")
+        # endregion
 
         #! Formato do arquivo
+        # region Formato
         self.formato_frame = ctk.CTkFrame(
             self.config_download_frame, fg_color="transparent"
         )
@@ -307,7 +310,7 @@ class MainApplication(ctk.CTk):
         )
         self.formato_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
 
-        self.formato_var = ctk.StringVar(value="mp4")
+        self.formato_var = ctk.StringVar(value=self.user_prefer.get("format"))
         self.formato_OptionMenu = ctk.CTkOptionMenu(
             self.formato_frame,
             dynamic_resizing=False,
@@ -316,14 +319,16 @@ class MainApplication(ctk.CTk):
             width=80,
         )
         self.formato_OptionMenu.grid(row=1, column=0, sticky="ew")
+        # endregion
 
         #! Qualidade do Video
+        # region Qualidade do Video
         self.qualidade_frame = ctk.CTkFrame(
             self.config_download_frame, fg_color="transparent"
         )
         self.qualidade_frame.pack(side="left", expand=True, padx=5)
 
-        self.qualidade_var = ctk.StringVar(value="1080p")
+        self.qualidade_var = ctk.StringVar(value=self.user_prefer.get("quality"))
         self.qualidade_label = ctk.CTkLabel(
             self.qualidade_frame, text=self.translator.get_text("quality")
         )
@@ -337,8 +342,11 @@ class MainApplication(ctk.CTk):
             width=80,
         )
         self.qualidade_menu.grid(row=1, column=0, sticky="ew")
+        self.media_selected(self.media_var.get(), True)
+        # endregion
 
         #! Frame de url
+        # region URL entry
         self.url1_frame = ctk.CTkFrame(self.main_frame_top, fg_color="transparent")
         self.url1_frame.pack(
             side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(40, 10), padx=15
@@ -354,8 +362,10 @@ class MainApplication(ctk.CTk):
             placeholder_text=self.translator.get_text("url_placeholder"),
         )
         self.url1_entry.grid(row=0, column=1, sticky="nsew", padx=10)
+        # endregion
 
         #! Botão de Download
+        # region Botão Download
         self.download_button = ctk.CTkButton(
             self.main_frame_top,
             text=self.translator.get_text("download"),
@@ -364,8 +374,10 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=14),
         )
         self.download_button.pack(side="top")
+        # endregion
 
         #! Frame para seleção de pasta de donwload
+        # region Download Path
         self.download_path_frame = ctk.CTkFrame(
             self.main_frame_bottom, fg_color="transparent"
         )
@@ -387,6 +399,7 @@ class MainApplication(ctk.CTk):
             placeholder_text=self.translator.get_text("folder_path"),
         )
         self.download_path_entry.grid(row=1, column=0, padx=5, pady=(2, 0), sticky="ew")
+        self.download_path_entry.insert(0, self.user_prefer.get("download_path"))
 
         self.download_path_button = ctk.CTkButton(
             self.download_path_frame,
@@ -394,6 +407,7 @@ class MainApplication(ctk.CTk):
             command=self.download_path_select,
         )
         self.download_path_button.grid(row=1, column=1, padx=10, pady=(2, 0))
+        # endregion
 
         # endregion
 
@@ -444,7 +458,7 @@ class MainApplication(ctk.CTk):
         # endregion
 
         #! Settings
-        # region Janela de Configurações
+        # region Janela Configurações
         self.settings_frame = ctk.CTkFrame(self.tab3, fg_color="transparent")
         self.settings_frame.pack(fill="both", expand=True, pady=10)
 
@@ -492,7 +506,7 @@ class MainApplication(ctk.CTk):
         )
         self.appearance_label.pack(side="left")
 
-        self.appearance_var = ctk.StringVar(value="Sistema")  # TODO pegar valor padrão
+        self.appearance_var = ctk.StringVar(value=self.user_prefer.get("appearance"))
 
         self.appearance_dropdown = ctk.CTkOptionMenu(
             self.appearance_frame,
@@ -521,7 +535,7 @@ class MainApplication(ctk.CTk):
         self.language_label.pack(side="left")
 
         self.language_var = ctk.StringVar(
-            value=self.available_languages[self.default_config.DEFAULT_LANGUAGE]
+            value=self.available_languages[self.user_prefer.get("language")]
         )
 
         self.language_dropdown = ctk.CTkOptionMenu(
@@ -536,6 +550,7 @@ class MainApplication(ctk.CTk):
         # endregion
 
         # endregion
+
         # endregion
 
         """
@@ -576,9 +591,6 @@ class MainApplication(ctk.CTk):
             width=20,
         )
         self.ffmpeg_download_button.grid(row=1, column=2, padx=(0, 10), pady=(2, 0))
-
-        # Carrega as configurações salvas
-        self.load_saved_settings()
 
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -626,13 +638,13 @@ class MainApplication(ctk.CTk):
             message=self.translator.get_text("playlist_check_tolltip")
         )
 
-        self.midia_label.configure(text=self.translator.get_text("media_type"))
-        self.midia_var.set(
+        self.media_label.configure(text=self.translator.get_text("media_type"))
+        self.media_var.set(
             self.translator.get_text("media_values")[0]
-            if self.midia_var.get() in self.localized_video
+            if self.media_var.get() in self.localized_video
             else self.translator.get_text("media_values")[1]
         )
-        self.midia_SegButton.configure(values=self.translator.get_text("media_values"))
+        self.media_SegButton.configure(values=self.translator.get_text("media_values"))
         self.formato_label.configure(text=self.translator.get_text("format"))
         self.qualidade_label.configure(text=self.translator.get_text("quality"))
         self.url1_entry.configure(
@@ -667,37 +679,11 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
-    def load_saved_settings(self):
-        """Carrega as configurações salvas nos widgets"""
-        # Carrega o caminho de download
-        saved_download_path = self.user_prefer.get("download_path")
-        self.download_path_entry.delete(0, "end")
-        self.download_path_entry.insert(0, saved_download_path)
-
-        """
-        # Carrega o caminho do FFmpeg
-        saved_ffmpeg_saved = self.user_prefer.get("ffmpeg_path")
-        if saved_ffmpeg_saved:
-            self.ffmpeg_path_entry.delete(0, "end")
-            self.ffmpeg_path_entry.insert(0, saved_ffmpeg_saved)
-        """
-
-        # Carrega outras configurações
-        self.midia_var.set(self.user_prefer.get("midia"))
-        self.qualidade_var.set(self.user_prefer.get("quality"))
-        self.switch_var.set(self.user_prefer.get("theme"))
-        if self.midia_var.get() in self.localized_audio:
-            self.midia_selected(self.midia_var.get())
-        self.formato_var.set(self.user_prefer.get("format"))
-        self.language_var.set(
-            self.available_languages[self.user_prefer.get("language")]
-        )
-
     def save_current_settings(self):
         """Salva as configurações atuais"""
         self.user_prefer.set("download_path", self.download_path_entry.get())
         # self.user_prefer.set("ffmpeg_path", self.ffmpeg_path_entry.get())
-        self.user_prefer.set("midia", self.midia_var.get())
+        self.user_prefer.set("midia", self.media_var.get())
         self.user_prefer.set("format", self.formato_var.get())
         self.user_prefer.set("quality", self.qualidade_var.get())
         self.user_prefer.set("appearance", self.switch_var.get())
@@ -711,20 +697,18 @@ class MainApplication(ctk.CTk):
         self.save_current_settings()
         self.quit()
 
-    # Mudar tema
-    def toggle_theme(self):
-        ctk.set_appearance_mode(self.appearance_var.get())
-
     # Muda as opções de extensão de acordo do tipo de multimida selecionado
-    def midia_selected(self, valor):
+    def media_selected(self, valor, init=False):
         if valor in self.localized_audio:
-            self.formato_OptionMenu.configure(values=["mp3", "m4a", "aac"])
-            self.formato_var.set("mp3")
-            self.qualidade_menu.configure(state="disabled")
+            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
+            if not init:
+                self.formato_var.set("mp3")
+                self.qualidade_menu.configure(state="disabled")
         elif valor in self.localized_video:
-            self.formato_OptionMenu.configure(values=["mp4", "mkv", "webm"])
-            self.formato_var.set("mp4")
-            self.qualidade_menu.configure(state="normal")
+            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
+            if not init:
+                self.formato_var.set("mp4")
+                self.qualidade_menu.configure(state="normal")
 
     def call_download(self):
         self.disable_button()

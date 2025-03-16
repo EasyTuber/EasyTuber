@@ -21,8 +21,9 @@ class DefaultConfig:
         self.MIN_WINDOW_WIDTH = 700
         self.MIN_WINDOW_HEIGHT = 500
 
-        # Configurações de idioma
-        self.DEFAULT_LANGUAGE = "pt_BR"
+        # Configurações de Valores
+        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]
+        self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]
 
         # Caminho padrão
         self.FFMPEG_PATH = get_ffmpeg_path()
@@ -34,11 +35,11 @@ class UserPreferences:
         # Configurações padrão
         self.default_config = {
             "download_path": os.path.expanduser("~/Downloads").replace("\\", "/"),
-            "language": "pt_BR",
-            "midia": "Vídeo",
-            "format": "mp4",
+            "language": "en_US",
+            "media": "Audio",
+            "format": "aac",
             "quality": "1080p",
-            "appearance": "Sistema",
+            "appearance": "Light",
         }
 
         # Carrega ou cria as configurações
