@@ -7,7 +7,7 @@ from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 
-from libs import CTkProgressPopup, CTkAlert, CTkNotification
+from libs import CTkAlert, CTkNotification
 
 
 from modules import (
@@ -18,6 +18,7 @@ from modules import (
     get_image_path,
     b64_to_image,
     get_theme_path,
+    get_ffmpeg_path,
 )
 
 
@@ -551,16 +552,35 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
-        # endregion
+        #! Caminhos padrões
+        # region PADRAO
+        self.default_label = ctk.CTkLabel(
+            self.settings_frame_top,
+            text=self.translator.get_text("interface"),
+            font=ctk.CTkFont(size=16, weight="bold"),
+        )
+        self.default_label.pack(side="top")
 
-        """
+        self.default_div = ctk.CTkFrame(
+            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
+        )
+        self.default_div.pack(side="top", fill="x")
+
+        self.default_frame = ctk.CTkFrame(
+            self.settings_frame_top, fg_color="transparent"
+        )
+        self.default_frame.pack(side="top", fill="x", pady=10)
+
         #! Frame para seleção de arquivo .exe
-        self.ffmpeg_path_frame = ctk.CTkFrame(self.bottom_frame, fg_color="transparent")
-        self.ffmpeg_path_frame.grid(row=1, column=0, padx=5, pady=(0, 10), sticky="ew")
-        self.ffmpeg_path_frame.grid_columnconfigure(0, weight=1)
+        self.ffmpeg_path_frame = ctk.CTkFrame(
+            self.default_frame, fg_color="transparent"
+        )
+        self.ffmpeg_path_frame.pack(side="left", expand=True, fill="x")
+        self.ffmpeg_path_frame.columnconfigure(1, weight=1)
 
         self.ffmpeg_path_label = ctk.CTkLabel(
-            self.ffmpeg_path_frame, text=self.translator.get_text("ffmpeg_path")
+            self.ffmpeg_path_frame,
+            text=self.translator.get_text("ffmpeg_path"),
         )
         self.ffmpeg_path_label.grid(row=0, column=0, padx=5, sticky="w")
 
@@ -568,8 +588,31 @@ class MainApplication(ctk.CTk):
             self.ffmpeg_path_frame,
             placeholder_text=self.translator.get_text("exe_path"),
         )
-        self.ffmpeg_path_entry.grid(row=1, column=0, padx=5, pady=(2, 0), sticky="ew")
+        self.ffmpeg_path_entry.grid(row=0, column=1, padx=5, pady=(2, 0), sticky="ew")
 
+        self.ffmpeg_path_button = ctk.CTkButton(
+            self.ffmpeg_path_frame,
+            text=self.translator.get_text("search_ffmpeg"),
+            command=self.ffmpeg_path_select,
+        )
+        self.ffmpeg_path_button.grid(row=0, column=2, padx=(5, 3), pady=(2, 0))
+
+        ffmpeg_path = get_ffmpeg_path()
+        # TODO ver também se já está salvo em configurações do usuário
+        if ffmpeg_path:
+            self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
+        else:
+            self.ffmpeg_popup()
+            pass
+            # alerta
+
+        self.after(1000, self.ffmpeg_popup())
+
+        # endregion
+
+        # endregion
+
+        """
         self.ffmpeg_path_button = ctk.CTkButton(
             self.ffmpeg_path_frame,
             text=self.translator.get_text("search_ffmpeg"),
@@ -740,16 +783,17 @@ class MainApplication(ctk.CTk):
             self.download_path_entry.delete(0, "end")
             self.download_path_entry.insert(0, folder_path)
 
-    """
     # Copia o caminho do .exe selecionado
     def ffmpeg_path_select(self):
         file_path = filedialog.askopenfilename(
-            filetypes=[("Arquivos Executáveis", "*.exe"), ("Todos os Arquivos", "*.*")]
+            filetypes=[
+                (self.translator.get_text("filetypes")[0], "*.exe"),
+                (self.translator.get_text("filetypes")[1], "*.*"),
+            ]
         )
         if file_path:
             self.ffmpeg_path_entry.delete(0, "end")
             self.ffmpeg_path_entry.insert(0, file_path)
-    """
 
     # Mostra mensagem de erro
     def show_error(self, message):
@@ -761,7 +805,30 @@ class MainApplication(ctk.CTk):
             title=self.translator.get_text("success")[1], message=message, icon="check"
         )
 
-    def abrir_link(self, url):
+    def ffmpeg_popup(self):
+        title = self.translator.get_text("popup_ffmpeg_title")
+        text = self.translator.get_text("popup_ffmpeg_msg")
+        option = list(self.translator.get_text("popup_ffmpeg_options").keys())
+
+        msg = CTkMessagebox(
+            width=600,
+            title=title,
+            message=text,
+            icon="warning",
+            option_1=option[0],
+            option_2=option[1],
+            option_3=option[2],
+        )
+        response = msg.get()
+
+        if response == option[0]:
+            self.ffmpeg_path_select()
+        elif response == option[1]:
+            self.open_link("https://community.chocolatey.org/packages/ffmpeg")
+        elif response == option[2]:
+            self.open_link("https://ffmpeg.org/download.html")
+
+    def open_link(self, url):
         webbrowser.open(url)
 
     def run(self):

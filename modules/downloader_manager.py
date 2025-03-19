@@ -87,13 +87,14 @@ class YoutubeDownloader:
             "playlist_items": self.root.playlist_entry.get(),
             "qualidade": self.root.qualidade_var.get().replace("p", ""),
             "download_path": self.root.download_path_entry.get(),
+            "ffmpeg_path": self.root.ffmpeg_path_entry.get(),
         }
 
         # Configurações base comuns
         self.ydl_opts = {
             "progress_hooks": [self.progress_hooks],
             "postprocessor_hooks": [self.check_cancel_hook],
-            "ffmpeg_location": get_ffmpeg_path(),
+            "ffmpeg_location": self.options_ydlp["ffmpeg_path"],
         }
 
         # Configurações específicas para playlist

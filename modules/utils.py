@@ -2,6 +2,8 @@ import os
 import json
 import shutil
 import sys
+import re
+import subprocess
 from PIL import Image
 import base64
 from io import BytesIO
@@ -13,6 +15,7 @@ def b64_to_image(b64_string):
     return Image.open(BytesIO(img_data))
 
 
+# Retorna pasta atual do programa
 def get_executable_dir():
     """Retorna o diretório onde o executável está"""
     if getattr(sys, "frozen", False):
@@ -30,11 +33,6 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
-
-
-def get_ffmpeg_path(filename="ffmpeg.exe"):
-    """Retorna caminho para o arquivo ffmpeg"""
-    return resource_path(os.path.join("resources", "bin", filename))
 
 
 def get_image_path(filename):
@@ -81,3 +79,103 @@ def read_config(filename):
 def save_config(filename, dados):
     with open(get_config_path(filename), "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=4, ensure_ascii=False)
+
+
+def get_ffmpeg_path():
+    """
+    Encontra o caminho real para o executável do FFmpeg, ignorando shims do Chocolatey.
+    Retorna o caminho do executável real ou None se não encontrado.
+    """
+    # Primeiro verifica se o ffmpeg está no PATH
+    ffmpeg_path = shutil.which("ffmpeg")
+
+    if ffmpeg_path:
+        # Verifica se é um shim do Chocolatey
+        if "chocolatey" in ffmpeg_path.lower():
+            # Tenta encontrar o caminho real executando o comando ffmpeg -version
+            try:
+                result = subprocess.run(
+                    ["ffmpeg", "-version"], capture_output=True, text=True
+                )
+                # Procura por um caminho de arquivo no output
+                match = re.search(r"(([A-Z]:\\|/)[^\s]+ffmpeg(\.exe)?)", result.stdout)
+                if match:
+                    real_path = match.group(1)
+                    if os.path.exists(real_path):
+                        return real_path
+            except Exception:
+                pass
+
+            # Se não conseguiu encontrar pelo output, tenta locais comuns do Chocolatey
+            choco_paths = [
+                os.path.join(
+                    os.environ.get("ChocolateyInstall", ""),
+                    "lib",
+                    "ffmpeg",
+                    "tools",
+                    "ffmpeg",
+                    "bin",
+                    "ffmpeg.exe",
+                ),
+                os.path.join(
+                    os.environ.get("ProgramData", ""),
+                    "chocolatey",
+                    "lib",
+                    "ffmpeg",
+                    "tools",
+                    "ffmpeg",
+                    "bin",
+                    "ffmpeg.exe",
+                ),
+                os.path.join(
+                    "C:",
+                    "ProgramData",
+                    "chocolatey",
+                    "lib",
+                    "ffmpeg",
+                    "tools",
+                    "ffmpeg",
+                    "bin",
+                    "ffmpeg.exe",
+                ),
+            ]
+
+            for path in choco_paths:
+                if os.path.exists(path):
+                    return path
+        else:
+            # Se não é do Chocolatey, provavelmente é o executável real
+            return ffmpeg_path
+
+    # Se não encontrou pelo PATH, procura em locais comuns
+    common_locations = [
+        # Windows
+        os.path.join(os.getenv("LOCALAPPDATA", ""), "FFmpeg", "ffmpeg.exe"),
+        os.path.join(os.getenv("PROGRAMFILES", ""), "FFmpeg", "bin", "ffmpeg.exe"),
+        os.path.join(os.getenv("PROGRAMFILES(X86)", ""), "FFmpeg", "bin", "ffmpeg.exe"),
+        # Linux
+        "/usr/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        # macOS
+        "/usr/local/bin/ffmpeg",
+        "/opt/homebrew/bin/ffmpeg",
+    ]
+
+    for location in common_locations:
+        if os.path.isfile(location):
+            return location
+
+    # Se ainda não encontrou, tenta encontrar pela saída do comando 'where' (Windows)
+    try:
+        if os.name == "nt":  # Windows
+            result = subprocess.run(["where", "ffmpeg"], capture_output=True, text=True)
+            paths = result.stdout.strip().split("\n")
+            for path in paths:
+                path = path.strip()
+                if os.path.exists(path) and "chocolatey" not in path.lower():
+                    return path
+    except Exception:
+        pass
+
+    # Se não encontrou em nenhum lugar
+    return None

@@ -6,7 +6,9 @@
     "appearance": "Aparência",
     "appearance_values": {"Sistema": "System", "Claro": "Light", "Escuro": "Dark"},
     "language": "Idioma",
-
+    "popup_ffmpeg_title": "FFmpeg não encontrado!",
+    "popup_ffmpeg_msg": "FFmpeg não encontrado. Escolha uma das opções abaixo:\n\n • Informar caminho: Se o FFmpeg já estiver instalado, indique a localização do executável\n •Instalar via Chocolatey: Instalar automaticamente usando o gerenciador de pacotes\n •Baixar manualmente: Abrir o site oficial para download e instalação\n\nApós a instalação, você precisará informar o caminho nas configurações.",
+    "popup_ffmpeg_options": {"Procurar ffmpeg.exe": "ffmpeg_path", "Chocolatey": "chocolatey", "Manualmente": "manually"},
     "tabs_names": [
         "Download",
         "Opções Avançadas",
@@ -55,5 +57,9 @@
     "success": [
         "Download concluído",
         "Sucesso"
+    ],
+    "filetypes": [
+        "Arquivos Executáveis",
+        "Todos os Arquivos"
     ]
 }
