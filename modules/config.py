@@ -25,22 +25,25 @@ class DefaultConfig:
         self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]
         self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]
 
-        # Caminho padrão
-        self.FFMPEG_PATH = get_ffmpeg_path()
-
 
 class UserPreferences:
     def __init__(self):
 
         # Configurações padrão
         self.default_config = {
-            "download_path": os.path.expanduser("~/Downloads").replace("\\", "/"),
-            "language": "en_US",
-            "media": "Audio",
-            "format": "aac",
+            "default_download_path": os.path.expanduser("~/Downloads").replace(
+                "\\", "/"
+            ),
+            "language": "pt_BR",
+            "media": "Vídeo",
+            "format": "mp4",
             "quality": "1080p",
-            "appearance": "Light",
+            "appearance": "Sistema",
         }
+
+        ffmpeg_path = get_ffmpeg_path()
+        if ffmpeg_path:
+            self.default_config["ffmpeg_path"] = ffmpeg_path.replace("\\", "/")
 
         # Carrega ou cria as configurações
         self.config = self.load_preferences()

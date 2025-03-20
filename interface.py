@@ -383,31 +383,65 @@ class MainApplication(ctk.CTk):
             self.main_frame_bottom, fg_color="transparent"
         )
         self.download_path_frame.pack(
-            ipadx=5,
+            side="top",
             fill="x",
             pady=(20, 10),
-            padx=15,
+            padx=25,
         )
-        self.download_path_frame.columnconfigure(0, weight=1)
+
+        self.download_path_frame_top = ctk.CTkFrame(
+            self.download_path_frame, fg_color="transparent"
+        )
+        self.download_path_frame_top.pack(side="top", fill="x")
+
+        self.download_path_frame_buttom = ctk.CTkFrame(
+            self.download_path_frame, fg_color="transparent"
+        )
+        self.download_path_frame_buttom.pack(side="top", fill="x")
 
         self.download_path_label = ctk.CTkLabel(
-            self.download_path_frame, text=self.translator.get_text("download_path")
+            self.download_path_frame_top,
+            width=130,
+            anchor="w",
+            text=self.translator.get_text("download_path"),
         )
-        self.download_path_label.grid(row=0, column=0, padx=5, sticky="w")
+        self.download_path_label.pack(side="left", fill="x")
 
         self.download_path_entry = ctk.CTkEntry(
-            self.download_path_frame,
+            self.download_path_frame_buttom,
             placeholder_text=self.translator.get_text("folder_path"),
         )
-        self.download_path_entry.grid(row=1, column=0, padx=5, pady=(2, 0), sticky="ew")
-        self.download_path_entry.insert(0, self.user_prefer.get("download_path"))
+        self.download_path_entry.pack(side="left", expand=True, fill="x", padx=(0, 5))
+
+        last_download_path = self.user_prefer.get("last_download_path")
+        if last_download_path:
+            self.download_path_entry.insert(0, last_download_path)
+        else:
+            self.download_path_entry.insert(
+                0, self.user_prefer.get("default_download_path")
+            )
 
         self.download_path_button = ctk.CTkButton(
-            self.download_path_frame,
+            self.download_path_frame_buttom,
             text=self.translator.get_text("select_folder"),
-            command=self.download_path_select,
+            command=lambda: self.download_path_select(self.download_path_entry),
         )
-        self.download_path_button.grid(row=1, column=1, padx=10, pady=(2, 0))
+        self.download_path_button.pack(side="left")
+
+        self.download_path_reset_icon = ctk.CTkImage(
+            Image.open(get_image_path("reset_icon.png")),
+            size=(16, 16),
+        )
+
+        self.download_path_reset = ctk.CTkButton(
+            self.download_path_frame_buttom,
+            text="",
+            image=self.download_path_reset_icon,
+            command=lambda: self.reset_download_path(),
+            width=28,
+            corner_radius=5,
+        )
+        self.download_path_reset.pack(side="left", padx=(2, 0))
         # endregion
 
         # endregion
@@ -497,7 +531,7 @@ class MainApplication(ctk.CTk):
         self.appearance_frame = ctk.CTkFrame(
             self.interface_frame, fg_color="transparent"
         )
-        self.appearance_frame.pack(side="left", expand=True, fill="x")
+        self.appearance_frame.pack(side="left", expand=True)
 
         self.appearance_label = ctk.CTkLabel(
             self.appearance_frame,
@@ -516,7 +550,7 @@ class MainApplication(ctk.CTk):
             command=lambda choice: ctk.set_appearance_mode(
                 self.translator.get_text("appearance_values")[choice]
             ),
-            width=120,
+            width=140,
         )
         self.appearance_dropdown.pack(side="left", padx=(5, 0))
 
@@ -525,7 +559,7 @@ class MainApplication(ctk.CTk):
         #! Idioma
         # region IDIOMA
         self.language_frame = ctk.CTkFrame(self.interface_frame, fg_color="transparent")
-        self.language_frame.pack(side="left", expand=True, fill="x")
+        self.language_frame.pack(side="left", expand=True)
 
         self.language_label = ctk.CTkLabel(
             self.language_frame,
@@ -544,7 +578,7 @@ class MainApplication(ctk.CTk):
             values=list(self.available_languages.values()),
             variable=self.language_var,
             command=self.change_language,
-            width=180,
+            width=140,
         )
         self.language_dropdown.pack(side="left", padx=(5, 0))
 
@@ -552,11 +586,11 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
-        #! Caminhos padrões
+        #! Preferências Padrão
         # region PADRAO
         self.default_label = ctk.CTkLabel(
             self.settings_frame_top,
-            text=self.translator.get_text("interface"),
+            text=self.translator.get_text("default_preferences"),
             font=ctk.CTkFont(size=16, weight="bold"),
         )
         self.default_label.pack(side="top")
@@ -572,72 +606,95 @@ class MainApplication(ctk.CTk):
         self.default_frame.pack(side="top", fill="x", pady=10)
 
         #! Frame para seleção de arquivo .exe
+        # region FFMPEG
         self.ffmpeg_path_frame = ctk.CTkFrame(
             self.default_frame, fg_color="transparent"
         )
-        self.ffmpeg_path_frame.pack(side="left", expand=True, fill="x")
-        self.ffmpeg_path_frame.columnconfigure(1, weight=1)
+        self.ffmpeg_path_frame.pack(side="top", expand=True, fill="x", pady=(0, 10))
 
         self.ffmpeg_path_label = ctk.CTkLabel(
             self.ffmpeg_path_frame,
             text=self.translator.get_text("ffmpeg_path"),
+            width=130,
+            anchor="w",
         )
-        self.ffmpeg_path_label.grid(row=0, column=0, padx=5, sticky="w")
+        self.ffmpeg_path_label.pack(side="left")
 
         self.ffmpeg_path_entry = ctk.CTkEntry(
             self.ffmpeg_path_frame,
             placeholder_text=self.translator.get_text("exe_path"),
         )
-        self.ffmpeg_path_entry.grid(row=0, column=1, padx=5, pady=(2, 0), sticky="ew")
+        self.ffmpeg_path_entry.pack(side="left", expand=True, fill="x", padx=5)
 
         self.ffmpeg_path_button = ctk.CTkButton(
             self.ffmpeg_path_frame,
             text=self.translator.get_text("search_ffmpeg"),
             command=self.ffmpeg_path_select,
         )
-        self.ffmpeg_path_button.grid(row=0, column=2, padx=(5, 3), pady=(2, 0))
+        self.ffmpeg_path_button.pack(side="left")
 
-        ffmpeg_path = get_ffmpeg_path()
-        # TODO ver também se já está salvo em configurações do usuário
-        if ffmpeg_path:
-            self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
+        ffmpeg_path = self.user_prefer.get("ffmpeg_path")
+        if not ffmpeg_path:
+            ffmpeg_path = get_ffmpeg_path()
+            if ffmpeg_path:
+                self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
+            else:
+                self.ffmpeg_popup()
         else:
-            self.ffmpeg_popup()
-            pass
-            # alerta
+            self.ffmpeg_path_entry.insert(0, ffmpeg_path)
+        # endregion
 
-        self.after(1000, self.ffmpeg_popup())
+        #! Frame para seleção de pasta de donwload
+        # region Download Default
+        self.default_download_path_frame = ctk.CTkFrame(
+            self.default_frame, fg_color="transparent"
+        )
+        self.default_download_path_frame.pack(side="top", expand=True, fill="x")
 
+        self.default_download_path_label = ctk.CTkLabel(
+            self.default_download_path_frame,
+            text=self.translator.get_text("download_path"),
+            width=130,
+            anchor="w",
+        )
+        self.default_download_path_label.pack(side="left")
+
+        self.default_download_path_entry = ctk.CTkEntry(
+            self.default_download_path_frame,
+            placeholder_text=self.translator.get_text("folder_path"),
+        )
+        self.default_download_path_entry.pack(
+            side="left", expand=True, fill="x", padx=5
+        )
+        self.default_download_path_entry.insert(
+            0, self.user_prefer.get("default_download_path")
+        )
+
+        self.default_download_tooltip = CTkToolTip(
+            self.default_download_path_entry,
+            justify="left",
+            padding=(5, 5),
+            border_width=1,
+            x_offset=-50,
+            y_offset=-55,
+            follow=False,
+            message=self.translator.get_text("donwload_path_tooltip"),
+        )
+
+        self.default_download_path_button = ctk.CTkButton(
+            self.default_download_path_frame,
+            text=self.translator.get_text("select_folder"),
+            command=lambda: self.download_path_select(self.default_download_path_entry),
+        )
+        self.default_download_path_button.pack(side="left")
         # endregion
 
         # endregion
 
-        """
-        self.ffmpeg_path_button = ctk.CTkButton(
-            self.ffmpeg_path_frame,
-            text=self.translator.get_text("search_ffmpeg"),
-            command=self.ffmpeg_path_select,
-        )
-        self.ffmpeg_path_button.grid(row=1, column=1, padx=(5, 3), pady=(2, 0))
-
-        # Botão que redireciona para baixar o FFMPEG
-        DOWNLOAD_ICON = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAABEElEQVR4nO3WQW7CMBRF0bekshuGtKMuo8Muuu2tkMjgGwg2LcH2f0fKgEnid4MEkpmZmdnGKCgbHCBSNjhApGxwgEjZ4ACRssEBImWDA0TKBgeIlA0OECkbHCBSNjhApGyYMQDw8ugALc/YFPAB/ADvjwoAvALfwKc6HL+oikChYfyijwjArjgYp89v/xXgeK8rz9ipB5y/nZvfhNoA99z7KWg8aE2AYcbfc+BbAYYb33rwtQDDjm8ZcC3A8ONrh1wKMM34xdqgMsB04yt+w0vN/yWGweW3u2b8N/+HCPONb4gw7/iKCPOPX4mQZ/wCOABfp+ugjID98Xr2OcysHZ3R1uiMA2yN7AHMzMxMo/sFG0lNHgCxAKIAAAAASUVORK5CYII="
-        self.ffmpeg_download_icon = ctk.CTkImage(
-            b64_to_image(DOWNLOAD_ICON), size=(16, 16)
-        )
-
-        self.ffmpeg_download_button = ctk.CTkButton(
-            self.ffmpeg_path_frame,
-            text="",
-            image=self.ffmpeg_download_icon,
-            command=lambda: self.abrir_link("https://ffmpeg.org/download.html"),
-            width=20,
-        )
-        self.ffmpeg_download_button.grid(row=1, column=2, padx=(0, 10), pady=(2, 0))
+        # endregion
 
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        """
 
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
@@ -720,16 +777,42 @@ class MainApplication(ctk.CTk):
                     list(self.translator.get_text("appearance_values").keys())[index]
                 )
 
+        self.default_label.configure(
+            text=self.translator.get_text("default_preferences")
+        )
+        self.ffmpeg_path_label.configure(text=self.translator.get_text("ffmpeg_path"))
+        self.ffmpeg_path_entry.configure(
+            placeholder_text=self.translator.get_text("exe_path")
+        )
+        self.ffmpeg_path_button.configure(
+            text=self.translator.get_text("search_ffmpeg")
+        )
+        self.default_download_path_label.configure(
+            text=self.translator.get_text("download_path")
+        )
+        self.default_download_path_entry.configure(
+            placeholder_text=self.translator.get_text("folder_path")
+        )
+        self.default_download_path_button.configure(
+            text=self.translator.get_text("select_folder")
+        )
+        self.default_download_tooltip.configure(
+            message=self.translator.get_text("donwload_path_tooltip")
+        )
+
         # endregion
 
     def save_current_settings(self):
         """Salva as configurações atuais"""
-        self.user_prefer.set("download_path", self.download_path_entry.get())
-        # self.user_prefer.set("ffmpeg_path", self.ffmpeg_path_entry.get())
-        self.user_prefer.set("midia", self.media_var.get())
+        self.user_prefer.set("last_download_path", self.download_path_entry.get())
+        self.user_prefer.set(
+            "default_download_path", self.default_download_path_entry.get()
+        )
+        self.user_prefer.set("ffmpeg_path", self.ffmpeg_path_entry.get())
+        self.user_prefer.set("media", self.media_var.get())
         self.user_prefer.set("format", self.formato_var.get())
         self.user_prefer.set("quality", self.qualidade_var.get())
-        self.user_prefer.set("appearance", self.switch_var.get())
+        self.user_prefer.set("appearance", self.appearance_var.get())
         self.user_prefer.set(
             "language", self.available_languages_inverted[self.language_var.get()]
         )
@@ -739,6 +822,11 @@ class MainApplication(ctk.CTk):
         """Chamado quando a janela é fechada"""
         self.save_current_settings()
         self.quit()
+
+    def reset_download_path(self):
+        path = self.default_download_path_entry.get()
+        self.download_path_entry.delete(0, "end")
+        self.download_path_entry.insert(0, path)
 
     # Muda as opções de extensão de acordo do tipo de multimida selecionado
     def media_selected(self, valor, init=False):
@@ -777,11 +865,11 @@ class MainApplication(ctk.CTk):
         self.download_button.configure(state="disabled")
 
     # Copia o caminho da pasta selecionada
-    def download_path_select(self):
+    def download_path_select(self, path_entry):
         folder_path = filedialog.askdirectory()
         if folder_path:
-            self.download_path_entry.delete(0, "end")
-            self.download_path_entry.insert(0, folder_path)
+            path_entry.delete(0, "end")
+            path_entry.insert(0, folder_path)
 
     # Copia o caminho do .exe selecionado
     def ffmpeg_path_select(self):
