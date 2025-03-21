@@ -66,6 +66,14 @@ class YoutubeDownloader:
                 # Resetar a variavel
                 self.progress_popup = None
                 self.root.restore_button()
+                if self.root.clear_url_var.get():
+                    self.root.url1_var.set("")
+                if self.root.open_folder_var.get():
+                    # TODO ver como abrir uma pasta
+                    pass
+                if self.root.notify_completed_var.get():
+                    # TODO notificação de concluido
+                    pass
                 # TODO dps criar o update after download para mandar aviso de concluido
                 # self.update_ui_after_download(success=True)
         except Exception as e:

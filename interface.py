@@ -535,7 +535,7 @@ class MainApplication(ctk.CTk):
 
         self.appearance_label = ctk.CTkLabel(
             self.appearance_frame,
-            width=100,
+            # width=100,
             text=self.translator.get_text("appearance") + ":",
             anchor="e",
         )
@@ -563,7 +563,7 @@ class MainApplication(ctk.CTk):
 
         self.language_label = ctk.CTkLabel(
             self.language_frame,
-            width=100,
+            # width=100,
             text=self.translator.get_text("language") + ":",
             anchor="e",
         )
@@ -586,11 +586,86 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
-        #! Preferências Padrão
-        # region PADRAO
+        #! Pós download
+        # region Pós-Download
+        self.post_download_label = ctk.CTkLabel(
+            self.settings_frame_top,
+            text=self.translator.get_text("post_download"),
+            font=ctk.CTkFont(size=16, weight="bold"),
+        )
+        self.post_download_label.pack(side="top")
+
+        self.post_download_div = ctk.CTkFrame(
+            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
+        )
+        self.post_download_div.pack(side="top", fill="x")
+
+        self.post_download_frame = ctk.CTkFrame(
+            self.settings_frame_top, fg_color="transparent"
+        )
+        self.post_download_frame.pack(side="top", fill="x", pady=10)
+
+        self.clear_url_var = ctk.BooleanVar(value=False)
+        self.open_folder_var = ctk.BooleanVar(value=False)
+        self.notify_completed_var = ctk.BooleanVar(value=True)
+
+        # Limpar url
+        self.clear_url_checkbox = ctk.CTkCheckBox(
+            self.post_download_frame,
+            text=self.translator.get_text("check_clear_url"),
+            variable=self.clear_url_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.clear_url_checkbox.pack(side="left", expand=True, padx=5)
+
+        # Abrir pasta
+        self.open_folder_checkbox = ctk.CTkCheckBox(
+            self.post_download_frame,
+            text=self.translator.get_text("check_open_folder"),
+            variable=self.open_folder_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.open_folder_checkbox.pack(side="left", expand=True, padx=5)
+
+        self.open_folder_tolltip = CTkToolTip(
+            self.open_folder_checkbox,
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+            message=self.translator.get_text("check_open_folder_tolltip"),
+        )
+
+        # Notificar quando concluido
+        self.notify_completed_checkbox = ctk.CTkCheckBox(
+            self.post_download_frame,
+            text=self.translator.get_text("check_notify_completed"),
+            variable=self.notify_completed_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.notify_completed_checkbox.pack(side="left", expand=True, padx=5)
+
+        self.notify_completed_tooltip = CTkToolTip(
+            self.notify_completed_checkbox,
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+            message=self.translator.get_text("check_notify_completed_tolltip"),
+        )
+
+        # endregion
+
+        #! Caminhos Padrão
+        # region Default Paths
         self.default_label = ctk.CTkLabel(
             self.settings_frame_top,
-            text=self.translator.get_text("default_preferences"),
+            text=self.translator.get_text("default_paths"),
             font=ctk.CTkFont(size=16, weight="bold"),
         )
         self.default_label.pack(side="top")
@@ -614,8 +689,7 @@ class MainApplication(ctk.CTk):
 
         self.ffmpeg_path_label = ctk.CTkLabel(
             self.ffmpeg_path_frame,
-            text=self.translator.get_text("ffmpeg_path"),
-            width=130,
+            text="FFmpeg:",
             anchor="w",
         )
         self.ffmpeg_path_label.pack(side="left")
@@ -653,8 +727,8 @@ class MainApplication(ctk.CTk):
 
         self.default_download_path_label = ctk.CTkLabel(
             self.default_download_path_frame,
-            text=self.translator.get_text("download_path"),
-            width=130,
+            text="Download:",
+            width=50,
             anchor="w",
         )
         self.default_download_path_label.pack(side="left")
@@ -777,18 +851,31 @@ class MainApplication(ctk.CTk):
                     list(self.translator.get_text("appearance_values").keys())[index]
                 )
 
-        self.default_label.configure(
-            text=self.translator.get_text("default_preferences")
+        self.post_download_label.configure(
+            text=self.translator.get_text("post_download")
         )
-        self.ffmpeg_path_label.configure(text=self.translator.get_text("ffmpeg_path"))
+        self.clear_url_checkbox.configure(
+            text=self.translator.get_text("check_clear_url")
+        )
+        self.open_folder_checkbox.configure(
+            text=self.translator.get_text("check_open_folder")
+        )
+        self.open_folder_tolltip.configure(
+            message=self.translator.get_text("check_open_folder_tolltip")
+        )
+        self.notify_completed_checkbox.configure(
+            text=self.translator.get_text("check_notify_completed")
+        )
+        self.notify_completed_tooltip.configure(
+            message=self.translator.get_text("check_notify_completed_tolltip")
+        )
+
+        self.default_label.configure(text=self.translator.get_text("default_paths"))
         self.ffmpeg_path_entry.configure(
             placeholder_text=self.translator.get_text("exe_path")
         )
         self.ffmpeg_path_button.configure(
             text=self.translator.get_text("search_ffmpeg")
-        )
-        self.default_download_path_label.configure(
-            text=self.translator.get_text("download_path")
         )
         self.default_download_path_entry.configure(
             placeholder_text=self.translator.get_text("folder_path")

@@ -6,7 +6,7 @@
     "appearance": "Appearance",
     "appearance_values": {"System": "System", "Light": "Light", "Dark": "Dark"},
     "language": "Language",
-    "default_preferences" : "Default Preferences",
+    "default_paths" : "Default Paths",
     "popup_ffmpeg_title": "FFmpeg not found!",
     "popup_ffmpeg_msg": "FFmpeg not found. Choose one of the options below:\n\n • Specify path: If FFmpeg is already installed, indicate the location of the executable\n • Install via Chocolatey: Install automatically using the package manager\n • Download manually: Open the official website for download and installation\n\nAfter installation, you'll need to specify the path in the settings.",
     "popup_ffmpeg_options": {"Search for ffmpeg.exe": "ffmpeg_path", "Chocolatey": "chocolatey", "Manually": "manually"},
@@ -63,5 +63,11 @@
         "Executable Files",
         "All Files"
     ],
-    "donwload_path_tooltip": "This is where files will be saved whenever the program starts, unless an alternative path is specified during download."
+    "donwload_path_tooltip": "This is where files will be saved whenever the program starts, unless an alternative path is specified during download.",
+    "post_download": "Post-Download Options",
+    "check_open_folder": "Open folder",
+    "check_open_folder_tolltip":"Open the folder where the media was downloaded.",
+    "check_notify_completed": "Notify",
+    "check_notify_completed_tolltip":"Notify when completed",
+    "check_clear_url":"Clear URL field"
 }
