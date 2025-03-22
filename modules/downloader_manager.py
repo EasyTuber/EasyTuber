@@ -1,7 +1,7 @@
 import os
 from yt_dlp import YoutubeDL
 import threading
-from modules.utils import get_ffmpeg_path
+from modules.utils import get_ffmpeg_path, play_sound
 from libs import CTkProgressPopup
 
 
@@ -62,20 +62,8 @@ class YoutubeDownloader:
 
             # Se chegou aqui, o download foi concluído
             if not self.cancel_download.is_set():
-                self.progress_popup.close_progress_popup()
-                # Resetar a variavel
-                self.progress_popup = None
-                self.root.restore_button()
-                if self.root.clear_url_var.get():
-                    self.root.url1_var.set("")
-                if self.root.open_folder_var.get():
-                    # TODO ver como abrir uma pasta
-                    pass
-                if self.root.notify_completed_var.get():
-                    # TODO notificação de concluido
-                    pass
                 # TODO dps criar o update after download para mandar aviso de concluido
-                # self.update_ui_after_download(success=True)
+                self.update_ui_after_download(success=True)
         except Exception as e:
             # Verificar se foi um cancelamento intencional
             if "cancelado pelo usuário" in str(e):
@@ -87,9 +75,10 @@ class YoutubeDownloader:
 
     def config_options(self):
         self.ydl_opts.clear()
+        self.options_ydlp.clear()
         self.options_ydlp = {
             "url": self.root.url1_var.get(),
-            "midia": self.root.midia_var.get(),
+            "media": self.root.media_var.get(),
             "formato": self.root.formato_var.get(),
             "playlist": self.root.playlist_check_var.get(),
             "playlist_items": self.root.playlist_entry.get(),
@@ -127,7 +116,7 @@ class YoutubeDownloader:
             )
 
         # Se é audio
-        if self.options_ydlp["midia"] in self.root.localized_audio:
+        if self.options_ydlp["media"] in self.root.localized_audio:
             self.ydl_opts.update(
                 {
                     "format": "bestaudio/best",
@@ -142,6 +131,7 @@ class YoutubeDownloader:
             )
         else:  # Se é video
             # TODO depois colocar um if para pegar das opções avançadas
+            # TODO colocar o marge to format para mudar o formati
             self.ydl_opts.update(
                 {
                     "format": f"bestvideo[ext={self.options_ydlp["formato"]}][height<={self.options_ydlp["qualidade"]}]+bestaudio[ext=m4a]/best[ext={self.options_ydlp["formato"]}][height<={self.options_ydlp["qualidade"]}]/best[height<={self.options_ydlp["qualidade"]}]/best",
@@ -252,16 +242,29 @@ class YoutubeDownloader:
     def update_ui_after_download(self, success=False, cancelled=False, error=None):
         # Executa na thread principal
         def update():
-            self.is_downloading = False
-
             if cancelled:
-                self.status_label.configure(text="Download cancelado")
+                # self.status_label.configure(text="Download cancelado")
+                pass
             elif success:
-                self.status_label.configure(text="Download concluído com sucesso!")
-                self.progress_bar.set(1.0)
-            else:
-                self.status_label.configure(text=f"Erro: {error}")
+                self.progress_popup.close_progress_popup()
+                # Resetar a variavel
+                if self.root.clear_url_var.get():
+                    print("Limpar url")
+                    self.root.url1_var.set("")
+                if self.root.open_folder_var.get():
+                    print("Abrir pasta")
+                    os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
+                if self.root.notify_completed_var.get():
+                    if self.root.sound_notification_var.get():
+                        play_sound(True)
+                    self.root.show_checkmark(self.translator.get_text("success")[0])
+                    pass
 
-            self.action_button.configure(text="Iniciar Download", state="normal")
+            else:
+                self.progress_popup.close_progress_popup()
+                # self.status_label.configure(text=f"Erro: {error}")
+
+            self.progress_popup = None
+            self.root.restore_button()
 
         self.root.after(0, update)

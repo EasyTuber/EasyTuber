@@ -69,5 +69,6 @@
     "check_open_folder_tolltip":"Abrir pasta onde foi baixado a mídia.",
     "check_notify_completed": "Notificar",
     "check_notify_completed_tolltip":"Notificar quando concluido.",
-    "check_clear_url": "Limpar campo URL"
+    "check_clear_url": "Limpar campo URL",
+    "sound_notification":"Notificação sonora"
 }

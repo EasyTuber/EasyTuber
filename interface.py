@@ -16,35 +16,83 @@ from modules import (
     DefaultConfig,
     TranslationManager,
     get_image_path,
-    b64_to_image,
     get_theme_path,
     get_ffmpeg_path,
+    play_sound,
+    center_window,
 )
 
 
+# TODO fazer salvar/carregar configurações do notificação sonora, limpar url, abrir pasta e notificar
+
+
 class CustomTabview(ctk.CTkFrame):
+    """
+    Custom tab view widget with dynamic button and content frames.
+
+    Attributes
+    ----------
+    master : ctk.CTk
+        The parent widget.
+    button_frame : ctk.CTkFrame
+        Frame containing the tab buttons.
+    content_frame : ctk.CTkFrame
+        Frame containing the tab content.
+    buttons : dict
+        Dictionary mapping tab names to their respective buttons.
+    tabs : dict
+        Dictionary mapping tab names to their respective content frames.
+    current_tab : str
+        The currently selected tab.
+    """
+
     def __init__(self, master, **kwargs):
+        """
+        Initializes the CustomTabview widget.
+
+        Parameters
+        ----------
+        master : ctk.CTk
+            The parent widget.
+        **kwargs
+            Additional keyword arguments passed to ctk.CTkFrame.
+        """
         super().__init__(master, **kwargs)
 
-        # Criar frame para os botões
+        # Create frame for buttons
         self.button_frame = ctk.CTkFrame(self, corner_radius=10)
         self.button_frame.pack(side="top", fill="x", padx=10)
         self.button_frame.rowconfigure(0, weight=1)
 
-        # Criar frame para o conteúdo
+        # Create frame for content
         self.content_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.content_frame.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
-        # Dicionários para armazenar botões e frames
+        # Dictionaries to store buttons and frames
         self.buttons = {}
         self.tabs = {}
         self.current_tab = None
 
     def add(self, name, text):
-        # Calcular a posição para o novo botão
+        """
+        Adds a new tab with the given name and button text.
+
+        Parameters
+        ----------
+        name : str
+            Unique identifier for the tab.
+        text : str
+            Text displayed on the tab button.
+
+        Returns
+        -------
+        ctk.CTkFrame
+            The content frame for the newly added tab.
+        """
+        # Calculate position for the new button
         button_position = len(self.buttons)
 
-        # Criar botão para a aba
+        # Create button for the tab
         button = ctk.CTkButton(
             self.button_frame,
             text=text,
@@ -59,50 +107,61 @@ class CustomTabview(ctk.CTkFrame):
         button.grid(row=0, column=button_position, sticky="nsew", padx=5, pady=5)
         self.button_frame.grid_columnconfigure(button_position, weight=1)
 
-        # Criar frame para o conteúdo da aba
+        # Create frame for the tab content
         tab_frame = ctk.CTkFrame(
             self.content_frame,
             corner_radius=10,
             fg_color=("gray95", "gray17"),
         )
 
-        # Armazenar referências
+        # Store references
         self.buttons[name] = button
         self.tabs[name] = tab_frame
 
-        # Se for a primeira aba, selecione-a
+        # If this is the first tab, select it
         if not self.current_tab:
             self.select(name)
 
         return tab_frame
 
     def select(self, name):
-        # Esconder a aba atualmente visível
+        """
+        Selects the tab with the given name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the tab to select.
+        """
+        # Hide the currently visible tab
         if self.current_tab:
             self.tabs[self.current_tab].pack_forget()
 
-            # Restaurar aparência do botão não selecionado
+            # Restore appearance of the unselected button
             self.buttons[self.current_tab].configure(
                 fg_color="transparent",
                 hover_color=("gray90", "gray30"),
                 text_color=("gray50", "gray70"),
             )
 
-        # Mostrar a aba selecionada
+        # Show the selected tab
         self.tabs[name].pack(fill="both", expand=True)
 
-        # Destacar o botão selecionado
+        # Highlight the selected button
         self.buttons[name].configure(
             fg_color=("#D03434", "#A11D1D"),
             hover_color=("#AE2727", "#B81D1D"),
             text_color=("#DCE4EE", "#DCE4EE"),
         )
 
-        # Atualizar a aba atual
+        # Update the current tab
         self.current_tab = name
 
     def update_button_text(self):
-        # Verificar se o botão existe
+        """
+        Updates the text of all tab buttons based on the master's translator.
+        """
+        # Check if the button exists
         for index, name in enumerate(self.buttons):
             new_text = self.master.translator.get_text("tabs_names")[index]
             self.buttons[name].configure(text=new_text)
@@ -140,12 +199,12 @@ class MainApplication(ctk.CTk):
         self.trace_url2 = self.url2_var.trace_add("write", self.sync_var2_to_var1)
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
-        self.geometry(
-            f"{self.default_config.DEFAULT_WINDOW_WIDTH}x{self.default_config.DEFAULT_WINDOW_HEIGHT}"
-        )
-        self.minsize(
-            self.default_config.MIN_WINDOW_WIDTH, self.default_config.MIN_WINDOW_HEIGHT
-        )
+
+        self.width = self.default_config.DEFAULT_WINDOW_WIDTH
+        self.height = self.default_config.DEFAULT_WINDOW_HEIGHT
+        center_window(self, self.width, self.height)
+        self.resizable(False, False)
+        self.lift()
 
         self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
 
@@ -584,6 +643,20 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
+        #! Notificação Sonora
+        # region NOTIFICAÇÂO SONORA
+        self.sound_notification_var = ctk.BooleanVar(value=True)
+        self.sound_notification_checkbox = ctk.CTkCheckBox(
+            self.interface_frame,
+            text=self.translator.get_text("sound_notification"),
+            variable=self.sound_notification_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.sound_notification_checkbox.pack(side="left", expand=True, padx=5)
+
+        # endregion
+
         # endregion
 
         #! Pós download
@@ -850,6 +923,9 @@ class MainApplication(ctk.CTk):
                 self.appearance_var.set(
                     list(self.translator.get_text("appearance_values").keys())[index]
                 )
+        self.sound_notification_checkbox.configure(
+            text=self.translator.get_text("sound_notification")
+        )
 
         self.post_download_label.configure(
             text=self.translator.get_text("post_download")
@@ -936,9 +1012,13 @@ class MainApplication(ctk.CTk):
             erros.append(self.translator.get_text("errors")[0])
         if not self.download_path_entry.get():
             erros.append(self.translator.get_text("errors")[1])
+        if not self.ffmpeg_path_entry.get():
+            erros.append(self.translator.get_text("errors")[2])
 
         if erros:
             for erro in erros:
+                if self.sound_notification_var.get():
+                    play_sound(False)
                 self.show_error(erro)  # Exibir cada erro
             self.restore_button()
             return

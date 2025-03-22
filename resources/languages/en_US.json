@@ -69,5 +69,6 @@
     "check_open_folder_tolltip":"Open the folder where the media was downloaded.",
     "check_notify_completed": "Notify",
     "check_notify_completed_tolltip":"Notify when completed",
-    "check_clear_url":"Clear URL field"
+    "check_clear_url":"Clear URL field",
+    "sound_notification":"Sound notification"
 }
