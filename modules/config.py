@@ -7,13 +7,11 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "2.0.0-beta"
+        self.APP_VERSION = "2.0.0"
         self.APP_AUTHOR = "Gabriel Frais"
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
-
-        # Configurações de aparência
-        self.DEFAULT_THEME = "system"  # ou "light", "system"
-        self.DEFAULT_COLOR = "red"  # cor primária para elementos da interface
+        self.APP_LICENSE = "GPLv3"
+        self.APP_WEBSITE = "https://github.com/EasyTuber/EasyTuber"
 
         # Configurações de tamanho da janela
         self.DEFAULT_WINDOW_WIDTH = 700
@@ -22,8 +20,8 @@ class DefaultConfig:
         self.MIN_WINDOW_HEIGHT = 500
 
         # Configurações de Valores
-        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]
-        self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]
+        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]  # TODO adicionar mais formatos
+        self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]  # TODO adicionar mais formatos
 
 
 class UserPreferences:
@@ -52,6 +50,10 @@ class UserPreferences:
             "format": "mp4",  # Default media format
             "quality": "1080p",  # Default quality
             "appearance": "Sistema",  # Default appearance setting
+            "sound_notification": True,  # Default sound notification
+            "open_folder": False,  # Default open folder after download
+            "clear_url": False,  # Default clear url after download
+            "notify_completed": True,  # Default notify completed
         }
 
         # Attempt to get the FFmpeg executable path and add it to the config if available

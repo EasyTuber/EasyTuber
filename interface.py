@@ -1,13 +1,9 @@
-import threading
 import webbrowser
 import customtkinter as ctk
-
 from PIL import Image
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
-
-from libs import CTkAlert, CTkNotification
 
 
 from modules import (
@@ -16,14 +12,10 @@ from modules import (
     DefaultConfig,
     TranslationManager,
     get_image_path,
-    get_theme_path,
     get_ffmpeg_path,
     play_sound,
     center_window,
 )
-
-
-# TODO fazer salvar/carregar configurações do notificação sonora, limpar url, abrir pasta e notificar
 
 
 class CustomTabview(ctk.CTkFrame):
@@ -162,8 +154,8 @@ class CustomTabview(ctk.CTkFrame):
         Updates the text of all tab buttons based on the master's translator.
         """
         # Check if the button exists
-        for index, name in enumerate(self.buttons):
-            new_text = self.master.translator.get_text("tabs_names")[index]
+        for name in self.buttons:
+            new_text = self.master.translator.get_text(name)
             self.buttons[name].configure(text=new_text)
 
 
@@ -194,9 +186,12 @@ class MainApplication(ctk.CTk):
         self.url1_var = ctk.StringVar()
         self.url2_var = ctk.StringVar()
 
+        # TODO Work in Progress (Advanced)
+        """
         # Registrar os traces iniciais (com escopo global para poder removê-los)
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
         self.trace_url2 = self.url2_var.trace_add("write", self.sync_var2_to_var1)
+        """
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
 
@@ -209,6 +204,7 @@ class MainApplication(ctk.CTk):
         self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
 
         # Outras variaveis
+        self.download_options = {}
 
         # endregion
 
@@ -251,16 +247,19 @@ class MainApplication(ctk.CTk):
 
         # Adicionar abas
         self.tab1 = self.tabview.add(
-            "tab1", self.translator.get_text("tabs_names")[0]
+            "download", self.translator.get_text("download")
         )  # Download
+        # TODO Work in Progress (Advanced)
+        """
         self.tab2 = self.tabview.add(
-            "tab2", self.translator.get_text("tabs_names")[1]
+            "advanced_options", self.translator.get_text("advanced_options")
         )  # Advanced
+        """
         self.tab3 = self.tabview.add(
-            "tab3", self.translator.get_text("tabs_names")[2]
+            "settings", self.translator.get_text("settings")
         )  # Settings
         self.tab4 = self.tabview.add(
-            "tab4", self.translator.get_text("tabs_names")[3]
+            "about", self.translator.get_text("about")
         )  # About
         # endregion
 
@@ -428,8 +427,8 @@ class MainApplication(ctk.CTk):
         # region Botão Download
         self.download_button = ctk.CTkButton(
             self.main_frame_top,
-            text=self.translator.get_text("download"),
-            command=self.call_download,
+            text=self.translator.get_text("download_button"),
+            command=lambda: self.call_download("basic"),
             width=200,
             font=ctk.CTkFont(size=14),
         )
@@ -506,6 +505,8 @@ class MainApplication(ctk.CTk):
         # endregion
 
         #! Advanced Options
+        # TODO Work in Progress (Advanced)
+        """ 
         # region Janela de Opções Avançadas
         self.advced_frame = ctk.CTkFrame(self.tab2, fg_color="transparent")
         self.advced_frame.pack(fill="both", expand=True, pady=10)
@@ -550,6 +551,7 @@ class MainApplication(ctk.CTk):
         # endregion
 
         # endregion
+        """
 
         #! Settings
         # region Janela Configurações
@@ -609,7 +611,7 @@ class MainApplication(ctk.CTk):
             command=lambda choice: ctk.set_appearance_mode(
                 self.translator.get_text("appearance_values")[choice]
             ),
-            width=140,
+            width=100,
         )
         self.appearance_dropdown.pack(side="left", padx=(5, 0))
 
@@ -645,7 +647,9 @@ class MainApplication(ctk.CTk):
 
         #! Notificação Sonora
         # region NOTIFICAÇÂO SONORA
-        self.sound_notification_var = ctk.BooleanVar(value=True)
+        self.sound_notification_var = ctk.BooleanVar(
+            value=self.user_prefer.get("sound_notification")
+        )
         self.sound_notification_checkbox = ctk.CTkCheckBox(
             self.interface_frame,
             text=self.translator.get_text("sound_notification"),
@@ -678,9 +682,11 @@ class MainApplication(ctk.CTk):
         )
         self.post_download_frame.pack(side="top", fill="x", pady=10)
 
-        self.clear_url_var = ctk.BooleanVar(value=False)
-        self.open_folder_var = ctk.BooleanVar(value=False)
-        self.notify_completed_var = ctk.BooleanVar(value=True)
+        self.clear_url_var = ctk.BooleanVar(value=self.user_prefer.get("clear_url"))
+        self.open_folder_var = ctk.BooleanVar(value=self.user_prefer.get("open_folder"))
+        self.notify_completed_var = ctk.BooleanVar(
+            value=self.user_prefer.get("notify_completed")
+        )
 
         # Limpar url
         self.clear_url_checkbox = ctk.CTkCheckBox(
@@ -840,9 +846,146 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
+        #! About
+        # region Janela Sobre
+        self.about_frame = ctk.CTkFrame(self.tab4, fg_color="transparent")
+        self.about_frame.pack(fill="both", expand=True, pady=10)
+
+        self.about_frame_top = ctk.CTkFrame(self.about_frame, fg_color="transparent")
+        self.about_frame_top.pack(side="top", fill="both", padx=15)
+
+        self.about_frame_bottom = ctk.CTkFrame(self.about_frame, fg_color="transparent")
+        self.about_frame_bottom.pack(side="bottom", fill="x")
+
+        #! Informações do Desenvolvedor
+        # region DESENVOLVEDOR
+        self.dev_label = ctk.CTkLabel(
+            self.about_frame_top,
+            text=self.translator.get_text("developed_by"),
+            font=ctk.CTkFont(size=16, weight="bold"),
+        )
+        self.dev_label.pack(side="top", pady=(0, 5))
+
+        self.dev_div = ctk.CTkFrame(
+            self.about_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
+        )
+        self.dev_div.pack(side="top", fill="x")
+
+        #! Versão
+        self.version_label = ctk.CTkLabel(
+            self.about_frame_top,
+            text=self.translator.get_text("version").format(
+                version=self.default_config.APP_VERSION
+            ),
+            font=ctk.CTkFont(size=14),
+        )
+        self.version_label.pack(side="top", pady=(20, 5))
+
+        #! Links
+        self.github_button = ctk.CTkButton(
+            self.about_frame_top,
+            text="GitHub",
+            command=lambda: self.open_link(self.default_config.APP_WEBSITE),
+            width=120,
+            font=ctk.CTkFont(size=13),
+        )
+        self.github_button.pack(side="top", pady=5)
+
+        #! Ferramentas
+        self.tools_label = ctk.CTkLabel(
+            self.about_frame_top,
+            text=self.translator.get_text("tools"),
+            font=ctk.CTkFont(size=14, weight="bold"),
+        )
+        self.tools_label.pack(side="top", pady=(20, 5))
+
+        #! Principais
+        self.main_tools_frame = ctk.CTkFrame(
+            self.about_frame_top, fg_color="transparent"
+        )
+        self.main_tools_frame.pack(side="top", fill="x", pady=5)
+
+        self.python_logo = ctk.CTkImage(
+            light_image=Image.open(get_image_path("python_logo.png")),
+            dark_image=Image.open(get_image_path("python_logo.png")),
+            size=(80, 25),  # Mantém proporção original de 498x155
+        )
+
+        self.python_button = ctk.CTkButton(
+            self.main_tools_frame,
+            text="",
+            image=self.python_logo,
+            command=lambda: self.open_link("https://www.python.org/"),
+            width=150,
+            font=ctk.CTkFont(size=14, weight="bold"),
+        )
+        self.python_button.pack(side="left", padx=5, expand=True)
+
+        self.customtkinter_logo = ctk.CTkImage(
+            light_image=Image.open(get_image_path("customtkinter_logo.png")),
+            dark_image=Image.open(get_image_path("customtkinter_logo.png")),
+            size=(116, 25),  # Mantém proporção original de 1231x264
+        )
+
+        self.customtkinter_button = ctk.CTkButton(
+            self.main_tools_frame,
+            text="",
+            image=self.customtkinter_logo,
+            command=lambda: self.open_link(
+                "https://github.com/TomSchimansky/CustomTkinter"
+            ),
+            width=150,
+            font=ctk.CTkFont(size=14, weight="bold"),
+        )
+        self.customtkinter_button.pack(side="left", padx=5, expand=True)
+
+        #! Componentes
+        self.tools_frame = ctk.CTkFrame(self.about_frame_top, fg_color="transparent")
+        self.tools_frame.pack(side="top", fill="x", pady=5)
+
+        self.ctkmsg_button = ctk.CTkButton(
+            self.tools_frame,
+            text="CTkMessagebox",
+            command=lambda: self.open_link("https://github.com/Akascape/CTkMessagebox"),
+            width=120,
+            font=ctk.CTkFont(size=13),
+        )
+        self.ctkmsg_button.pack(side="left", padx=5, expand=True)
+
+        self.ctktool_button = ctk.CTkButton(
+            self.tools_frame,
+            text="CTkToolTip",
+            command=lambda: self.open_link("https://github.com/Akascape/CTkToolTip"),
+            width=120,
+            font=ctk.CTkFont(size=13),
+        )
+        self.ctktool_button.pack(side="left", padx=5, expand=True)
+
+        self.ctktheme_button = ctk.CTkButton(
+            self.tools_frame,
+            text="CTkThemesPack",
+            command=lambda: self.open_link("https://github.com/a13xe/CTkThemesPack"),
+            width=120,
+            font=ctk.CTkFont(size=13),
+        )
+        self.ctktheme_button.pack(side="left", padx=5, expand=True)
+
+        self.ctkcomp_button = ctk.CTkButton(
+            self.tools_frame,
+            text="ctk_components",
+            command=lambda: self.open_link(
+                "https://github.com/rudymohammadbali/ctk_components"
+            ),
+            width=120,
+            font=ctk.CTkFont(size=13),
+        )
+        self.ctkcomp_button.pack(side="left", padx=5, expand=True)
+
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+    # TODO Work in Progress (Advanced)
+    """
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -864,6 +1007,7 @@ class MainApplication(ctk.CTk):
 
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
+    """
 
     def change_language(self, language_name):
         # Obter código do idioma
@@ -874,7 +1018,7 @@ class MainApplication(ctk.CTk):
             # Atualizar todos os textos da interface
             self.update_interface_texts()
 
-    def update_interface_texts(self):  # TODO Atualizar
+    def update_interface_texts(self):
         self.tabview.update_button_text()
 
         # region Traduzir Download
@@ -897,7 +1041,7 @@ class MainApplication(ctk.CTk):
         self.url1_entry.configure(
             placeholder_text=self.translator.get_text("url_placeholder")
         )
-        self.download_button.configure(text=self.translator.get_text("download"))
+        self.download_button.configure(text=self.translator.get_text("download_button"))
         self.download_path_label.configure(
             text=self.translator.get_text("download_path")
         )
@@ -963,6 +1107,14 @@ class MainApplication(ctk.CTk):
             message=self.translator.get_text("donwload_path_tooltip")
         )
 
+        self.dev_label.configure(text=self.translator.get_text("developed_by"))
+        self.version_label.configure(
+            text=self.translator.get_text("version").format(
+                version=self.default_config.APP_VERSION
+            )
+        )
+        self.tools_label.configure(text=self.translator.get_text("tools"))
+
         # endregion
 
     def save_current_settings(self):
@@ -979,6 +1131,10 @@ class MainApplication(ctk.CTk):
         self.user_prefer.set(
             "language", self.available_languages_inverted[self.language_var.get()]
         )
+        self.user_prefer.set("sound_notification", self.sound_notification_var.get())
+        self.user_prefer.set("clear_url", self.clear_url_var.get())
+        self.user_prefer.set("open_folder", self.open_folder_var.get())
+        self.user_prefer.set("notify_completed", self.notify_completed_var.get())
         self.user_prefer.save_preferences()
 
     def on_closing(self):
@@ -1004,7 +1160,7 @@ class MainApplication(ctk.CTk):
                 self.formato_var.set("mp4")
                 self.qualidade_menu.configure(state="normal")
 
-    def call_download(self):
+    def call_download(self, type: str):
         self.disable_button()
 
         erros = []
@@ -1023,7 +1179,26 @@ class MainApplication(ctk.CTk):
             self.restore_button()
             return
         else:
-            self.yt_dlp.start_download()
+            self.download_options.clear()
+            self.download_options = {
+                "url": self.url1_entry.get(),
+                "download_path": self.download_path_entry.get(),
+                "ffmpeg_path": self.ffmpeg_path_entry.get(),
+            }
+            if type == "basic":
+                self.download_options.update(
+                    {
+                        "media": self.media_var.get(),
+                        "format": self.formato_var.get(),
+                        "quality": self.qualidade_var.get().replace("p", ""),
+                        "playlist": self.playlist_check_var.get(),
+                        "playlist_items": self.playlist_entry.get(),
+                    }
+                )
+            elif type == "advanced":
+                # TODO Work in Progress (Advanced)
+                pass
+            self.yt_dlp.start_download(type)
 
     def restore_button(self):
         self.download_button.configure(state="normal")
@@ -1088,15 +1263,3 @@ class MainApplication(ctk.CTk):
 
     def run(self):
         self.mainloop()
-
-
-def main():
-    """Função principal que inicializa o aplicativo"""
-    ctk.set_default_color_theme(get_theme_path("red.json"))
-    app = MainApplication()
-    ctk.set_appearance_mode(app.user_prefer.get("appearance"))
-    app.run()
-
-
-if __name__ == "__main__":
-    main()

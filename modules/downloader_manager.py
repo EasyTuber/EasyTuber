@@ -7,7 +7,14 @@ from libs import CTkProgressPopup
 
 class YoutubeDownloader:
     def __init__(self, root):
+        """
+        Initializes the YouTube download manager
 
+        Parameters
+        ----------
+        root : ctk.CTk
+            The main application window
+        """
         self.root = root
         self.translator = root.translator
         self.ydl_opts = {}
@@ -17,12 +24,16 @@ class YoutubeDownloader:
         self.options_ydlp = {}
         self.url = ""
         self.progress_popup = None
+        self.type_download = None
 
         # Flag para controlar o cancelamento
         self.cancel_download = threading.Event()
         self.download_thread = None
 
-    def start_download(self):
+    def start_download(self, type: str):
+
+        self.type_download = type
+
         # Janela para mostrar o donwload
         self.progress_popup = None
         self.progress_popup = CTkProgressPopup(
@@ -53,7 +64,7 @@ class YoutubeDownloader:
 
                 def patched_sanitize_info(info_dict, remove_private=True):
                     if self.cancel_download.is_set():
-                        raise Exception("Download cancelado pelo usuário")
+                        raise Exception("download cancelled")
                     return original_sanitize_info(info_dict, remove_private)
 
                 ydl.sanitize_info = patched_sanitize_info
@@ -62,38 +73,28 @@ class YoutubeDownloader:
 
             # Se chegou aqui, o download foi concluído
             if not self.cancel_download.is_set():
-                # TODO dps criar o update after download para mandar aviso de concluido
                 self.update_ui_after_download(success=True)
         except Exception as e:
             # Verificar se foi um cancelamento intencional
-            if "cancelado pelo usuário" in str(e):
-                pass
-                # self.update_ui_after_download(cancelled=True)
+            if "download cancelled" in str(e):
+                self.update_ui_after_download(cancelled=True)
             else:
-                print(f"Erro durante o download: {e}")
-                # self.update_ui_after_download(success=False, error=str(e))
+                self.update_ui_after_download(success=False, error=str(e))
 
     def config_options(self):
         self.ydl_opts.clear()
         self.options_ydlp.clear()
-        self.options_ydlp = {
-            "url": self.root.url1_var.get(),
-            "media": self.root.media_var.get(),
-            "formato": self.root.formato_var.get(),
-            "playlist": self.root.playlist_check_var.get(),
-            "playlist_items": self.root.playlist_entry.get(),
-            "qualidade": self.root.qualidade_var.get().replace("p", ""),
-            "download_path": self.root.download_path_entry.get(),
-            "ffmpeg_path": self.root.ffmpeg_path_entry.get(),
-        }
+
+        self.options_ydlp = self.root.download_options
 
         # Configurações base comuns
         self.ydl_opts = {
             "progress_hooks": [self.progress_hooks],
-            "postprocessor_hooks": [self.check_cancel_hook],
+            "postprocessor_hooks": [self.postprocessor_hook],
             "ffmpeg_location": self.options_ydlp["ffmpeg_path"],
         }
 
+        # TODO Configurações específicas para playlist
         # Configurações específicas para playlist
         if self.options_ydlp["playlist"]:
             self.ydl_opts.update(
@@ -123,7 +124,7 @@ class YoutubeDownloader:
                     "postprocessors": [
                         {
                             "key": "FFmpegExtractAudio",
-                            "preferredcodec": self.options_ydlp["formato"],
+                            "preferredcodec": self.options_ydlp["format"],
                             "preferredquality": "192",
                         }
                     ],
@@ -131,22 +132,36 @@ class YoutubeDownloader:
             )
         else:  # Se é video
             # TODO depois colocar um if para pegar das opções avançadas
-            # TODO colocar o marge to format para mudar o formati
             self.ydl_opts.update(
                 {
-                    "format": f"bestvideo[ext={self.options_ydlp["formato"]}][height<={self.options_ydlp["qualidade"]}]+bestaudio[ext=m4a]/best[ext={self.options_ydlp["formato"]}][height<={self.options_ydlp["qualidade"]}]/best[height<={self.options_ydlp["qualidade"]}]/best",
+                    "format": f'bestvideo[height<={self.options_ydlp["quality"]}]+bestaudio/best[height<={self.options_ydlp["quality"]}]',
+                    "merge_output_format": self.options_ydlp["format"],
                 }
             )
 
-    def check_cancel_hook(self, d):
+    def postprocessor_hook(self, d):
         if self.cancel_download.is_set():
-            raise Exception("Download cancelado pelo usuário")
+            raise Exception("download cancelled")
+
+        # TODO: atualizar a interface
+        if d["status"] == "started":
+            print(
+                f"Iniciando pós-processamento: {d.get('postprocessor', 'desconhecido')}"
+            )
+        elif d["status"] == "processing":
+            print(f"Processando arquivo {d.get('filename')}")
+        elif d["status"] == "finished":
+            print(f"Pós-processamento concluído: {d.get('filename')}")
+            print(f"Tipo: {d.get('postprocessor')}")
+            print(f"Tamanho final: {d.get('filesize', 'desconhecido')} bytes")
+        elif d["status"] == "error":
+            print(f"Erro no pós-processamento: {d.get('error')}")
 
     # Atualiza a barra de progresso e o status de download
     def progress_hooks(self, d):
 
         if self.cancel_download.is_set():
-            raise Exception("Download cancelado pelo usuário")
+            raise Exception("download cancelled")
 
         info_dict = d.get("info_dict", {})
         playlist_index = info_dict.get("playlist_index")
@@ -249,10 +264,8 @@ class YoutubeDownloader:
                 self.progress_popup.close_progress_popup()
                 # Resetar a variavel
                 if self.root.clear_url_var.get():
-                    print("Limpar url")
                     self.root.url1_var.set("")
                 if self.root.open_folder_var.get():
-                    print("Abrir pasta")
                     os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
                 if self.root.notify_completed_var.get():
                     if self.root.sound_notification_var.get():

@@ -1,6 +1,9 @@
 {
     "id": "pt_BR",
     "name": "Português (Brasil)",
+    "developed_by": "Desenvolvido por: Gabriel Frais",
+    "version": "Versão: {version}",
+    "tools": "Ferramentas utilizadas:",
     "app_title": "EasyTuber",
     "interface": "Interface",
     "appearance": "Aparência",
@@ -16,6 +19,10 @@
         "Configurações",
         "Sobre"
     ],
+    "download": "Download",
+    "advanced_options": "Opções Avançadas",
+    "settings": "Configurações",
+    "about": "Sobre",
     "playlist_check_tolltip": "Marque essa opção caso seja playlist.",
     "playlist_placeholder": "Ex: 1,3-5,8",
     "playlist_tolltip": "Escolha quais vídeos deseja baixar da playlist!\n • Vídeos específicos: Digite os números separados por vírgula.\n  - Exemplo: 1, 5, 7 → Baixa os vídeos 1, 5 e 7.\n • Intervalos: Use um hífen para selecionar uma sequência de vídeos.\n  - Exemplo: 5-10 → Baixa os vídeos do 5 ao 10.\n • Combinar formatos: Você pode misturar os dois métodos.\n  - Exemplo: 1, 3-5, 8 → Baixa os vídeos 1, 3, 4, 5 e 8.\nDeixe em branco para baixar todos os vídeos da playlist.",
@@ -26,7 +33,7 @@
     "format": "Formato",
     "quality": "Qualidade",
     "url_placeholder": "Cole o link do YouTube aqui",
-    "download": "Baixar",
+    "download_button": "Baixar",
     "search": "Pesquisar",
     "downloading": "Download em Progresso",
     "status": [
