@@ -1,22 +1,50 @@
 {
     "id": "pt_BR",
     "name": "Português (Brasil)",
+    "developed_by": "Desenvolvido por: Gabriel Frais",
+    "version": "Versão: {version}",
+    "tools": "Ferramentas utilizadas:",
     "app_title": "EasyTuber",
+    "interface": "Interface",
+    "appearance": "Aparência",
+    "appearance_values": {"Sistema": "System", "Claro": "Light", "Escuro": "Dark"},
     "language": "Idioma",
-    "media_type": "Tipo de Mídia:",
+    "default_paths" : "Caminhos Padrão",
+    "popup_ffmpeg_title": "FFmpeg não encontrado!",
+    "popup_ffmpeg_msg": "FFmpeg não encontrado. Escolha uma das opções abaixo:\n\n • Informar caminho: Se o FFmpeg já estiver instalado, indique a localização do executável\n •Instalar via Chocolatey: Instalar automaticamente usando o gerenciador de pacotes\n •Baixar manualmente: Abrir o site oficial para download e instalação\n\nApós a instalação, você precisará informar o caminho nas configurações.",
+    "popup_ffmpeg_options": {"Procurar ffmpeg.exe": "ffmpeg_path", "Chocolatey": "chocolatey", "Manualmente": "manually"},
+    "tabs_names": [
+        "Download",
+        "Opções Avançadas",
+        "Configurações",
+        "Sobre"
+    ],
+    "download": "Download",
+    "advanced_options": "Opções Avançadas",
+    "settings": "Configurações",
+    "about": "Sobre",
+    "playlist_check_tolltip": "Marque essa opção caso seja playlist.",
+    "playlist_placeholder": "Ex: 1,3-5,8",
+    "playlist_tolltip": "Escolha quais vídeos deseja baixar da playlist!\n • Vídeos específicos: Digite os números separados por vírgula.\n  - Exemplo: 1, 5, 7 → Baixa os vídeos 1, 5 e 7.\n • Intervalos: Use um hífen para selecionar uma sequência de vídeos.\n  - Exemplo: 5-10 → Baixa os vídeos do 5 ao 10.\n • Combinar formatos: Você pode misturar os dois métodos.\n  - Exemplo: 1, 3-5, 8 → Baixa os vídeos 1, 3, 4, 5 e 8.\nDeixe em branco para baixar todos os vídeos da playlist.",
+    "media_type": "Tipo de Mídia",
     "media_values": ["Vídeo","Áudio"],
     "video": "Vídeo",
     "audio": "Áudio",
-    "format": "Formato:",
-    "quality": "Qualidade:",
+    "format": "Formato",
+    "quality": "Qualidade",
     "url_placeholder": "Cole o link do YouTube aqui",
-    "download": "Baixar",
+    "download_button": "Baixar",
+    "search": "Pesquisar",
+    "downloading": "Download em Progresso",
     "status": [
         "Pronto para baixar", 
         "Iniciando download...", 
         "Processando arquivo...", 
         "Erro no download", 
-        "Download concluído!"
+        "Download concluído!",
+        "Baixando...",
+        "Baixando item {index} de {count}",
+        "Processando item {index} de {count}"
     ],
     "download_path": "Caminho de Download:",
     "folder_path": "Caminho da pasta...",
@@ -37,5 +65,17 @@
     "success": [
         "Download concluído",
         "Sucesso"
-    ]
+    ],
+    "filetypes": [
+        "Arquivos Executáveis",
+        "Todos os Arquivos"
+    ],
+    "donwload_path_tooltip": "Este é o local onde os arquivos serão salvos sempre que o programa for iniciado, a menos que um caminho alternativo seja especificado durante o download.",
+    "post_download": "Opções Pós-Download",
+    "check_open_folder": "Abrir pasta",
+    "check_open_folder_tolltip":"Abrir pasta onde foi baixado a mídia.",
+    "check_notify_completed": "Notificar",
+    "check_notify_completed_tolltip":"Notificar quando concluido.",
+    "check_clear_url": "Limpar campo URL",
+    "sound_notification":"Notificação sonora"
 }
