@@ -3,7 +3,7 @@ import customtkinter as ctk
 from PIL import Image
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
-from CTkToolTip import *
+from CTkToolTip import CTkToolTip
 
 
 from modules import (
@@ -920,6 +920,21 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold"),
         )
         self.python_button.pack(side="left", padx=5, expand=True)
+
+        self.ytdlp_logo = ctk.CTkImage(
+            light_image=Image.open(get_image_path("ytdlp_logo.png")),
+            dark_image=Image.open(get_image_path("ytdlp_logo.png")),
+            size=(25, 25),
+        )
+
+        self.ytdlp_button = ctk.CTkButton(
+            self.main_tools_frame,
+            text="yt-dlp",
+            image=self.ytdlp_logo,
+            command=lambda: self.open_link("https://github.com/yt-dlp/yt-dlp"),
+            width=150,
+        )
+        self.ytdlp_button.pack(side="left", padx=5, expand=True)
 
         self.customtkinter_logo = ctk.CTkImage(
             light_image=Image.open(get_image_path("customtkinter_logo.png")),

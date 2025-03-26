@@ -77,5 +77,6 @@
     "check_notify_completed": "Notificar",
     "check_notify_completed_tolltip":"Notificar quando concluido.",
     "check_clear_url": "Limpar campo URL",
-    "sound_notification":"Notificação sonora"
+    "sound_notification":"Notificação sonora",
+    "download_cancelled":"Download cancelado"
 }

@@ -2,7 +2,7 @@ import os
 from yt_dlp import YoutubeDL
 import threading
 from modules.utils import get_ffmpeg_path, play_sound
-from libs import CTkProgressPopup
+from libs import CTkProgressPopup, CTkNotification
 
 
 class YoutubeDownloader:
@@ -258,8 +258,12 @@ class YoutubeDownloader:
         # Executa na thread principal
         def update():
             if cancelled:
-                # self.status_label.configure(text="Download cancelado")
-                pass
+                CTkNotification(
+                    master=self.root,
+                    state="info",
+                    message=self.translator.get_text("download_cancelled"),
+                    side="right_bottom",
+                )
             elif success:
                 self.progress_popup.close_progress_popup()
                 # Resetar a variavel
@@ -271,11 +275,12 @@ class YoutubeDownloader:
                     if self.root.sound_notification_var.get():
                         play_sound(True)
                     self.root.show_checkmark(self.translator.get_text("success")[0])
-                    pass
 
             else:
                 self.progress_popup.close_progress_popup()
-                # self.status_label.configure(text=f"Erro: {error}")
+                if self.root.sound_notification_var.get():
+                    play_sound(False)
+                self.root.show_error(f"Erro: {error}")
 
             self.progress_popup = None
             self.root.restore_button()

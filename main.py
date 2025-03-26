@@ -5,23 +5,21 @@
 Aplicativo: EasyTuber
 Descrição: Faça download de vídeos e áudios do Youtube
 Autor: Gabriel Frais
-Versão: 2.0.0-beta
+Versão: 2.0.0
 """
 
-import sys
 from interface import MainApplication
 import customtkinter as ctk
 from modules import get_theme_path
-
-
-# TODO mudar o .spec para add as pastas novas
 
 
 def main():
     """Função principal que inicializa o aplicativo"""
     ctk.set_default_color_theme(get_theme_path("red.json"))
     app = MainApplication()
-    ctk.set_appearance_mode(app.user_prefer.get("appearance"))
+    ctk.set_appearance_mode(
+        app.translator.get_text("appearance_values")[app.user_prefer.get("appearance")]
+    )
     app.run()
 
 

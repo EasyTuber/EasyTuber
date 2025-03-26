@@ -1,10 +1,11 @@
+"""
 import sys
 import os
 
 
 # Adiciona o caminho da pasta 'libs' ao sys.path
 def get_executable_dir():
-    """Retorna o diretório onde o executável está"""
+    ""Retorna o diretório onde o executável está""
     if getattr(sys, "frozen", False):
         # Se estamos em um executável PyInstaller
         return os.path.dirname(sys.executable)
@@ -18,3 +19,6 @@ libs_path = os.path.join(app_dir, "libs", "ctk_components")
 sys.path.append(libs_path)
 
 from ctk_components import CTkAlert, CTkNotification, CTkProgressPopup
+"""
+
+from .ctk_components.ctk_components import CTkAlert, CTkNotification, CTkProgressPopup

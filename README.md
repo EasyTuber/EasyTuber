@@ -1,3 +1,7 @@
+<p align="center">
+    <a href="https://github.com/EasyTuber/EasyTuber/blob/main/README_EN.md">🇺🇸 English Version</a>
+</p>
+
 # EasyTuber  
 **🖥️ Uma interface gráfica (GUI) para o yt-dlp, tornando o download de vídeos mais fácil e acessível!**  
 
@@ -8,7 +12,19 @@
 - ✅ Opção de escolher qualidade e formato antes de baixar  
 - ✅ Open-source e gratuito!  
 
+## 🛠️ Ferramentas Utilizadas
+- **yt-dlp**: Para download dos vídeos
+- **FFmpeg**: Para conversão e processamento de mídia
+- **Python**: Linguagem base do projeto
+- **CustomTKinter**: Para a interface gráfica
+
 ## 📥 Download e Instalação  
+### 🔹 **Pré-requisitos**
+1. Instale o [FFmpeg](https://ffmpeg.org/download.html) no seu sistema
+   - Windows: Baixe do site oficial e adicione ao PATH
+   - Linux: `sudo apt install ffmpeg` (Ubuntu/Debian)
+   - macOS: `brew install ffmpeg` (usando Homebrew)
+
 ### 🔹 **Baixar o Executável**  
 1. Acesse a [página de releases](https://github.com/EasyTuber/EasyTuber/releases).  
 2. Baixe a versão mais recente do **EasyTuber**.   
@@ -20,6 +36,7 @@ Se preferir rodar pelo código-fonte:
 ```bash
 git clone https://github.com/seu-usuario/EasyTuber.git
 cd EasyTuber
+pip install -r requirements.txt
 python easytuber.py
 ```
 
@@ -47,5 +64,4 @@ git push origin minha-nova-funcionalidade
 5. Abra um **Pull Request**
 
 ## 📜 Licença  
-
 Este projeto é licenciado sob a licença [GNU General Public License v3.0 (GPLv3)](LICENSE).

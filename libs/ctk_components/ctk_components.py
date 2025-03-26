@@ -33,9 +33,9 @@ from tkinter import ttk
 import customtkinter as ctk
 from PIL import Image, ImageDraw, ImageTk
 
-from src.util.CTkGif import CTkGif
-from src.util.py_win_style import set_opacity
-from src.util.window_position import center_window, place_frame
+from .src.util.CTkGif import CTkGif
+from .src.util.py_win_style import set_opacity
+from .src.util.window_position import center_window, place_frame
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 ICON_DIR = os.path.join(CURRENT_PATH, "src", "icons")
