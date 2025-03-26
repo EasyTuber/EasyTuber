@@ -78,6 +78,7 @@ class YoutubeDownloader:
             # Verificar se foi um cancelamento intencional
             if "download cancelled" in str(e):
                 self.update_ui_after_download(cancelled=True)
+                self.cleanup_partial_downloads()
             else:
                 self.update_ui_after_download(success=False, error=str(e))
 
@@ -286,3 +287,36 @@ class YoutubeDownloader:
             self.root.restore_button()
 
         self.root.after(0, update)
+
+    def cleanup_partial_downloads(self):
+        """
+        Removes partial download files from the download directory.
+
+        This method scans the download directory and removes any files that are:
+        - .part files (partial downloads)
+        - .ytdl files (YouTube-DL temporary files)
+        - Empty files (0 bytes)
+
+        The cleanup helps prevent accumulation of incomplete downloads.
+        """
+        try:
+            for file in os.listdir(self.options_ydlp["download_path"]):
+                full_path = os.path.join(self.options_ydlp["download_path"], file)
+
+                # Check if file is a partial download
+                is_partial = (
+                    file.endswith(".part")
+                    or file.endswith(".ytdl")
+                    or
+                    # Add other partial file extensions if needed
+                    (os.path.isfile(full_path) and os.path.getsize(full_path) == 0)
+                )
+
+                if is_partial:
+                    try:
+                        os.remove(full_path)
+                        print(f"Partial file removed: {file}")
+                    except Exception as e:
+                        print(f"Error removing {file}: {e}")
+        except Exception as error:
+            print(f"Error cleaning downloads: {error}")

@@ -47,9 +47,9 @@
     "exe_path":"Executable path...",
     "search_ffmpeg":"Search for ffmpeg.exe",
     "downloading_progress": [
-        "Downloading... {percent} | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
-        "Downloading... {percent} | {speed} MB/s",
-        "Downloading... {percent}"
+        "{percent} | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
+        "{percent} | {speed} MB/s",
+        "{percent}"
     ],
     "errors": [
         "Please enter a valid URL.",

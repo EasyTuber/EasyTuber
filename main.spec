@@ -7,7 +7,6 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
-        ('resources/config/*.json', 'resources/config'),
         ('resources/images/*.png', 'resources/images'),
         ('resources/languages/*.json', 'resources/languages'),
         ('resources/images/*.ico', 'resources/images'),

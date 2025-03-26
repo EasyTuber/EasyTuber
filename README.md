@@ -21,7 +21,7 @@
 ## 📥 Download e Instalação  
 ### 🔹 **Pré-requisitos**
 1. Instale o [FFmpeg](https://ffmpeg.org/download.html) no seu sistema
-   - Windows: Baixe do site oficial e adicione ao PATH
+   - Windows: Baixe a versão essentials do site oficial ou use `choco install ffmpeg`
    - Linux: `sudo apt install ffmpeg` (Ubuntu/Debian)
    - macOS: `brew install ffmpeg` (usando Homebrew)
 

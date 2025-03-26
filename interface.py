@@ -1184,7 +1184,7 @@ class MainApplication(ctk.CTk):
         if not self.download_path_entry.get():
             erros.append(self.translator.get_text("errors")[1])
         if not self.ffmpeg_path_entry.get():
-            erros.append(self.translator.get_text("errors")[2])
+            self.ffmpeg_popup()
 
         if erros:
             for erro in erros:
@@ -1271,7 +1271,9 @@ class MainApplication(ctk.CTk):
         elif response == option[1]:
             self.open_link("https://community.chocolatey.org/packages/ffmpeg")
         elif response == option[2]:
-            self.open_link("https://ffmpeg.org/download.html")
+            self.open_link(
+                "https://github.com/EasyTuber/EasyTuber?tab=readme-ov-file#-pr%C3%A9-requisitos"
+            )
 
     def open_link(self, url):
         webbrowser.open(url)

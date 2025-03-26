@@ -958,7 +958,7 @@ class CTkProgressPopup(ctk.CTkFrame):
         self.cancel_btn.grid(row=2, column=1, sticky="e", padx=10, pady=0)
 
         self.message = ctk.CTkLabel(self, text=message, height=0)
-        self.message.grid(row=3, column=0, sticky="nw", padx=20, pady=(0, 10))
+        self.message.grid(row=3, column=0, sticky="ew", padx=20, pady=(0, 10))
 
         self.horizontal, self.vertical = side.split("_")
         place_frame(self.root, self, self.horizontal, self.vertical)

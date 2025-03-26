@@ -1,3 +1,7 @@
+<p align="center">
+    <a href="https://github.com/EasyTuber/EasyTuber/blob/main/README.md">🇧🇷 Versão em Português</a>
+</p>
+
 # EasyTuber  
 **🖥️ A graphical user interface (GUI) for yt-dlp, making video downloads easier and more accessible!**  
 
@@ -17,7 +21,7 @@
 ## 📥 Download and Installation  
 ### 🔹 **Prerequisites**
 1. Install [FFmpeg](https://ffmpeg.org/download.html) on your system
-   - Windows: Download from official website and add to PATH
+   - Windows: Download the essentials version from the official website or use `choco install ffmpeg`
    - Linux: `sudo apt install ffmpeg` (Ubuntu/Debian)
    - macOS: `brew install ffmpeg` (using Homebrew)
 
@@ -61,6 +65,3 @@ git push origin my-new-feature
 
 ## 📜 License  
 This project is licensed under the [GNU General Public License v3.0 (GPLv3)](LICENSE).
-
----
-[🇧🇷 Versão em Português](README.md) 

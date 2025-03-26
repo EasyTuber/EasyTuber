@@ -133,13 +133,9 @@ def get_config_path(filename: str) -> str:
     # If the configuration file doesn't exist, copy from the resource or create it
     if not os.path.exists(config_path):
         try:
-            source_path = resource_path(os.path.join("resources", "config", filename))
-            if os.path.exists(source_path):
-                shutil.copy2(source_path, config_path)
-            else:
-                # Create an empty JSON file if the source doesn't exist
-                with open(config_path, "w", encoding="utf-8") as f:
-                    json.dump({}, f, indent=4, ensure_ascii=False)
+            # Create an empty JSON file if the source doesn't exist
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({}, f, indent=4, ensure_ascii=False)
         except Exception as e:
             print(f"Error creating the configuration file: {e}")
 
