@@ -25,6 +25,8 @@ class YoutubeDownloader:
         self.url = ""
         self.progress_popup = None
         self.type_download = None
+        self.total_videos = 0
+        self.current_video = 0
 
         # Flag para controlar o cancelamento
         self.cancel_download = threading.Event()
@@ -47,6 +49,10 @@ class YoutubeDownloader:
         # Reset da flag de cancelamento
         self.cancel_download.clear()
 
+        # Reset dos contadores
+        self.total_videos = 0
+        self.current_video = 0
+
         # Inicia o download em uma thread separada
         self.download_thread = threading.Thread(
             target=self.download_process, daemon=True
@@ -61,13 +67,36 @@ class YoutubeDownloader:
             with YoutubeDL(self.ydl_opts) as ydl:
                 # Injetar verificação de cancelamento
                 original_sanitize_info = ydl.sanitize_info
+                original_extract_info = ydl.extract_info
 
                 def patched_sanitize_info(info_dict, remove_private=True):
                     if self.cancel_download.is_set():
                         raise Exception("download cancelled")
                     return original_sanitize_info(info_dict, remove_private)
 
+                def patched_extract_info(url, download=True, *args, **kwargs):
+                    if self.cancel_download.is_set():
+                        raise Exception("download cancelled")
+
+                    # Atualiza a interface para mostrar que está baixando informações
+                    if self.options_ydlp.get("playlist") and self.total_videos > 1:
+                        self.progress_popup.update_label(
+                            self.translator.get_text("status")[9].format(
+                                index=self.current_video, count=self.total_videos
+                            )
+                        )
+                    else:
+                        self.progress_popup.update_label(
+                            self.translator.get_text("status")[8]
+                        )
+                    self.progress_popup.update_progress(0.01)
+                    self.progress_popup.update_message("")
+                    self.root.update_idletasks()
+
+                    return original_extract_info(url, download, *args, **kwargs)
+
                 ydl.sanitize_info = patched_sanitize_info
+                ydl.extract_info = patched_extract_info
 
                 ydl.download([url])
 
@@ -93,6 +122,8 @@ class YoutubeDownloader:
             "progress_hooks": [self.progress_hooks],
             "postprocessor_hooks": [self.postprocessor_hook],
             "ffmpeg_location": self.options_ydlp["ffmpeg_path"],
+            "quiet": True,  # Desabilita o modo quieto para receber as mensagens
+            "no_warnings": True,  # Permite receber avisos
         }
 
         # TODO Configurações específicas para playlist
@@ -152,31 +183,31 @@ class YoutubeDownloader:
         if self.cancel_download.is_set():
             raise Exception("download cancelled")
 
-        # TODO: atualizar a interface
-        """ 
-        if d["status"] == "started":
-            print(
-                f"Iniciando pós-processamento: {d.get('postprocessor', 'desconhecido')}"
-            )
-        elif d["status"] == "processing":
-            print(f"Processando arquivo {d.get('filename')}")
         elif d["status"] == "finished":
-            print(f"Pós-processamento concluído: {d.get('filename')}")
-            print(f"Tipo: {d.get('postprocessor')}")
-            print(f"Tamanho final: {d.get('filesize', 'desconhecido')} bytes")
-        elif d["status"] == "error":
-            print(f"Erro no pós-processamento: {d.get('error')}")
-        """
+            if self.options_ydlp.get("playlist"):
+                message = self.translator.get_text("status")[11].format(
+                    index=self.current_video, count=self.total_videos
+                )
+            else:
+                message = self.translator.get_text("status")[10]
+
+            self.progress_popup.update_message(message)
+            self.progress_popup.update_progress(1)
+
+        self.root.update_idletasks()
 
     # Atualiza a barra de progresso e o status de download
     def progress_hooks(self, d):
-
         if self.cancel_download.is_set():
             raise Exception("download cancelled")
 
         info_dict = d.get("info_dict", {})
         playlist_index = info_dict.get("playlist_autonumber")
         playlist_count = info_dict.get("n_entries")
+
+        if self.options_ydlp.get("playlist"):
+            self.total_videos = playlist_count
+            self.current_video = playlist_index + 1
 
         if d["status"] == "downloading":
             try:
@@ -190,6 +221,7 @@ class YoutubeDownloader:
                     self.progress_popup.update_label(
                         self.translator.get_text("status")[5]
                     )
+
                 # Obtém o total de bytes
                 total_bytes = d.get("total_bytes")
 
@@ -255,7 +287,8 @@ class YoutubeDownloader:
             else:
                 self.progress_popup.update_label(self.translator.get_text("status")[2])
 
-            self.progress_popup.update_progress(1)
+            self.progress_popup.update_message("")
+            self.progress_popup.update_progress(0.98)
 
         elif d["status"] == "error":
             # TODO configurar caso erro

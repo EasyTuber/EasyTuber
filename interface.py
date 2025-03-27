@@ -381,7 +381,7 @@ class MainApplication(ctk.CTk):
             border_width=1,
             x_offset=-50,
             follow=False,
-            message=self.translator.get_text("playlist_check_tolltip"),
+            message=self.translator.get_text("playlist_check_tooltip"),
         )
 
         self.playlist_options_frame = ctk.CTkFrame(
@@ -413,7 +413,7 @@ class MainApplication(ctk.CTk):
 
         self.playlist_items_tooltip = CTkToolTip(
             self.playlist_items_entry,
-            message=self.translator.get_text("playlist_items_tolltip"),
+            message=self.translator.get_text("playlist_items_tooltip"),
             justify="left",
             padding=(10, 10),
             border_width=1,
@@ -435,7 +435,7 @@ class MainApplication(ctk.CTk):
 
         self.playlist_reverse_tooltip = CTkToolTip(
             self.playlist_reverse_check,
-            message=self.translator.get_text("playlist_reverse_tolltip"),
+            message=self.translator.get_text("playlist_reverse_tooltip"),
             justify="left",
             padding=(10, 10),
             border_width=1,
@@ -457,7 +457,7 @@ class MainApplication(ctk.CTk):
 
         self.playlist_random_tooltip = CTkToolTip(
             self.playlist_random_check,
-            message=self.translator.get_text("playlist_random_tolltip"),
+            message=self.translator.get_text("playlist_random_tooltip"),
             justify="left",
             padding=(10, 10),
             border_width=1,
@@ -773,14 +773,14 @@ class MainApplication(ctk.CTk):
         )
         self.open_folder_checkbox.pack(side="left", expand=True, padx=5)
 
-        self.open_folder_tolltip = CTkToolTip(
+        self.open_folder_tooltip = CTkToolTip(
             self.open_folder_checkbox,
             justify="left",
             padding=(10, 10),
             border_width=1,
             x_offset=-50,
             follow=False,
-            message=self.translator.get_text("check_open_folder_tolltip"),
+            message=self.translator.get_text("check_open_folder_tooltip"),
         )
 
         # Notificar quando concluido
@@ -800,7 +800,7 @@ class MainApplication(ctk.CTk):
             border_width=1,
             x_offset=-50,
             follow=False,
-            message=self.translator.get_text("check_notify_completed_tolltip"),
+            message=self.translator.get_text("check_notify_completed_tooltip"),
         )
 
         # endregion
@@ -1138,7 +1138,7 @@ class MainApplication(ctk.CTk):
 
         self.playlist_check.configure(text=self.translator.get_text("playlist"))
         self.playlist_check_tooltip.configure(
-            message=self.translator.get_text("playlist_check_tolltip")
+            message=self.translator.get_text("playlist_check_tooltip")
         )
         self.playlist_items_label.configure(
             text=self.translator.get_text("playlist_items")
@@ -1150,13 +1150,13 @@ class MainApplication(ctk.CTk):
             text=self.translator.get_text("playlist_random")
         )
         self.playlist_items_tooltip.configure(
-            message=self.translator.get_text("playlist_items_tolltip")
+            message=self.translator.get_text("playlist_items_tooltip")
         )
         self.playlist_reverse_tooltip.configure(
-            message=self.translator.get_text("playlist_reverse_tolltip")
+            message=self.translator.get_text("playlist_reverse_tooltip")
         )
         self.playlist_random_tooltip.configure(
-            message=self.translator.get_text("playlist_random_tolltip")
+            message=self.translator.get_text("playlist_random_tooltip")
         )
 
         self.media_label.configure(text=self.translator.get_text("media_type"))
@@ -1210,14 +1210,14 @@ class MainApplication(ctk.CTk):
         self.open_folder_checkbox.configure(
             text=self.translator.get_text("check_open_folder")
         )
-        self.open_folder_tolltip.configure(
-            message=self.translator.get_text("check_open_folder_tolltip")
+        self.open_folder_tooltip.configure(
+            message=self.translator.get_text("check_open_folder_tooltip")
         )
         self.notify_completed_checkbox.configure(
             text=self.translator.get_text("check_notify_completed")
         )
         self.notify_completed_tooltip.configure(
-            message=self.translator.get_text("check_notify_completed_tolltip")
+            message=self.translator.get_text("check_notify_completed_tooltip")
         )
 
         self.default_label.configure(text=self.translator.get_text("default_paths"))
