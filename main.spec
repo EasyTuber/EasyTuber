@@ -23,6 +23,7 @@ a = Analysis(
         'modules.language_manager',
         'modules.downloader_manager',
         'modules.config',
+        'modules.update_checker',
         'modules',
         'libs',
         'libs.ctk_components',
