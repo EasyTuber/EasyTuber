@@ -278,67 +278,22 @@ class MainApplication(ctk.CTk):
         self.config_download_frame = ctk.CTkFrame(
             self.main_frame_top, fg_color="transparent"
         )
-        self.config_download_frame.pack(side="top", expand=True, fill="x")
+        self.config_download_frame.pack(side="top", expand=True, fill="x", padx=15)
 
-        #! Playlist
-        # region Playlist
-        self.playlist_frame = ctk.CTkFrame(
+        self.config_download_frame_top = ctk.CTkFrame(
             self.config_download_frame, fg_color="transparent"
         )
-        self.playlist_frame.pack(side="left", expand=True, padx=5)
+        self.config_download_frame_top.pack(side="top", fill="x")
 
-        self.playlist_label = ctk.CTkLabel(self.playlist_frame, text="Playlist")
-        self.playlist_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
-
-        self.playlist_imput_frame = ctk.CTkFrame(
-            self.playlist_frame, fg_color="transparent"
+        self.config_download_frame_bottom = ctk.CTkFrame(
+            self.config_download_frame, fg_color="transparent"
         )
-        self.playlist_imput_frame.grid(row=1, column=0, sticky="ew")
-
-        self.playlist_check_var = ctk.BooleanVar(value=False)
-        self.playlist_check = ctk.CTkCheckBox(
-            self.playlist_imput_frame,
-            text="",
-            width=1,
-            variable=self.playlist_check_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.playlist_check.pack(side="left", padx=(0, 2))
-
-        self.playlist_check_tooltip = CTkToolTip(
-            self.playlist_check,
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-            message=self.translator.get_text("playlist_check_tolltip"),
-        )
-
-        self.playlist_entry = ctk.CTkEntry(
-            self.playlist_imput_frame,
-            width=100,
-            corner_radius=10,
-            placeholder_text=self.translator.get_text("playlist_placeholder"),
-        )
-        self.playlist_entry.pack(side="left")
-
-        self.playlist_entry_tooltip = CTkToolTip(
-            self.playlist_entry,
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-70,
-            follow=False,
-            message=self.translator.get_text("playlist_tolltip"),
-        )
-        # endregion
+        self.config_download_frame_bottom.pack(side="bottom", fill="x")
 
         #! Tipo de Mídia
         # region Tipo de Mídia
         self.media_frame = ctk.CTkFrame(
-            self.config_download_frame, fg_color="transparent"
+            self.config_download_frame_top, fg_color="transparent"
         )
         self.media_frame.pack(side="left", expand=True, padx=5)
 
@@ -360,7 +315,7 @@ class MainApplication(ctk.CTk):
         #! Formato do arquivo
         # region Formato
         self.formato_frame = ctk.CTkFrame(
-            self.config_download_frame, fg_color="transparent"
+            self.config_download_frame_top, fg_color="transparent"
         )
         self.formato_frame.pack(side="left", expand=True, padx=5)
 
@@ -383,7 +338,7 @@ class MainApplication(ctk.CTk):
         #! Qualidade do Video
         # region Qualidade do Video
         self.qualidade_frame = ctk.CTkFrame(
-            self.config_download_frame, fg_color="transparent"
+            self.config_download_frame_top, fg_color="transparent"
         )
         self.qualidade_frame.pack(side="left", expand=True, padx=5)
 
@@ -404,23 +359,199 @@ class MainApplication(ctk.CTk):
         self.media_selected(self.media_var.get(), True)
         # endregion
 
+        #! Playlist
+        # region Playlist
+
+        self.playlist_check_var = ctk.BooleanVar(value=False)
+        self.playlist_check = ctk.CTkCheckBox(
+            self.config_download_frame_bottom,
+            text=self.translator.get_text("playlist"),
+            width=1,
+            variable=self.playlist_check_var,
+            onvalue=True,
+            offvalue=False,
+            command=self.toggle_playlist_options,
+        )
+        self.playlist_check.pack(side="top", pady=(10, 5))
+
+        self.playlist_check_tooltip = CTkToolTip(
+            self.playlist_check,
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+            message=self.translator.get_text("playlist_check_tolltip"),
+        )
+
+        self.playlist_options_frame = ctk.CTkFrame(
+            self.config_download_frame_bottom,
+            fg_color="transparent",
+            border_width=2,
+            border_color=("#D03434", "#A11D1D"),
+            corner_radius=10,
+        )
+        self.playlist_options_frame.pack(side="top", fill="x", expand=True)
+
+        # Frame para opções de input
+        self.playlist_options_frame_top = ctk.CTkFrame(
+            self.playlist_options_frame, fg_color="transparent"
+        )
+        self.playlist_options_frame_top.pack(side="top", fill="x", pady=(5, 2), padx=5)
+
+        # Frame para opções de checkbox
+        self.playlist_options_frame_bottom = ctk.CTkFrame(
+            self.playlist_options_frame, fg_color="transparent"
+        )
+        self.playlist_options_frame_bottom.pack(
+            side="bottom", fill="x", padx=5, pady=(0, 5)
+        )
+
+        # TODO: se itens tem valor, então bloquear o start e o end
+
+        # Playlist Items
+        self.playlist_items_frame = ctk.CTkFrame(
+            self.playlist_options_frame_top, fg_color="transparent"
+        )
+        self.playlist_items_frame.pack(side="left", expand=True)
+
+        self.playlist_items_label = ctk.CTkLabel(
+            self.playlist_items_frame, text=self.translator.get_text("playlist_items")
+        )
+        self.playlist_items_label.pack(side="left", padx=(0, 5))
+
+        self.playlist_items_entry = ctk.CTkEntry(
+            self.playlist_items_frame,
+            width=100,
+            placeholder_text=self.translator.get_text("playlist_placeholder"),
+        )
+        self.playlist_items_entry.pack(side="left")
+
+        self.playlist_items_tooltip = CTkToolTip(
+            self.playlist_items_entry,
+            message=self.translator.get_text("playlist_items_tolltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-70,
+            follow=False,
+        )
+
+        # Playlist Start
+        self.playlist_start_frame = ctk.CTkFrame(
+            self.playlist_options_frame_top, fg_color="transparent"
+        )
+        self.playlist_start_frame.pack(side="left", expand=True)
+
+        self.playlist_start_label = ctk.CTkLabel(
+            self.playlist_start_frame, text=self.translator.get_text("playlist_start")
+        )
+        self.playlist_start_label.pack(side="left")
+
+        self.playlist_start_entry = ctk.CTkEntry(
+            self.playlist_start_frame, width=50, placeholder_text="1"
+        )
+        self.playlist_start_entry.pack(side="left", padx=5)
+
+        self.playlist_start_tooltip = CTkToolTip(
+            self.playlist_start_entry,
+            message=self.translator.get_text("playlist_start_tolltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-70,
+            follow=False,
+        )
+
+        # Playlist End
+        self.playlist_end_frame = ctk.CTkFrame(
+            self.playlist_options_frame_top, fg_color="transparent"
+        )
+        self.playlist_end_frame.pack(side="left", expand=True)
+
+        self.playlist_end_label = ctk.CTkLabel(
+            self.playlist_end_frame, text=self.translator.get_text("playlist_end")
+        )
+        self.playlist_end_label.pack(side="left", expand=True)
+
+        self.playlist_end_entry = ctk.CTkEntry(
+            self.playlist_end_frame, width=50, placeholder_text="0"
+        )
+        self.playlist_end_entry.pack(side="left", padx=5)
+
+        self.playlist_end_tooltip = CTkToolTip(
+            self.playlist_end_entry,
+            message=self.translator.get_text("playlist_end_tolltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-70,
+            follow=False,
+        )
+
+        # Playlist Reverse
+        self.playlist_reverse_var = ctk.BooleanVar(value=False)
+        self.playlist_reverse_check = ctk.CTkCheckBox(
+            self.playlist_options_frame_bottom,
+            text=self.translator.get_text("playlist_reverse"),
+            variable=self.playlist_reverse_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.playlist_reverse_check.pack(side="left", expand=True)
+
+        self.playlist_reverse_tooltip = CTkToolTip(
+            self.playlist_reverse_check,
+            message=self.translator.get_text("playlist_reverse_tolltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
+
+        # Playlist Random
+        self.playlist_random_var = ctk.BooleanVar(value=False)
+        self.playlist_random_check = ctk.CTkCheckBox(
+            self.playlist_options_frame_bottom,
+            text=self.translator.get_text("playlist_random"),
+            variable=self.playlist_random_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.playlist_random_check.pack(side="left", expand=True)
+
+        self.playlist_random_tooltip = CTkToolTip(
+            self.playlist_random_check,
+            message=self.translator.get_text("playlist_random_tolltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
+
+        # Inicialmente esconde as opções
+        self.playlist_options_frame.pack_forget()
+        # endregion
+
         #! Frame de url
         # region URL entry
         self.url1_frame = ctk.CTkFrame(self.main_frame_top, fg_color="transparent")
         self.url1_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(40, 10), padx=15
+            side="top", fill="x", expand=True, ipadx=5, ipady=5, padx=15, pady=10
         )
         self.url1_frame.columnconfigure(1, weight=1)
 
         self.url1_label = ctk.CTkLabel(self.url1_frame, text="Url:", font=("Arial", 14))
-        self.url1_label.grid(row=0, column=0, sticky="e", padx=(10, 0))
+        self.url1_label.grid(row=0, column=0, sticky="e", padx=(0, 10))
 
         self.url1_entry = ctk.CTkEntry(
             self.url1_frame,
             textvariable=self.url1_var,
             placeholder_text=self.translator.get_text("url_placeholder"),
         )
-        self.url1_entry.grid(row=0, column=1, sticky="nsew", padx=10)
+        self.url1_entry.grid(row=0, column=1, sticky="nsew")
         # endregion
 
         #! Botão de Download
@@ -443,8 +574,8 @@ class MainApplication(ctk.CTk):
         self.download_path_frame.pack(
             side="top",
             fill="x",
-            pady=(20, 10),
-            padx=25,
+            pady=(0, 5),
+            padx=10,
         )
 
         self.download_path_frame_top = ctk.CTkFrame(
@@ -870,8 +1001,10 @@ class MainApplication(ctk.CTk):
             self.about_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
         )
         self.dev_div.pack(side="top", fill="x")
+        # endregion
 
         #! Versão
+        # region VERSÃO
         self.version_label = ctk.CTkLabel(
             self.about_frame_top,
             text=self.translator.get_text("version").format(
@@ -880,8 +1013,10 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=14),
         )
         self.version_label.pack(side="top", pady=(20, 5))
+        # endregion
 
         #! Links
+        # region Links
         self.github_button = ctk.CTkButton(
             self.about_frame_top,
             text="GitHub",
@@ -890,8 +1025,10 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=13),
         )
         self.github_button.pack(side="top", pady=5)
+        # endregion
 
         #! Ferramentas
+        # region Ferramentas
         self.tools_label = ctk.CTkLabel(
             self.about_frame_top,
             text=self.translator.get_text("tools"),
@@ -900,6 +1037,7 @@ class MainApplication(ctk.CTk):
         self.tools_label.pack(side="top", pady=(20, 5))
 
         #! Principais
+        # region Principais
         self.main_tools_frame = ctk.CTkFrame(
             self.about_frame_top, fg_color="transparent"
         )
@@ -953,8 +1091,10 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold"),
         )
         self.customtkinter_button.pack(side="left", padx=5, expand=True)
+        # endregion
 
         #! Componentes
+        # region Componentes
         self.tools_frame = ctk.CTkFrame(self.about_frame_top, fg_color="transparent")
         self.tools_frame.pack(side="top", fill="x", pady=5)
 
@@ -995,6 +1135,9 @@ class MainApplication(ctk.CTk):
             font=ctk.CTkFont(size=13),
         )
         self.ctkcomp_button.pack(side="left", padx=5, expand=True)
+        # endregion
+        # endregion
+        # endregion
 
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -1037,11 +1180,38 @@ class MainApplication(ctk.CTk):
         self.tabview.update_button_text()
 
         # region Traduzir Download
-        self.playlist_entry_tooltip.configure(
-            message=self.translator.get_text("playlist_tolltip")
-        )
+
+        self.playlist_check.configure(text=self.translator.get_text("playlist"))
         self.playlist_check_tooltip.configure(
             message=self.translator.get_text("playlist_check_tolltip")
+        )
+        self.playlist_items_label.configure(
+            text=self.translator.get_text("playlist_items")
+        )
+        self.playlist_start_label.configure(
+            text=self.translator.get_text("playlist_start")
+        )
+        self.playlist_end_label.configure(text=self.translator.get_text("playlist_end"))
+        self.playlist_reverse_check.configure(
+            text=self.translator.get_text("playlist_reverse")
+        )
+        self.playlist_random_check.configure(
+            text=self.translator.get_text("playlist_random")
+        )
+        self.playlist_items_tooltip.configure(
+            message=self.translator.get_text("playlist_items_tolltip")
+        )
+        self.playlist_start_tooltip.configure(
+            message=self.translator.get_text("playlist_start_tolltip")
+        )
+        self.playlist_end_tooltip.configure(
+            message=self.translator.get_text("playlist_end_tolltip")
+        )
+        self.playlist_reverse_tooltip.configure(
+            message=self.translator.get_text("playlist_reverse_tolltip")
+        )
+        self.playlist_random_tooltip.configure(
+            message=self.translator.get_text("playlist_random_tolltip")
         )
 
         self.media_label.configure(text=self.translator.get_text("media_type"))
@@ -1207,7 +1377,23 @@ class MainApplication(ctk.CTk):
                         "format": self.formato_var.get(),
                         "quality": self.qualidade_var.get().replace("p", ""),
                         "playlist": self.playlist_check_var.get(),
-                        "playlist_items": self.playlist_entry.get(),
+                        "playlist_items": (
+                            self.playlist_items_entry.get()
+                            if self.playlist_check_var.get()
+                            else ""
+                        ),
+                        "playlist_reverse": self.playlist_reverse_var.get(),
+                        "playlist_random": self.playlist_random_var.get(),
+                        "playlist_start": (
+                            self.playlist_start_entry.get()
+                            if self.playlist_check_var.get()
+                            else ""
+                        ),
+                        "playlist_end": (
+                            self.playlist_end_entry.get()
+                            if self.playlist_check_var.get()
+                            else ""
+                        ),
                     }
                 )
             elif type == "advanced":
@@ -1277,6 +1463,15 @@ class MainApplication(ctk.CTk):
 
     def open_link(self, url):
         webbrowser.open(url)
+
+    def toggle_playlist_options(self):
+        """Controla a visibilidade das opções avançadas de playlist"""
+        if self.playlist_check_var.get():
+            self.playlist_options_frame.pack(
+                side="top", fill="x", expand=True, ipadx=5, ipady=5
+            )
+        else:
+            self.playlist_options_frame.pack_forget()
 
     def run(self):
         self.mainloop()
