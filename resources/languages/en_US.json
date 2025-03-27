@@ -72,5 +72,11 @@
     "check_notify_completed_tolltip":"Notify when completed",
     "check_clear_url":"Clear URL field",
     "sound_notification":"Sound notification",
-    "download_cancelled":"Download cancelled"
+    "download_cancelled":"Download cancelled",
+    "popup_update_title":"Update Available",
+    "popup_update_msg":"A new version of EasyTuber is available: {version}.\nDo you want to update now?",
+    "popup_update_options":{
+        "Update":"update",
+        "Later":"later"
+    }
 }

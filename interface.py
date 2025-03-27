@@ -11,6 +11,7 @@ from modules import (
     UserPreferences,
     DefaultConfig,
     TranslationManager,
+    UpdateChecker,
     get_image_path,
     get_ffmpeg_path,
     play_sound,
@@ -169,6 +170,7 @@ class MainApplication(ctk.CTk):
         self.translator = TranslationManager(self)
         self.default_config = DefaultConfig()
         self.yt_dlp = YoutubeDownloader(self)
+        self.update_checker = UpdateChecker(self)
 
         # Variaveis de tradução
         self.localized_audio = self.translator.get_translates("audio")
@@ -1249,6 +1251,27 @@ class MainApplication(ctk.CTk):
         CTkMessagebox(
             title=self.translator.get_text("success")[1], message=message, icon="check"
         )
+
+    def show_update_available(self, update_info):
+        title = self.translator.get_text("popup_update_title")
+        message = self.translator.get_text("popup_update_msg").format(
+            version=update_info["latest_version"]
+        )
+        option = list(self.translator.get_text("popup_update_options").keys())
+
+        msg = CTkMessagebox(
+            width=450,
+            title=title,
+            message=message,
+            icon="info",
+            option_1=option[0],
+            option_2=option[1],
+            wraplength=400,
+        )
+        response = msg.get()
+
+        if response == option[0]:
+            self.open_link(update_info["release_url"])
 
     def ffmpeg_popup(self):
         title = self.translator.get_text("popup_ffmpeg_title")

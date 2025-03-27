@@ -12,6 +12,9 @@ class DefaultConfig:
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
         self.APP_LICENSE = "GPLv3"
         self.APP_WEBSITE = "https://github.com/EasyTuber/EasyTuber"
+        self.APP_REPO_OWNER = "EasyTuber"
+        self.APP_REPO_NAME = "EasyTuber"
+        self.APP_RELEASE_URL = f"https://github.com/{self.APP_REPO_OWNER}/{self.APP_REPO_NAME}/releases/latest"
 
         # Configurações de tamanho da janela
         self.DEFAULT_WINDOW_WIDTH = 700
@@ -96,7 +99,7 @@ class UserPreferences:
         except Exception as e:
             print(f"Error saving preferences: {e}")
 
-    def get(self, key: str):
+    def get(self, key: str, default_value=None):
         """
         Retrieves the value of a given configuration key.
 
@@ -105,11 +108,15 @@ class UserPreferences:
 
         Args:
             key (str): The configuration key whose value is to be retrieved.
+            default_value (any): The value to return if the key is not found in the current preferences.
 
         Returns:
             The value of the configuration key.
         """
-        return self.config.get(key, self.default_config.get(key))
+        if default_value is None:
+            return self.config.get(key, self.default_config.get(key))
+        else:
+            return self.config.get(key, default_value)
 
     def set(self, key: str, value):
         """

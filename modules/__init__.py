@@ -8,3 +8,4 @@ from .utils import (
     play_sound,
     center_window,
 )
+from .update_checker import UpdateChecker
