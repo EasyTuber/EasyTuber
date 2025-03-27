@@ -97,12 +97,13 @@ class YoutubeDownloader:
 
         # TODO Configurações específicas para playlist
         # Configurações específicas para playlist
+
         if self.options_ydlp["playlist"]:
             self.ydl_opts.update(
                 {
                     "outtmpl": os.path.join(
                         self.options_ydlp["download_path"],
-                        "%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s",
+                        "%(playlist)s/%(playlist_autonumber)s - %(title)s.%(ext)s",
                     ),  # Cria pasta com nome da playlist # TODO colocar como opcional
                     "ignoreerrors": True,  # Continua mesmo se um vídeo falhar
                     "playlist": True,
@@ -112,6 +113,13 @@ class YoutubeDownloader:
             # Se especificado os itens da playlist
             if self.options_ydlp["playlist_items"]:
                 self.ydl_opts["playlist_items"] = self.options_ydlp["playlist_items"]
+            # Se especificado o reverso da playlist
+            if self.options_ydlp["playlist_reverse"]:
+                self.ydl_opts["playlistreverse"] = self.options_ydlp["playlist_reverse"]
+            # Se especificado o aleatório da playlist
+            if self.options_ydlp["playlist_random"]:
+                self.ydl_opts["playlistrandom"] = self.options_ydlp["playlist_random"]
+
         else:
             self.ydl_opts["outtmpl"] = os.path.join(
                 self.options_ydlp["download_path"], "%(title)s.%(ext)s"
@@ -145,6 +153,7 @@ class YoutubeDownloader:
             raise Exception("download cancelled")
 
         # TODO: atualizar a interface
+        """ 
         if d["status"] == "started":
             print(
                 f"Iniciando pós-processamento: {d.get('postprocessor', 'desconhecido')}"
@@ -157,6 +166,7 @@ class YoutubeDownloader:
             print(f"Tamanho final: {d.get('filesize', 'desconhecido')} bytes")
         elif d["status"] == "error":
             print(f"Erro no pós-processamento: {d.get('error')}")
+        """
 
     # Atualiza a barra de progresso e o status de download
     def progress_hooks(self, d):
@@ -165,7 +175,7 @@ class YoutubeDownloader:
             raise Exception("download cancelled")
 
         info_dict = d.get("info_dict", {})
-        playlist_index = info_dict.get("playlist_index")
+        playlist_index = info_dict.get("playlist_autonumber")
         playlist_count = info_dict.get("n_entries")
 
         if d["status"] == "downloading":

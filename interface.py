@@ -393,25 +393,9 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_options_frame.pack(side="top", fill="x", expand=True)
 
-        # Frame para opções de input
-        self.playlist_options_frame_top = ctk.CTkFrame(
-            self.playlist_options_frame, fg_color="transparent"
-        )
-        self.playlist_options_frame_top.pack(side="top", fill="x", pady=(5, 2), padx=5)
-
-        # Frame para opções de checkbox
-        self.playlist_options_frame_bottom = ctk.CTkFrame(
-            self.playlist_options_frame, fg_color="transparent"
-        )
-        self.playlist_options_frame_bottom.pack(
-            side="bottom", fill="x", padx=5, pady=(0, 5)
-        )
-
-        # TODO: se itens tem valor, então bloquear o start e o end
-
         # Playlist Items
         self.playlist_items_frame = ctk.CTkFrame(
-            self.playlist_options_frame_top, fg_color="transparent"
+            self.playlist_options_frame, fg_color="transparent"
         )
         self.playlist_items_frame.pack(side="left", expand=True)
 
@@ -427,8 +411,6 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_items_entry.pack(side="left")
 
-        self.playlist_items_entry.bind("<KeyRelease>", self.playlist_items_entry_change)
-
         self.playlist_items_tooltip = CTkToolTip(
             self.playlist_items_entry,
             message=self.translator.get_text("playlist_items_tolltip"),
@@ -439,70 +421,10 @@ class MainApplication(ctk.CTk):
             follow=False,
         )
 
-        # Playlist Start
-        self.playlist_start_frame = ctk.CTkFrame(
-            self.playlist_options_frame_top, fg_color="transparent"
-        )
-        self.playlist_start_frame.pack(side="left", expand=True)
-
-        self.playlist_start_label = ctk.CTkLabel(
-            self.playlist_start_frame, text=self.translator.get_text("playlist_start")
-        )
-        self.playlist_start_label.pack(side="left")
-
-        self.playlist_start_entry = ctk.CTkEntry(
-            self.playlist_start_frame, width=50, placeholder_text="1"
-        )
-        self.playlist_start_entry.pack(side="left", padx=5)
-
-        self.playlist_start_entry.bind(
-            "<KeyRelease>", self.playlist_start_end_entry_change
-        )
-
-        self.playlist_start_tooltip = CTkToolTip(
-            self.playlist_start_entry,
-            message=self.translator.get_text("playlist_start_tolltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-70,
-            follow=False,
-        )
-
-        # Playlist End
-        self.playlist_end_frame = ctk.CTkFrame(
-            self.playlist_options_frame_top, fg_color="transparent"
-        )
-        self.playlist_end_frame.pack(side="left", expand=True)
-
-        self.playlist_end_label = ctk.CTkLabel(
-            self.playlist_end_frame, text=self.translator.get_text("playlist_end")
-        )
-        self.playlist_end_label.pack(side="left", expand=True)
-
-        self.playlist_end_entry = ctk.CTkEntry(
-            self.playlist_end_frame, width=50, placeholder_text="0"
-        )
-        self.playlist_end_entry.pack(side="left", padx=5)
-
-        self.playlist_end_entry.bind(
-            "<KeyRelease>", self.playlist_start_end_entry_change
-        )
-
-        self.playlist_end_tooltip = CTkToolTip(
-            self.playlist_end_entry,
-            message=self.translator.get_text("playlist_end_tolltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-70,
-            follow=False,
-        )
-
         # Playlist Reverse
         self.playlist_reverse_var = ctk.BooleanVar(value=False)
         self.playlist_reverse_check = ctk.CTkCheckBox(
-            self.playlist_options_frame_bottom,
+            self.playlist_options_frame,
             text=self.translator.get_text("playlist_reverse"),
             variable=self.playlist_reverse_var,
             command=self.toggle_playlist_reverse,
@@ -524,7 +446,7 @@ class MainApplication(ctk.CTk):
         # Playlist Random
         self.playlist_random_var = ctk.BooleanVar(value=False)
         self.playlist_random_check = ctk.CTkCheckBox(
-            self.playlist_options_frame_bottom,
+            self.playlist_options_frame,
             text=self.translator.get_text("playlist_random"),
             variable=self.playlist_random_var,
             command=self.toggle_playlist_random,
@@ -1179,32 +1101,6 @@ class MainApplication(ctk.CTk):
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
     """
 
-    def playlist_items_entry_change(self, event):
-        if self.playlist_items_entry.get():
-            self.playlist_start_entry.configure(
-                state="disabled", placeholder_text_color=["gray80", "gray40"]
-            )
-            self.playlist_end_entry.configure(
-                state="disabled", placeholder_text_color=["gray80", "gray40"]
-            )
-        else:
-            self.playlist_start_entry.configure(
-                state="normal", placeholder_text_color=["gray52", "gray62"]
-            )
-            self.playlist_end_entry.configure(
-                state="normal", placeholder_text_color=["gray52", "gray62"]
-            )
-
-    def playlist_start_end_entry_change(self, event):
-        if self.playlist_start_entry.get() or self.playlist_end_entry.get():
-            self.playlist_items_entry.configure(
-                state="disabled", placeholder_text_color=["gray80", "gray40"]
-            )
-        else:
-            self.playlist_items_entry.configure(
-                state="normal", placeholder_text_color=["gray52", "gray62"]
-            )
-
     def toggle_playlist_reverse(self):
         if self.playlist_reverse_var.get():
             self.playlist_random_check.configure(
@@ -1247,10 +1143,6 @@ class MainApplication(ctk.CTk):
         self.playlist_items_label.configure(
             text=self.translator.get_text("playlist_items")
         )
-        self.playlist_start_label.configure(
-            text=self.translator.get_text("playlist_start")
-        )
-        self.playlist_end_label.configure(text=self.translator.get_text("playlist_end"))
         self.playlist_reverse_check.configure(
             text=self.translator.get_text("playlist_reverse")
         )
@@ -1259,12 +1151,6 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_items_tooltip.configure(
             message=self.translator.get_text("playlist_items_tolltip")
-        )
-        self.playlist_start_tooltip.configure(
-            message=self.translator.get_text("playlist_start_tolltip")
-        )
-        self.playlist_end_tooltip.configure(
-            message=self.translator.get_text("playlist_end_tolltip")
         )
         self.playlist_reverse_tooltip.configure(
             message=self.translator.get_text("playlist_reverse_tolltip")
@@ -1395,14 +1281,14 @@ class MainApplication(ctk.CTk):
     def media_selected(self, valor, init=False):
         if valor in self.localized_audio:
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
+            self.qualidade_menu.configure(state="disabled")
             if not init:
                 self.formato_var.set("mp3")
-                self.qualidade_menu.configure(state="disabled")
         elif valor in self.localized_video:
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
+            self.qualidade_menu.configure(state="normal")
             if not init:
                 self.formato_var.set("mp4")
-                self.qualidade_menu.configure(state="normal")
 
     def call_download(self, type: str):
         self.disable_button()
@@ -1441,18 +1327,8 @@ class MainApplication(ctk.CTk):
                             if self.playlist_check_var.get()
                             else ""
                         ),
-                        "playlist_reverse": self.playlist_reverse_var.get(),
-                        "playlist_random": self.playlist_random_var.get(),
-                        "playlist_start": (
-                            self.playlist_start_entry.get()
-                            if self.playlist_check_var.get()
-                            else ""
-                        ),
-                        "playlist_end": (
-                            self.playlist_end_entry.get()
-                            if self.playlist_check_var.get()
-                            else ""
-                        ),
+                        "playlist_reverse": bool(self.playlist_reverse_var.get()),
+                        "playlist_random": bool(self.playlist_random_var.get()),
                     }
                 )
             elif type == "advanced":
