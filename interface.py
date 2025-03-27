@@ -427,6 +427,8 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_items_entry.pack(side="left")
 
+        self.playlist_items_entry.bind("<KeyRelease>", self.playlist_items_entry_change)
+
         self.playlist_items_tooltip = CTkToolTip(
             self.playlist_items_entry,
             message=self.translator.get_text("playlist_items_tolltip"),
@@ -452,6 +454,10 @@ class MainApplication(ctk.CTk):
             self.playlist_start_frame, width=50, placeholder_text="1"
         )
         self.playlist_start_entry.pack(side="left", padx=5)
+
+        self.playlist_start_entry.bind(
+            "<KeyRelease>", self.playlist_start_end_entry_change
+        )
 
         self.playlist_start_tooltip = CTkToolTip(
             self.playlist_start_entry,
@@ -479,6 +485,10 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_end_entry.pack(side="left", padx=5)
 
+        self.playlist_end_entry.bind(
+            "<KeyRelease>", self.playlist_start_end_entry_change
+        )
+
         self.playlist_end_tooltip = CTkToolTip(
             self.playlist_end_entry,
             message=self.translator.get_text("playlist_end_tolltip"),
@@ -495,6 +505,7 @@ class MainApplication(ctk.CTk):
             self.playlist_options_frame_bottom,
             text=self.translator.get_text("playlist_reverse"),
             variable=self.playlist_reverse_var,
+            command=self.toggle_playlist_reverse,
             onvalue=True,
             offvalue=False,
         )
@@ -516,6 +527,7 @@ class MainApplication(ctk.CTk):
             self.playlist_options_frame_bottom,
             text=self.translator.get_text("playlist_random"),
             variable=self.playlist_random_var,
+            command=self.toggle_playlist_random,
             onvalue=True,
             offvalue=False,
         )
@@ -1167,6 +1179,53 @@ class MainApplication(ctk.CTk):
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
     """
 
+    def playlist_items_entry_change(self, event):
+        if self.playlist_items_entry.get():
+            self.playlist_start_entry.configure(
+                state="disabled", placeholder_text_color=["gray80", "gray40"]
+            )
+            self.playlist_end_entry.configure(
+                state="disabled", placeholder_text_color=["gray80", "gray40"]
+            )
+        else:
+            self.playlist_start_entry.configure(
+                state="normal", placeholder_text_color=["gray52", "gray62"]
+            )
+            self.playlist_end_entry.configure(
+                state="normal", placeholder_text_color=["gray52", "gray62"]
+            )
+
+    def playlist_start_end_entry_change(self, event):
+        if self.playlist_start_entry.get() or self.playlist_end_entry.get():
+            self.playlist_items_entry.configure(
+                state="disabled", placeholder_text_color=["gray80", "gray40"]
+            )
+        else:
+            self.playlist_items_entry.configure(
+                state="normal", placeholder_text_color=["gray52", "gray62"]
+            )
+
+    def toggle_playlist_reverse(self):
+        if self.playlist_reverse_var.get():
+            self.playlist_random_check.configure(
+                state="disabled", border_color=["#A7B4B9", "#55595D"]
+            )
+        else:
+            self.playlist_random_check.configure(
+                state="normal", border_color=["#3E454A", "#949A9F"]
+            )
+
+    def toggle_playlist_random(self):
+        if self.playlist_random_var.get():
+            self.playlist_reverse_check.configure(
+                state="disabled", border_color=["#A7B4B9", "#55595D"]
+            )
+        else:
+            self.playlist_reverse_check.configure(
+                state="normal", border_color=["#3E454A", "#949A9F"]
+            )
+
+    # TODO Work in Progress (Language)
     def change_language(self, language_name):
         # Obter código do idioma
         language_code = self.available_languages_inverted[language_name]
