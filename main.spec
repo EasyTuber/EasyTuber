@@ -48,6 +48,14 @@ a = Analysis(
     noarchive=False,
 )
 
+splash = Splash(
+    'resources/images/EasyTuber_Banner.png',
+    binaries=a.binaries,
+    datas=a.datas,
+    always_on_top=True,
+    time_to_display=1.0
+)
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
@@ -56,6 +64,8 @@ exe = EXE(
     a.binaries,
     a.zipfiles,
     a.datas,
+    splash,
+    splash.binaries,
     [],
     name='EasyTuber',
     debug=False,

@@ -1,8 +1,8 @@
 <div align="center">
     
-🇧🇷 [Português](README.md) • 🇺🇸 [English](README_EN.md) • 🇪🇸 [Español](README_es.md)
+🇧🇷 [Português](README.md) • 🇺🇸 English • 🇪🇸 [Español](README_es.md)
 
-<img src="resources/images/BigBanner%20EasyTuber.png" height="300">
+<img src="resources/images/BigBanner_EasyTuber.png" height="300">
 
 ![Downloads](https://img.shields.io/github/downloads/EasyTuber/EasyTuber/total?style=for-the-badge&color=D03434)
 [![Release version](https://img.shields.io/github/v/release/EasyTuber/EasyTuber?color=D03434&label=Release&style=for-the-badge)](https://github.com/EasyTuber/EasyTuber/releases/latest "Installation")
