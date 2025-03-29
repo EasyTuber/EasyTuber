@@ -1283,12 +1283,14 @@ class MainApplication(ctk.CTk):
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
             self.qualidade_menu.configure(state="disabled")
             if not init:
-                self.formato_var.set("mp3")
+                self.user_prefer.set("last_format_video", self.formato_var.get())
+                self.formato_var.set(self.user_prefer.get("last_format_audio"))
         elif valor in self.localized_video:
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
             self.qualidade_menu.configure(state="normal")
             if not init:
-                self.formato_var.set("mp4")
+                self.user_prefer.set("last_format_audio", self.formato_var.get())
+                self.formato_var.set(self.user_prefer.get("last_format_video"))
 
     def call_download(self, type: str):
         self.disable_button()
