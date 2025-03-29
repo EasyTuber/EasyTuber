@@ -23,10 +23,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build executable with PyInstaller
-        run: pyinstaller main.spec
+        run: pyinstaller --onefile src/app.py
 
       - name: Upload artifact (optional)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2 # Corrigido para v2
         with:
           name: app_windows_executable
           path: dist/app.exe
