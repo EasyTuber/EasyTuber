@@ -1,6 +1,6 @@
 <div align="center">
     
-🇧🇷 [Português](README.md) • 🇺🇸 [English](README_EN.md)
+🇧🇷 [Português](README.md) • 🇺🇸 [English](README_EN.md) • 🇪🇸 [Español](README_es.md)
 
 <img src="resources/images/BigBanner%20EasyTuber.png" height="300">
 
