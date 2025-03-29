@@ -57,6 +57,8 @@ class UserPreferences:
             "open_folder": False,  # Default open folder after download
             "clear_url": False,  # Default clear url after download
             "notify_completed": True,  # Default notify completed
+            "last_format_audio": "mp3",  # Default last format audio
+            "last_format_video": "mp4",  # Default last format video
         }
 
         # Attempt to get the FFmpeg executable path and add it to the config if available
