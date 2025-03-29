@@ -3,6 +3,7 @@ from yt_dlp import YoutubeDL
 import threading
 from modules.utils import get_ffmpeg_path, play_sound
 from libs import CTkProgressPopup, CTkNotification
+import time
 
 
 class YoutubeDownloader:
@@ -126,9 +127,9 @@ class YoutubeDownloader:
             "no_warnings": True,  # Permite receber avisos
         }
 
-        # TODO Configurações específicas para playlist
-        # Configurações específicas para playlist
+        # TODO Work in Progress (Advanced)
 
+        # Configurações específicas para playlist
         if self.options_ydlp["playlist"]:
             self.ydl_opts.update(
                 {
@@ -171,7 +172,6 @@ class YoutubeDownloader:
                 }
             )
         else:  # Se é video
-            # TODO depois colocar um if para pegar das opções avançadas
             self.ydl_opts.update(
                 {
                     "format": f'bestvideo[height<={self.options_ydlp["quality"]}]+bestaudio/best[height<={self.options_ydlp["quality"]}]',
@@ -297,7 +297,6 @@ class YoutubeDownloader:
             self.root.download_button.configure(state="normal")
             self.root.after(1000, lambda: self.progress_popup.cancel_task())
 
-    # TODO configurar o que acontece depois de concluido
     def update_ui_after_download(self, success=False, cancelled=False, error=None):
         # Executa na thread principal
         def update():
@@ -333,33 +332,47 @@ class YoutubeDownloader:
 
     def cleanup_partial_downloads(self):
         """
-        Removes partial download files from the download directory.
+        Remove arquivos parciais do diretório de download.
 
-        This method scans the download directory and removes any files that are:
-        - .part files (partial downloads)
-        - .ytdl files (YouTube-DL temporary files)
-        - Empty files (0 bytes)
+        Este método verifica o diretório de download e remove arquivos que são:
+        - Arquivos .part (downloads parciais)
+        - Arquivos .ytdl (arquivos temporários do YouTube-DL)
+        - Arquivos vazios (0 bytes)
 
-        The cleanup helps prevent accumulation of incomplete downloads.
+        A limpeza ajuda a evitar o acúmulo de downloads incompletos.
         """
+
+        def try_remove_file(filepath, max_attempts=3):
+            """Tenta remover um arquivo com várias tentativas e delay."""
+            for attempt in range(max_attempts):
+                try:
+                    os.remove(filepath)
+                    print(f"Arquivo parcial removido: {os.path.basename(filepath)}")
+                    return True
+                except PermissionError:
+                    print(
+                        f"Arquivo em uso, tentativa {attempt + 1} de {max_attempts}: {os.path.basename(filepath)}"
+                    )
+                    time.sleep(0.5)  # Reduzido para 0.5 segundos
+                except Exception as e:
+                    print(f"Erro ao tentar remover {os.path.basename(filepath)}: {e}")
+                    time.sleep(0.5)
+            return False
+
         try:
             for file in os.listdir(self.options_ydlp["download_path"]):
                 full_path = os.path.join(self.options_ydlp["download_path"], file)
 
-                # Check if file is a partial download
+                # Verifica se o arquivo é um download parcial
                 is_partial = (
                     file.endswith(".part")
                     or file.endswith(".ytdl")
                     or
-                    # Add other partial file extensions if needed
+                    # Adiciona outras extensões de arquivo parcial se necessário
                     (os.path.isfile(full_path) and os.path.getsize(full_path) == 0)
                 )
 
                 if is_partial:
-                    try:
-                        os.remove(full_path)
-                        print(f"Partial file removed: {file}")
-                    except Exception as e:
-                        print(f"Error removing {file}: {e}")
+                    try_remove_file(full_path)
         except Exception as error:
-            print(f"Error cleaning downloads: {error}")
+            print(f"Erro ao limpar downloads: {error}")
