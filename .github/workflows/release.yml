@@ -23,7 +23,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build executable with PyInstaller
-        run: pyinstaller --onefile src/app.py
+        run: pyinstaller main.spec
 
       - name: Upload artifact (optional)
         uses: actions/upload-artifact@v2 # Corrigido para v2
