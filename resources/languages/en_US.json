@@ -47,7 +47,7 @@
         "Downloading item {index} of {count}",
         "Processing item {index} of {count}",
         "Downloading information...",
-        "Downloading information {index} of {count}",
+        "Downloading information item {index} of {count}",
         "File completed",
         "Item {index} of {count} completed"
     ],

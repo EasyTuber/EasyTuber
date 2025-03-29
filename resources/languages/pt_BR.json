@@ -53,7 +53,7 @@
         "Baixando item {index} de {count}",
         "Processando item {index} de {count}",
         "Baixando informações...",
-        "Baixando informações {index} of {count}",
+        "Baixando informações item {index} de {count}",
         "Arquivo finalizado",
         "Item {index} de {count} finalizado"
     ],
