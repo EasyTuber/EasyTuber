@@ -1,22 +1,38 @@
-<p align="center">
-    <a href="https://github.com/EasyTuber/EasyTuber/blob/main/README_EN.md">🇺🇸 English Version</a>
-</p>
+<div align="center">
+    
+🇧🇷 [Português](README.md) • 🇺🇸 [English](README_EN.md) • 🇪🇸 [Español](README_es.md)
 
-# EasyTuber  
-**🖥️ Uma interface gráfica (GUI) para o yt-dlp, tornando o download de vídeos mais fácil e acessível!**  
+<img src="resources/images/BigBanner%20EasyTuber.png" height="300">
+
+![Downloads](https://img.shields.io/github/downloads/EasyTuber/EasyTuber/total?style=for-the-badge&color=D03434)
+[![Release version](https://img.shields.io/github/v/release/EasyTuber/EasyTuber?color=D03434&label=Release&style=for-the-badge)](https://github.com/EasyTuber/EasyTuber/releases/latest "Installation")
+[![Commits](https://img.shields.io/github/commit-activity/m/EasyTuber/EasyTuber?color=D03434&label=commits&style=for-the-badge)](https://github.com/EasyTuber/EasyTuber/commits "Commit History")
+[![Last Commit](https://img.shields.io/github/last-commit/EasyTuber/EasyTuber/main?color=D03434&label=Last%20Commit&style=for-the-badge&display_timestamp=committer)](https://github.com/EasyTuber/EasyTuber/pulse/monthly "Last activity")
+[![Python](https://img.shields.io/badge/Python-3.8%2B-D03434?style=for-the-badge)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-GPLv3-D03434?style=for-the-badge)](LICENSE)
+
+</div>
+
+**EasyTuber** é um aplicativo intuitivo que permite baixar vídeos e áudios do YouTube com facilidade. Com uma interface simples e eficiente, você pode salvar seus conteúdos favoritos em poucos cliques, sem complicações.
 
 ## 🚀 Recursos  
-- ✅ Interface amigável e intuitiva  
-- ✅ Suporte para múltiplos formatos de vídeo e áudio  
-- ✅ Download rápido e eficiente utilizando **yt-dlp**  
-- ✅ Opção de escolher qualidade e formato antes de baixar  
-- ✅ Open-source e gratuito!  
+- 🎨 **Interface amigável e intuitiva**  
+- 🎵 **Suporte para múltiplos formatos de vídeo e áudio**  
+- ⚡ **Download rápido e eficiente com yt-dlp**  
+- 🎯 **Escolha qualidade e formato antes de baixar**  
+- 🎬 **Suporte a playlists**
+- 📁 **Organização automática de downloads**
+- 🆓 **Open-source e gratuito!**
 
 ## 🛠️ Ferramentas Utilizadas
 - **yt-dlp**: Para download dos vídeos
 - **FFmpeg**: Para conversão e processamento de mídia
 - **Python**: Linguagem base do projeto
 - **CustomTKinter**: Para a interface gráfica
+- [**CTkThemesPack**](https://github.com/a13xe/CTkThemesPack): Utilizado o tema 'red'
+- [**ctk_components**](https://github.com/rudymohammadbali/ctk_components): Utilizado `CTkProgressPopup` e `CTkNotification`
+- [**CTkMessagebox**](https://github.com/Akascape/CTkMessagebox): Para os pop-ups
+- [**CTkToolTip**](https://github.com/Akascape/CTkToolTip): Para as dicas de ferramenta
 
 ## 📥 Download e Instalação  
 ### 🔹 **Pré-requisitos**
@@ -40,13 +56,21 @@ pip install -r requirements.txt
 python easytuber.py
 ```
 
-## 🎮 Como Usar
-1. Abra o programa
-2. Cole o link do vídeo que deseja baixar
-3. Escolha a qualidade e formato desejado
-4. Clique em "Baixar" e aguarde a mágica acontecer!
+## 🎮 Como Usar  
+1️⃣ **Abra o programa**  
+2️⃣ **Cole o link do vídeo que deseja baixar**  
+3️⃣ **Escolha a qualidade e formato desejado**  
+4️⃣ **Clique em "Baixar" e aguarde a mágica acontecer!** ✨  
+
+## 🐛 Solução de Problemas
+Se encontrar algum problema:
+1. Verifique se o FFmpeg está instalado corretamente
+2. Certifique-se de ter uma conexão estável com a internet
+3. Tente executar o programa como administrador
+4. Verifique se seu antivírus não está bloqueando o programa
 
 ## 🤝 Contribuindo
+Quer ajudar a melhorar o EasyTuber? Toda contribuição é bem-vinda!
 Se quiser contribuir:
 1. Faça um **fork** do projeto
 2. Crie um branch:
@@ -65,3 +89,8 @@ git push origin minha-nova-funcionalidade
 
 ## 📜 Licença  
 Este projeto é licenciado sob a licença [GNU General Public License v3.0 (GPLv3)](LICENSE).
+
+---
+<div align="center">
+    <sub>Desenvolvido com ❤️ pela comunidade EasyTuber</sub>
+</div>
