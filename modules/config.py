@@ -7,7 +7,7 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "2.2.0"
+        self.APP_VERSION = "2.3.0"
         self.APP_AUTHOR = "Gabriel Frais"
         self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
         self.APP_LICENSE = "GPLv3"
@@ -49,10 +49,10 @@ class UserPreferences:
                 get_executable_dir(), "Downloads"
             ).replace("\\", "/"),
             "language": "pt_BR",  # Default language (Portuguese)
-            "media": "Vídeo",  # Default media type
+            "media": "Video",  # Default media type
             "format": "mp4",  # Default media format
             "quality": "1080p",  # Default quality
-            "appearance": "Sistema",  # Default appearance setting
+            "appearance": "System",  # Default appearance setting
             "sound_notification": True,  # Default sound notification
             "open_folder": False,  # Default open folder after download
             "clear_url": False,  # Default clear url after download
@@ -90,22 +90,6 @@ class UserPreferences:
                 "language": self.config.get("language", ""),
             }
 
-            appearence_key = translator.get_key_by_value(
-                translator.get_text("appearance_values", "pt_BR"),
-                self.default_config.get("appearance"),
-            )
-
-            media_key = translator.get_key_by_value(
-                translator.get_text("media_values", "pt_BR"),
-                self.default_config.get("media"),
-            )
-
-            # Translate values
-            translate_values = {
-                "media": translator.get_text("media_values")[media_key],
-                "appearance": translator.get_text("appearance_values")[appearence_key],
-            }
-
             # Reset to default configuration
             self.config = self.default_config.copy()
 
@@ -113,9 +97,6 @@ class UserPreferences:
             for key, value in critical_values.items():
                 if value:  # Only restore if value exists
                     self.config[key] = value
-
-            for key, value in translate_values.items():
-                self.config[key] = value
 
             # Save the new configuration
             self.save_preferences()

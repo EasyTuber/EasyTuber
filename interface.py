@@ -5,7 +5,6 @@ from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
 
-
 from modules import (
     YoutubeDownloader,
     UserPreferences,
@@ -299,7 +298,11 @@ class MainApplication(ctk.CTk):
         )
         self.media_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
 
-        self.media_var = ctk.StringVar(value=self.user_prefer.get("media"))
+        self.media_var = ctk.StringVar(
+            value=self.translator.get_text("media_values")[
+                self.user_prefer.get("media")
+            ]
+        )
         self.media_SegButton = ctk.CTkSegmentedButton(
             self.media_frame,
             values=list(self.translator.get_text("media_values").values()),
@@ -664,7 +667,11 @@ class MainApplication(ctk.CTk):
         )
         self.appearance_label.pack(side="left")
 
-        self.appearance_var = ctk.StringVar(value=self.user_prefer.get("appearance"))
+        self.appearance_var = ctk.StringVar(
+            value=self.translator.get_text("appearance_values")[
+                self.user_prefer.get("appearance")
+            ]
+        )
 
         self.appearance_dropdown = ctk.CTkOptionMenu(
             self.appearance_frame,
@@ -1145,6 +1152,7 @@ class MainApplication(ctk.CTk):
             self.last_language = language_code
 
     def update_interface_texts(self):
+        self.save_current_settings()
         self.tabview.update_button_text()
 
         # region Traduzir Download
@@ -1173,11 +1181,10 @@ class MainApplication(ctk.CTk):
         )
 
         self.media_label.configure(text=self.translator.get_text("media_type"))
-        media_key = self.translator.get_key_by_value(
-            self.translator.get_text("media_values", self.last_language),
-            self.media_var.get(),
+
+        self.media_var.set(
+            self.translator.get_text("media_values")[self.user_prefer.get("media")]
         )
-        self.media_var.set(self.translator.get_text("media_values")[media_key])
         self.media_SegButton.configure(
             values=list(self.translator.get_text("media_values").values())
         )
@@ -1208,13 +1215,10 @@ class MainApplication(ctk.CTk):
             values=list(self.translator.get_text("appearance_values").values())
         )
 
-        appearence_key = self.translator.get_key_by_value(
-            self.translator.get_text("appearance_values", self.last_language),
-            self.appearance_var.get(),
-        )
-
         self.appearance_var.set(
-            self.translator.get_text("appearance_values")[appearence_key]
+            self.translator.get_text("appearance_values")[
+                self.user_prefer.get("appearance")
+            ]
         )
 
         self.sound_notification_checkbox.configure(
@@ -1278,10 +1282,22 @@ class MainApplication(ctk.CTk):
             "default_download_path", self.default_download_path_entry.get()
         )
         self.user_prefer.set("ffmpeg_path", self.ffmpeg_path_entry.get())
-        self.user_prefer.set("media", self.media_var.get())
+        self.user_prefer.set(
+            "media",
+            self.translator.get_key_by_value(
+                self.translator.get_text("media_values", self.last_language),
+                self.media_var.get(),
+            ),
+        )
         self.user_prefer.set("format", self.formato_var.get())
         self.user_prefer.set("quality", self.qualidade_var.get())
-        self.user_prefer.set("appearance", self.appearance_var.get())
+        self.user_prefer.set(
+            "appearance",
+            self.translator.get_key_by_value(
+                self.translator.get_text("appearance_values", self.last_language),
+                self.appearance_var.get(),
+            ),
+        )
         self.user_prefer.set(
             "language", self.available_languages_inverted[self.language_var.get()]
         )
@@ -1483,10 +1499,16 @@ class MainApplication(ctk.CTk):
             self.user_prefer.reset_preferences(self.translator)
 
             # Atualizar a interface com os valores padrão
-            self.media_var.set(self.user_prefer.get("media"))
+            self.media_var.set(
+                self.translator.get_text("media_values")[self.user_prefer.get("media")]
+            )
             self.formato_var.set(self.user_prefer.get("format"))
             self.qualidade_var.set(self.user_prefer.get("quality"))
-            self.appearance_var.set(self.user_prefer.get("appearance"))
+            self.appearance_var.set(
+                self.translator.get_text("appearance_values")[
+                    self.user_prefer.get("appearance")
+                ]
+            )
             self.language_var.set(
                 self.available_languages[self.user_prefer.get("language")]
             )
@@ -1512,9 +1534,7 @@ class MainApplication(ctk.CTk):
             )
 
             # Atualizar aparência
-            ctk.set_appearance_mode(
-                self.translator.get_text("appearance_values")[self.appearance_var.get()]
-            )
+            ctk.set_appearance_mode(self.user_prefer.get("appearance"))
 
             # Mostrar mensagem de sucesso após um pequeno delay
             self.after(
