@@ -55,7 +55,7 @@ def get_executable_dir() -> str:
     """
     if getattr(sys, "frozen", False):
         # If running as a PyInstaller executable
-        return os.path.dirname(sys.executable)
+        return os.path.join(os.path.dirname(sys.executable), "EasyTuber")
     else:
         # If running in development mode
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -123,7 +123,7 @@ def get_config_path(filename: str) -> str:
         str: The full path to the configuration file.
     """
     app_dir = get_executable_dir()
-    config_dir = os.path.join(app_dir, "resources", "config")
+    config_dir = os.path.join(app_dir, "config")
 
     # Create the configuration directory if it does not exist
     os.makedirs(config_dir, exist_ok=True)
