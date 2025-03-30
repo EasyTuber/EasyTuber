@@ -173,16 +173,11 @@ class MainApplication(ctk.CTk):
         self.update_checker = UpdateChecker(self)
 
         # Variaveis de tradução
-        self.localized_audio = self.translator.get_translates("audio")
-        self.localized_video = self.translator.get_translates("video")
-        self.localized_appearance = self.translator.get_all_translation_keys_list(
-            "appearance_values"
-        )
-
         self.available_languages = self.translator.available_languages
         self.available_languages_inverted = {
             v: k for k, v in self.available_languages.items()
         }
+        self.last_language = self.user_prefer.get("language")
 
         # Variaveis de url para compartilhar entre elas
         self.url1_var = ctk.StringVar()
@@ -307,7 +302,7 @@ class MainApplication(ctk.CTk):
         self.media_var = ctk.StringVar(value=self.user_prefer.get("media"))
         self.media_SegButton = ctk.CTkSegmentedButton(
             self.media_frame,
-            values=self.translator.get_text("media_values"),
+            values=list(self.translator.get_text("media_values").values()),
             variable=self.media_var,
             command=self.media_selected,
         )
@@ -673,10 +668,12 @@ class MainApplication(ctk.CTk):
 
         self.appearance_dropdown = ctk.CTkOptionMenu(
             self.appearance_frame,
-            values=list(self.translator.get_text("appearance_values").keys()),
+            values=list(self.translator.get_text("appearance_values").values()),
             variable=self.appearance_var,
             command=lambda choice: ctk.set_appearance_mode(
-                self.translator.get_text("appearance_values")[choice]
+                self.translator.get_key_by_value(
+                    self.translator.get_text("appearance_values"), choice
+                )
             ),
             width=100,
         )
@@ -909,6 +906,18 @@ class MainApplication(ctk.CTk):
         self.default_download_path_button.pack(side="left")
         # endregion
 
+        #! Botão de Reset
+        # region Reset Button
+        self.reset_settings_button = ctk.CTkButton(
+            self.settings_frame_bottom,
+            text=self.translator.get_text("reset_settings"),
+            command=self.reset_settings,
+            width=200,
+            font=ctk.CTkFont(size=14),
+        )
+        self.reset_settings_button.pack(side="bottom", pady=10)
+        # endregion
+
         # endregion
 
         # endregion
@@ -1133,6 +1142,8 @@ class MainApplication(ctk.CTk):
             # Atualizar todos os textos da interface
             self.update_interface_texts()
 
+            self.last_language = language_code
+
     def update_interface_texts(self):
         self.tabview.update_button_text()
 
@@ -1162,12 +1173,14 @@ class MainApplication(ctk.CTk):
         )
 
         self.media_label.configure(text=self.translator.get_text("media_type"))
-        self.media_var.set(
-            self.translator.get_text("media_values")[0]
-            if self.media_var.get() in self.localized_video
-            else self.translator.get_text("media_values")[1]
+        media_key = self.translator.get_key_by_value(
+            self.translator.get_text("media_values", self.last_language),
+            self.media_var.get(),
         )
-        self.media_SegButton.configure(values=self.translator.get_text("media_values"))
+        self.media_var.set(self.translator.get_text("media_values")[media_key])
+        self.media_SegButton.configure(
+            values=list(self.translator.get_text("media_values").values())
+        )
         self.formato_label.configure(text=self.translator.get_text("format"))
         self.qualidade_label.configure(text=self.translator.get_text("quality"))
         self.url1_entry.configure(
@@ -1192,13 +1205,18 @@ class MainApplication(ctk.CTk):
             text=self.translator.get_text("appearance") + ":"
         )
         self.appearance_dropdown.configure(
-            values=self.translator.get_text("appearance_values")
+            values=list(self.translator.get_text("appearance_values").values())
         )
-        for index, keys in enumerate(self.localized_appearance):
-            if self.appearance_var.get() in keys:
-                self.appearance_var.set(
-                    list(self.translator.get_text("appearance_values").keys())[index]
-                )
+
+        appearence_key = self.translator.get_key_by_value(
+            self.translator.get_text("appearance_values", self.last_language),
+            self.appearance_var.get(),
+        )
+
+        self.appearance_var.set(
+            self.translator.get_text("appearance_values")[appearence_key]
+        )
+
         self.sound_notification_checkbox.configure(
             text=self.translator.get_text("sound_notification")
         )
@@ -1249,6 +1267,10 @@ class MainApplication(ctk.CTk):
 
         # endregion
 
+        self.reset_settings_button.configure(
+            text=self.translator.get_text("reset_settings")
+        )
+
     def save_current_settings(self):
         """Salva as configurações atuais"""
         self.user_prefer.set("last_download_path", self.download_path_entry.get())
@@ -1267,11 +1289,11 @@ class MainApplication(ctk.CTk):
         self.user_prefer.set("clear_url", self.clear_url_var.get())
         self.user_prefer.set("open_folder", self.open_folder_var.get())
         self.user_prefer.set("notify_completed", self.notify_completed_var.get())
-        self.user_prefer.save_preferences()
 
     def on_closing(self):
         """Chamado quando a janela é fechada"""
         self.save_current_settings()
+        self.user_prefer.save_preferences()
         self.quit()
 
     def reset_download_path(self):
@@ -1279,20 +1301,19 @@ class MainApplication(ctk.CTk):
         self.download_path_entry.delete(0, "end")
         self.download_path_entry.insert(0, path)
 
-    # Muda as opções de extensão de acordo do tipo de multimida selecionado
     def media_selected(self, valor, init=False):
-        if valor in self.localized_audio:
-            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
-            self.qualidade_menu.configure(state="disabled")
-            if not init:
-                self.user_prefer.set("last_format_video", self.formato_var.get())
-                self.formato_var.set(self.user_prefer.get("last_format_audio"))
-        elif valor in self.localized_video:
+        if valor == self.translator.get_text("video"):
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
             self.qualidade_menu.configure(state="normal")
             if not init:
                 self.user_prefer.set("last_format_audio", self.formato_var.get())
                 self.formato_var.set(self.user_prefer.get("last_format_video"))
+        elif valor == self.translator.get_text("audio"):
+            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
+            self.qualidade_menu.configure(state="disabled")
+            if not init:
+                self.user_prefer.set("last_format_video", self.formato_var.get())
+                self.formato_var.set(self.user_prefer.get("last_format_audio"))
 
     def call_download(self, type: str):
         self.disable_button()
@@ -1371,9 +1392,14 @@ class MainApplication(ctk.CTk):
 
     # Mostra mensagem de sucesso
     def show_checkmark(self, message):
-        CTkMessagebox(
-            title=self.translator.get_text("success")[1], message=message, icon="check"
+        msg = CTkMessagebox(
+            title=self.translator.get_text("success")[1],
+            message=message,
+            icon="check",
+            wraplength=400,
+            sound=self.sound_notification_var.get(),
         )
+        msg.get()
 
     def show_update_available(self, update_info):
         title = self.translator.get_text("popup_update_title")
@@ -1399,24 +1425,25 @@ class MainApplication(ctk.CTk):
     def ffmpeg_popup(self):
         title = self.translator.get_text("popup_ffmpeg_title")
         text = self.translator.get_text("popup_ffmpeg_msg")
-        option = list(self.translator.get_text("popup_ffmpeg_options").keys())
+        option = self.translator.get_text("popup_ffmpeg_options")
 
         msg = CTkMessagebox(
             width=600,
             title=title,
             message=text,
             icon="warning",
-            option_1=option[0],
-            option_2=option[1],
-            option_3=option[2],
+            wraplength=500,
+            option_1=option["ffmpeg_path"],
+            option_2=option["chocolatey"],
+            option_3=option["manually"],
         )
         response = msg.get()
 
-        if response == option[0]:
+        if response == option["ffmpeg_path"]:
             self.ffmpeg_path_select()
-        elif response == option[1]:
+        elif response == option["chocolatey"]:
             self.open_link("https://community.chocolatey.org/packages/ffmpeg")
-        elif response == option[2]:
+        elif response == option["manually"]:
             self.open_link(
                 "https://github.com/EasyTuber/EasyTuber?tab=readme-ov-file#-pr%C3%A9-requisitos"
             )
@@ -1432,6 +1459,68 @@ class MainApplication(ctk.CTk):
             )
         else:
             self.playlist_options_frame.pack_forget()
+
+    def reset_settings(self):
+        """Reseta todas as configurações para os valores padrão"""
+        title = self.translator.get_text("popup_reset_title")
+        message = self.translator.get_text("popup_reset_msg")
+        option = list(self.translator.get_text("popup_reset_options").keys())
+
+        msg = CTkMessagebox(
+            width=440,
+            title=title,
+            message=message,
+            icon="warning",
+            wraplength=360,
+            option_1=option[0],
+            option_2=option[1],
+        )
+        response = msg.get()
+
+        if response == option[0]:
+            # Resetar todas as configurações para o padrão
+            self.save_current_settings()
+            self.user_prefer.reset_preferences(self.translator)
+
+            # Atualizar a interface com os valores padrão
+            self.media_var.set(self.user_prefer.get("media"))
+            self.formato_var.set(self.user_prefer.get("format"))
+            self.qualidade_var.set(self.user_prefer.get("quality"))
+            self.appearance_var.set(self.user_prefer.get("appearance"))
+            self.language_var.set(
+                self.available_languages[self.user_prefer.get("language")]
+            )
+            self.sound_notification_var.set(self.user_prefer.get("sound_notification"))
+            self.clear_url_var.set(self.user_prefer.get("clear_url"))
+            self.open_folder_var.set(self.user_prefer.get("open_folder"))
+            self.notify_completed_var.set(self.user_prefer.get("notify_completed"))
+
+            # Atualizar os caminhos
+            self.ffmpeg_path_entry.delete(0, "end")
+            ffmpeg_path = get_ffmpeg_path()
+            if ffmpeg_path:
+                self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
+
+            self.default_download_path_entry.delete(0, "end")
+            self.default_download_path_entry.insert(
+                0, self.user_prefer.get("default_download_path")
+            )
+
+            self.download_path_entry.delete(0, "end")
+            self.download_path_entry.insert(
+                0, self.user_prefer.get("default_download_path")
+            )
+
+            # Atualizar aparência
+            ctk.set_appearance_mode(
+                self.translator.get_text("appearance_values")[self.appearance_var.get()]
+            )
+
+            # Mostrar mensagem de sucesso após um pequeno delay
+            self.after(
+                100,
+                lambda: self.show_checkmark(self.translator.get_text("reset_success")),
+            )
 
     def run(self):
         self.mainloop()

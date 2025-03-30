@@ -69,13 +69,14 @@ class UserPreferences:
         # Load preferences or create them if they don't exist
         self.config = self.load_preferences()
 
-    def reset_config(self):
+    def reset_preferences(self, translator):
         """
         Resets user preferences to default values while preserving critical settings.
 
         This function preserves important settings such as:
         - FFmpeg path
         - Download directory
+        - Language
         - Other critical configurations that should not be lost
 
         Returns:
@@ -86,6 +87,23 @@ class UserPreferences:
             critical_values = {
                 "ffmpeg_path": self.config.get("ffmpeg_path", ""),
                 "default_download_path": self.config.get("default_download_path", ""),
+                "language": self.config.get("language", ""),
+            }
+
+            appearence_key = translator.get_key_by_value(
+                translator.get_text("appearance_values", "pt_BR"),
+                self.default_config.get("appearance"),
+            )
+
+            media_key = translator.get_key_by_value(
+                translator.get_text("media_values", "pt_BR"),
+                self.default_config.get("media"),
+            )
+
+            # Translate values
+            translate_values = {
+                "media": translator.get_text("media_values")[media_key],
+                "appearance": translator.get_text("appearance_values")[appearence_key],
             }
 
             # Reset to default configuration
@@ -95,6 +113,9 @@ class UserPreferences:
             for key, value in critical_values.items():
                 if value:  # Only restore if value exists
                     self.config[key] = value
+
+            for key, value in translate_values.items():
+                self.config[key] = value
 
             # Save the new configuration
             self.save_preferences()

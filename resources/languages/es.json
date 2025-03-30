@@ -7,12 +7,12 @@
     "app_title": "EasyTuber",
     "interface": "Interfaz",
     "appearance": "Apariencia",
-    "appearance_values": {"Sistema": "System", "Claro": "Light", "Oscuro": "Dark"},
+    "appearance_values": {"System": "Sistema", "Light": "Claro", "Dark": "Oscuro"},
     "language": "Idioma",
     "default_paths": "Rutas Predeterminadas",
     "popup_ffmpeg_title": "¡FFmpeg no encontrado!",
     "popup_ffmpeg_msg": "FFmpeg no encontrado. Elige una de las opciones siguientes:\n\n • Especificar ruta: Si FFmpeg ya está instalado, indica la ubicación del ejecutable\n • Instalar via Chocolatey: Instalar automáticamente usando el gestor de paquetes\n • Descargar manualmente: Abrir el sitio oficial para descargar e instalar\n\nDespués de la instalación, necesitarás especificar la ruta en la configuración.",
-    "popup_ffmpeg_options": {"Buscar ffmpeg.exe": "ffmpeg_path", "Chocolatey": "chocolatey", "Manual": "manually"},
+    "popup_ffmpeg_options": {"ffmpeg_path": "Buscar ffmpeg.exe", "chocolatey": "Chocolatey", "manually": "Manual"},
     "tabs_names": [
         "Descargar",
         "Opciones Avanzadas",
@@ -34,7 +34,7 @@
     "playlist_random": "Orden aleatorio",
     "playlist_random_tooltip": "Descargar los elementos de la playlist en orden aleatorio",
     "media_type": "Tipo de Medio",
-    "media_values": ["Video", "Audio"],
+    "media_values": {"Video":"Video", "Audio":"Audio"},
     "video": "Video",
     "audio": "Audio",
     "format": "Formato",
@@ -95,5 +95,13 @@
     "popup_update_options": {
         "Actualizar": "update",
         "Más tarde": "later"
-    }
+    },
+    "reset_settings": "Restablecer Configuración",
+    "popup_reset_title": "Restablecer Configuración",
+    "popup_reset_msg": "¿Estás seguro de que deseas restablecer todas las configuraciones a los valores predeterminados?",
+    "popup_reset_options": {
+        "Sí": "yes",
+        "No": "no"
+    },
+    "reset_success": "¡Configuración restablecida con éxito!"
 } 

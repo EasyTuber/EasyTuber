@@ -12,8 +12,11 @@ class TranslationManager:
         Args:
             app: The application instance containing the user's preferences.
         """
+        try:
+            self.user_prefer = app.user_prefer
+        except Exception as e:
+            pass
 
-        self.user_prefer = app.user_prefer
         self.languages = {}
         self.load_languages()
         self.available_languages = {v["id"]: v["name"] for v in self.languages.values()}
@@ -49,7 +52,7 @@ class TranslationManager:
                 except Exception as e:
                     print(f"Error loading translation file {filename}: {e}")
 
-    def get_text(self, key: str) -> str:
+    def get_text(self, key: str, language: str = None) -> str:
         """
         Returns the translated text based on the key and the current language.
 
@@ -59,8 +62,10 @@ class TranslationManager:
         Returns:
             str: The translated text or the key if not found.
         """
-        if key in self.languages.get(self.current_language, {}):
-            return self.languages[self.current_language][key]
+        if language is None:
+            language = self.current_language
+        if key in self.languages.get(language, {}):
+            return self.languages[language][key]
         # Fallback to the default language
         elif key in self.languages.get("pt_BR", {}):
             return self.languages["pt_BR"][key]
@@ -103,6 +108,22 @@ class TranslationManager:
 
         # Convert to a list of lists with only the translation keys
         return [list(values.values()) for values in translation_map.values()]
+
+    def get_key_by_value(self, dictionary: dict, target_value: str) -> str | None:
+        """
+        Retorna a chave correspondente a um valor específico no dicionário.
+
+        Args:
+            dictionary (dict): O dicionário a ser pesquisado.
+            target_value (str): O valor a ser procurado no dicionário.
+
+        Returns:
+            str | None: A chave correspondente ao valor, ou None se não encontrado.
+        """
+        for key, value in dictionary.items():
+            if value == target_value:
+                return key
+        return None
 
     def change_language(self, language_code: str) -> bool:
         """

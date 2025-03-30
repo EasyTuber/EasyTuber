@@ -315,8 +315,6 @@ class YoutubeDownloader:
                 if self.root.open_folder_var.get():
                     os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
                 if self.root.notify_completed_var.get():
-                    if self.root.sound_notification_var.get():
-                        play_sound(True)
                     self.root.show_checkmark(self.translator.get_text("success")[0])
 
             else:

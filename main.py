@@ -26,9 +26,11 @@ def main():
         pass
 
     app = MainApplication()
-    ctk.set_appearance_mode(
-        app.translator.get_text("appearance_values")[app.user_prefer.get("appearance")]
+    appearance_key = app.translator.get_key_by_value(
+        app.translator.get_text("appearance_values"),
+        app.user_prefer.get("appearance"),
     )
+    ctk.set_appearance_mode(appearance_key)
     app.run()
 
 
