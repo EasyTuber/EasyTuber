@@ -9,7 +9,7 @@ class DefaultConfig:
         self.APP_NAME = "EasyTuber"
         self.APP_VERSION = "2.3.0"
         self.APP_AUTHOR = "Gabriel Frais"
-        self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
+        self.APP_DESCRIPTION = "EasyTuber é um aplicativo intuitivo que permite baixar vídeos e áudios do YouTube com facilidade. Com uma interface simples e eficiente, você pode salvar seus conteúdos favoritos em poucos cliques, sem complicações."
         self.APP_LICENSE = "GPLv3"
         self.APP_WEBSITE = "https://github.com/EasyTuber/EasyTuber"
         self.APP_REPO_OWNER = "EasyTuber"
