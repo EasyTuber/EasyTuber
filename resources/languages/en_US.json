@@ -12,7 +12,7 @@
     "default_paths" : "Default Paths",
     "popup_ffmpeg_title": "FFmpeg not found!",
     "popup_ffmpeg_msg": "FFmpeg not found. Choose one of the options below:\n\n • Specify path: If FFmpeg is already installed, indicate the location of the executable\n • Install via Chocolatey: Install automatically using the package manager\n • Download manually: Open the official website for download and installation\n\nAfter installation, you'll need to specify the path in the settings.",
-    "popup_ffmpeg_options": {"Search for ffmpeg.exe": "ffmpeg_path", "Chocolatey": "chocolatey", "Manually": "manually"},
+    "popup_ffmpeg_options": {"ffmpeg_path": "Search for ffmpeg.exe", "chocolatey": "Chocolatey", "manually": "Manually"},
     "download": "Download",
     "advanced_options": "Advanced Options",
     "settings": "Settings",
@@ -28,7 +28,7 @@
     "playlist_random": "Random order",
     "playlist_random_tooltip": "Download the playlist items in random order",
     "media_type": "Media Type",
-    "media_values": ["Video","Audio"],
+    "media_values": {"Video":"Video", "Audio":"Audio"},
     "video": "Video",
     "audio": "Audio",
     "format": "Format",
@@ -89,5 +89,13 @@
     "popup_update_options":{
         "Update":"update",
         "Later":"later"
-    }
+    },
+    "reset_settings": "Reset Settings",
+    "popup_reset_title": "Reset Settings",
+    "popup_reset_msg": "Are you sure you want to reset all settings to default?",
+    "popup_reset_options": {
+        "Yes": "yes",
+        "No": "no"
+    },
+    "reset_success": "Settings reset successfully!"
 }

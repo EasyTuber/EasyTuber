@@ -5,7 +5,7 @@
 Aplicativo: EasyTuber
 Descrição: Faça download de vídeos e áudios do Youtube
 Autor: Gabriel Frais
-Versão: 2.2.0
+Versão: 2.3.0
 """
 
 from interface import MainApplication
@@ -26,9 +26,7 @@ def main():
         pass
 
     app = MainApplication()
-    ctk.set_appearance_mode(
-        app.translator.get_text("appearance_values")[app.user_prefer.get("appearance")]
-    )
+    ctk.set_appearance_mode(app.user_prefer.get("appearance"))
     app.run()
 
 

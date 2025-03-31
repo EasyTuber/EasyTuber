@@ -1,5 +1,5 @@
 import os
-from .utils import read_config, save_config, get_ffmpeg_path
+from .utils import read_config, save_config, get_ffmpeg_path, get_executable_dir
 
 
 class DefaultConfig:
@@ -7,9 +7,9 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "2.1.0"
+        self.APP_VERSION = "2.3.0"
         self.APP_AUTHOR = "Gabriel Frais"
-        self.APP_DESCRIPTION = "Faça download de vídeos e áudios do Youtube"
+        self.APP_DESCRIPTION = "EasyTuber é um aplicativo intuitivo que permite baixar vídeos e áudios do YouTube com facilidade. Com uma interface simples e eficiente, você pode salvar seus conteúdos favoritos em poucos cliques, sem complicações."
         self.APP_LICENSE = "GPLv3"
         self.APP_WEBSITE = "https://github.com/EasyTuber/EasyTuber"
         self.APP_REPO_OWNER = "EasyTuber"
@@ -45,14 +45,14 @@ class UserPreferences:
         """
         # Default configuration values
         self.default_config = {
-            "default_download_path": os.path.expanduser("~/Downloads").replace(
-                "\\", "/"
-            ),
+            "default_download_path": os.path.join(
+                get_executable_dir(), "Downloads"
+            ).replace("\\", "/"),
             "language": "pt_BR",  # Default language (Portuguese)
-            "media": "Vídeo",  # Default media type
+            "media": "Video",  # Default media type
             "format": "mp4",  # Default media format
             "quality": "1080p",  # Default quality
-            "appearance": "Sistema",  # Default appearance setting
+            "appearance": "System",  # Default appearance setting
             "sound_notification": True,  # Default sound notification
             "open_folder": False,  # Default open folder after download
             "clear_url": False,  # Default clear url after download
@@ -68,6 +68,41 @@ class UserPreferences:
 
         # Load preferences or create them if they don't exist
         self.config = self.load_preferences()
+
+    def reset_preferences(self, translator):
+        """
+        Resets user preferences to default values while preserving critical settings.
+
+        This function preserves important settings such as:
+        - FFmpeg path
+        - Download directory
+        - Language
+        - Other critical configurations that should not be lost
+
+        Returns:
+            bool: True if reset was successful, False otherwise
+        """
+        try:
+            # Store critical values that should be preserved
+            critical_values = {
+                "ffmpeg_path": self.config.get("ffmpeg_path", ""),
+                "default_download_path": self.config.get("default_download_path", ""),
+                "language": self.config.get("language", ""),
+            }
+
+            # Reset to default configuration
+            self.config = self.default_config.copy()
+
+            # Restore critical values
+            for key, value in critical_values.items():
+                if value:  # Only restore if value exists
+                    self.config[key] = value
+
+            # Save the new configuration
+            self.save_preferences()
+
+        except Exception as e:
+            print(f"Error resetting preferences: {e}")
 
     def load_preferences(self) -> dict:
         """

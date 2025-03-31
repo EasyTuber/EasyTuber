@@ -1,10 +1,9 @@
-converter.py
 __pycache__/
 build/
 dist/
 Teste.py
 .vscode/
-resources/config/user_preferences.json
+config/user_preferences.json
 ytdlp_test.py
 tests/
-ffmpeg.exe
+downloads/

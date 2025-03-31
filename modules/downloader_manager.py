@@ -158,7 +158,7 @@ class YoutubeDownloader:
             )
 
         # Se é audio
-        if self.options_ydlp["media"] in self.root.localized_audio:
+        if self.options_ydlp["media"] in self.translator.get_text("audio"):
             self.ydl_opts.update(
                 {
                     "format": "bestaudio/best",
@@ -315,8 +315,6 @@ class YoutubeDownloader:
                 if self.root.open_folder_var.get():
                     os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
                 if self.root.notify_completed_var.get():
-                    if self.root.sound_notification_var.get():
-                        play_sound(True)
                     self.root.show_checkmark(self.translator.get_text("success")[0])
 
             else:
@@ -342,7 +340,7 @@ class YoutubeDownloader:
         A limpeza ajuda a evitar o acúmulo de downloads incompletos.
         """
 
-        def try_remove_file(filepath, max_attempts=3):
+        def try_remove_file(filepath, max_attempts=5):
             """Tenta remover um arquivo com várias tentativas e delay."""
             for attempt in range(max_attempts):
                 try:
