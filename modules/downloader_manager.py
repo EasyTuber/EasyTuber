@@ -125,6 +125,9 @@ class YoutubeDownloader:
             "ffmpeg_location": self.options_ydlp["ffmpeg_path"],
             "quiet": True,  # Desabilita o modo quieto para receber as mensagens
             "no_warnings": True,  # Permite receber avisos
+            "outtmpl": os.path.join(
+                self.options_ydlp["download_path"], "%(title)s.%(ext)s"
+            ),
         }
 
         # TODO Work in Progress (Advanced)
@@ -133,10 +136,6 @@ class YoutubeDownloader:
         if self.options_ydlp["playlist"]:
             self.ydl_opts.update(
                 {
-                    "outtmpl": os.path.join(
-                        self.options_ydlp["download_path"],
-                        "%(playlist)s/%(playlist_autonumber)s - %(title)s.%(ext)s",
-                    ),  # Cria pasta com nome da playlist # TODO colocar como opcional
                     "ignoreerrors": True,  # Continua mesmo se um vídeo falhar
                     "playlist": True,
                     "yes_playlist": True,
@@ -151,11 +150,13 @@ class YoutubeDownloader:
             # Se especificado o aleatório da playlist
             if self.options_ydlp["playlist_random"]:
                 self.ydl_opts["playlistrandom"] = self.options_ydlp["playlist_random"]
-
-        else:
-            self.ydl_opts["outtmpl"] = os.path.join(
-                self.options_ydlp["download_path"], "%(title)s.%(ext)s"
-            )
+            if self.options_ydlp["playlist_folder"]:
+                self.ydl_opts["outtmpl"] = (
+                    os.path.join(
+                        self.options_ydlp["download_path"],
+                        "%(playlist)s/%(title)s.%(ext)s",
+                    ),
+                )  # Cria pasta com nome da playlist
 
         # Se é audio
         if self.options_ydlp["media"] in self.translator.get_text("audio"):
@@ -336,8 +337,6 @@ class YoutubeDownloader:
         - Arquivos .part (downloads parciais)
         - Arquivos .ytdl (arquivos temporários do YouTube-DL)
         - Arquivos vazios (0 bytes)
-
-        A limpeza ajuda a evitar o acúmulo de downloads incompletos.
         """
 
         def try_remove_file(filepath, max_attempts=5):

@@ -465,6 +465,27 @@ class MainApplication(ctk.CTk):
             follow=False,
         )
 
+        # Playlist Folder
+        self.playlist_folder_var = ctk.BooleanVar(value=False)
+        self.playlist_folder_check = ctk.CTkCheckBox(
+            self.playlist_options_frame,
+            text=self.translator.get_text("playlist_folder"),
+            variable=self.playlist_folder_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.playlist_folder_check.pack(side="left", expand=True)
+
+        self.playlist_folder_tooltip = CTkToolTip(
+            self.playlist_folder_check,
+            message=self.translator.get_text("playlist_folder_tooltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
+
         # Inicialmente esconde as opções
         self.playlist_options_frame.pack_forget()
         # endregion
@@ -1170,6 +1191,9 @@ class MainApplication(ctk.CTk):
         self.playlist_random_check.configure(
             text=self.translator.get_text("playlist_random")
         )
+        self.playlist_folder_check.configure(
+            text=self.translator.get_text("playlist_folder")
+        )
         self.playlist_items_tooltip.configure(
             message=self.translator.get_text("playlist_items_tooltip")
         )
@@ -1178,6 +1202,9 @@ class MainApplication(ctk.CTk):
         )
         self.playlist_random_tooltip.configure(
             message=self.translator.get_text("playlist_random_tooltip")
+        )
+        self.playlist_folder_tooltip.configure(
+            message=self.translator.get_text("playlist_folder_tooltip")
         )
 
         self.media_label.configure(text=self.translator.get_text("media_type"))
@@ -1370,6 +1397,7 @@ class MainApplication(ctk.CTk):
                         ),
                         "playlist_reverse": bool(self.playlist_reverse_var.get()),
                         "playlist_random": bool(self.playlist_random_var.get()),
+                        "playlist_folder": bool(self.playlist_folder_var.get()),
                     }
                 )
             elif type == "advanced":
