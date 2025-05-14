@@ -6,8 +6,9 @@ import re
 import subprocess
 import threading
 import winsound
-from PIL import Image
+from PIL import Image, ImageTk
 from io import BytesIO
+import urllib.request
 from typing import Literal
 
 
@@ -299,3 +300,9 @@ def get_ffmpeg_path() -> str:
 
     # If the executable is still not found, return None
     return None
+
+
+def get_thumbnail_img(url):
+    with urllib.request.urlopen(url) as u:
+        raw_data = u.read()
+    return BytesIO(raw_data)

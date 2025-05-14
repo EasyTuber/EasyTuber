@@ -15,6 +15,7 @@ from modules import (
     get_ffmpeg_path,
     play_sound,
     center_window,
+    get_thumbnail_img,
 )
 
 
@@ -182,7 +183,6 @@ class MainApplication(ctk.CTk):
         self.url1_var = ctk.StringVar()
         self.url2_var = ctk.StringVar()
 
-        # TODO Work in Progress (Advanced)
         # Registrar os traces iniciais (com escopo global para poder removê-los)
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
         self.trace_url2 = self.url2_var.trace_add("write", self.sync_var2_to_var1)
@@ -199,6 +199,9 @@ class MainApplication(ctk.CTk):
 
         # Outras variaveis
         self.download_options = {}
+        self.info_preview = {}
+        self.info_presets = {}
+        self.audio_id = None
 
         # endregion
 
@@ -609,6 +612,29 @@ class MainApplication(ctk.CTk):
         )
         self.search_button.grid(row=0, column=2, sticky="w", padx=10)
         # endregion
+
+        self.info_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
+        self.info_frame.pack(
+            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(10, 10), padx=15
+        )
+
+        self.thumbnail_frame = ctk.CTkFrame(
+            self.info_frame,
+            fg_color="transparent",
+            border_width=2,
+            border_color=("#D03434", "#A11D1D"),
+        )
+        self.thumbnail_frame.pack(side="left", expand=True)
+
+        self.thumbnail_img = ctk.CTkImage(
+            Image.open(get_image_path("photo_icon.png")), size=(160, 90)
+        )
+        self.thumbnail_label = ctk.CTkLabel(
+            self.thumbnail_frame,
+            text="",
+            image=self.thumbnail_img,
+        )
+        self.thumbnail_label.pack()
 
         # endregion
 
@@ -1370,8 +1396,26 @@ class MainApplication(ctk.CTk):
             self.yt_dlp.start_download(type)
 
     def search(self):
+        self.info_preview = {}
+        self.info_presets = {}
+        self.audio_id = None
+
         url = self.url2_var.get()
-        self.yt_dlp.start_search(url)
+
+        def on_search_complete():
+            self.info_preview = self.yt_dlp.info_preview
+            self.info_presets = self.yt_dlp.info_presets
+            self.audio_id = self.yt_dlp.audio_id
+
+            print(self.info_preview)
+
+            self.thumbnail_img.configure(
+                light_image=Image.open(
+                    get_thumbnail_img(self.info_preview["thumbnail_url"])
+                )
+            )
+
+        self.yt_dlp.start_search(url, on_complete=on_search_complete)
 
     def restore_button(self):
         self.download_button.configure(state="normal")
