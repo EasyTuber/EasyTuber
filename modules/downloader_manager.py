@@ -2,7 +2,7 @@ import os
 from yt_dlp import YoutubeDL
 import threading
 from modules.utils import get_ffmpeg_path, play_sound
-from libs import CTkProgressPopup, CTkNotification
+from libs import CTkProgressPopup, CTkNotification, CTkLoader
 import time
 
 
@@ -36,6 +36,7 @@ class YoutubeDownloader:
     def start_download(self, type: str):
 
         self.type_download = type
+        print(f"tipo: {self.type_download}")
 
         # Janela para mostrar o donwload
         self.progress_popup = None
@@ -59,6 +60,38 @@ class YoutubeDownloader:
             target=self.download_process, daemon=True
         )
         self.download_thread.start()
+
+    def start_search(self, url):
+        self.info = []
+        self.url = url
+        loader = CTkLoader(self.root)
+
+        def search_thread_func():
+            self.search_process()
+            self.root.after(0, lambda: loader.stop_loader())
+            print(self.info)
+
+        search_thread = threading.Thread(target=search_thread_func, daemon=True)
+        search_thread.start()
+
+    def search_process(self):
+        ydl_opts = {"skip_download": True, "quiet": True, "no_warnings": True}
+
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(self.url, download=False)
+
+            # print(info)
+
+            # Criar um dicionário com as informações para preview
+            preview_data = {
+                "title": info.get("title", "Sem título"),
+                "duration": info.get("duration", 0),
+                "uploader": info.get("uploader", "Desconhecido"),
+                "thumbnail_url": info.get("thumbnail", None),
+                "view_count": info.get("view_count", 0),
+            }
+            print("\n____________________________\n")
+            self.info = preview_data
 
     def download_process(self):
         try:

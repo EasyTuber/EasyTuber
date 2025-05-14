@@ -183,11 +183,9 @@ class MainApplication(ctk.CTk):
         self.url2_var = ctk.StringVar()
 
         # TODO Work in Progress (Advanced)
-        """
         # Registrar os traces iniciais (com escopo global para poder removê-los)
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
         self.trace_url2 = self.url2_var.trace_add("write", self.sync_var2_to_var1)
-        """
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
 
@@ -246,11 +244,9 @@ class MainApplication(ctk.CTk):
             "download", self.translator.get_text("download")
         )  # Download
         # TODO Work in Progress (Advanced)
-        """
         self.tab2 = self.tabview.add(
             "advanced_options", self.translator.get_text("advanced_options")
         )  # Advanced
-        """
         self.tab3 = self.tabview.add(
             "settings", self.translator.get_text("settings")
         )  # Settings
@@ -571,7 +567,6 @@ class MainApplication(ctk.CTk):
 
         #! Advanced Options
         # TODO Work in Progress (Advanced)
-        """ 
         # region Janela de Opções Avançadas
         self.advced_frame = ctk.CTkFrame(self.tab2, fg_color="transparent")
         self.advced_frame.pack(fill="both", expand=True, pady=10)
@@ -608,7 +603,7 @@ class MainApplication(ctk.CTk):
         self.search_button = ctk.CTkButton(
             self.url2_frame,
             text=self.translator.get_text("search"),
-            command=self.call_download,
+            command=self.search,
             width=100,
             font=ctk.CTkFont(size=14),
         )
@@ -616,7 +611,6 @@ class MainApplication(ctk.CTk):
         # endregion
 
         # endregion
-        """
 
         #! Settings
         # region Janela Configurações
@@ -1095,7 +1089,6 @@ class MainApplication(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     # TODO Work in Progress (Advanced)
-    """
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -1117,7 +1110,6 @@ class MainApplication(ctk.CTk):
 
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
-    """
 
     def toggle_playlist_reverse(self):
         if self.playlist_reverse_var.get():
@@ -1331,7 +1323,7 @@ class MainApplication(ctk.CTk):
                 self.user_prefer.set("last_format_video", self.formato_var.get())
                 self.formato_var.set(self.user_prefer.get("last_format_audio"))
 
-    def call_download(self, type: str):
+    def call_download(self, type: str):  # TODO criar função só para a pesquisa
         self.disable_button()
 
         erros = []
@@ -1376,6 +1368,10 @@ class MainApplication(ctk.CTk):
                 # TODO Work in Progress (Advanced)
                 pass
             self.yt_dlp.start_download(type)
+
+    def search(self):
+        url = self.url2_var.get()
+        self.yt_dlp.start_search(url)
 
     def restore_button(self):
         self.download_button.configure(state="normal")
