@@ -16,6 +16,7 @@ from modules import (
     play_sound,
     center_window,
     get_thumbnail_img,
+    create_rounded_image,
 )
 
 
@@ -104,7 +105,7 @@ class CustomTabview(ctk.CTkFrame):
         tab_frame = ctk.CTkFrame(
             self.content_frame,
             corner_radius=10,
-            fg_color=("gray95", "gray17"),
+            fg_color=("gray90", "gray17"),
         )
 
         # Store references
@@ -586,7 +587,7 @@ class MainApplication(ctk.CTk):
         # region
         self.url2_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
         self.url2_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(10, 10), padx=15
+            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=10, padx=15
         )
         self.url2_frame.columnconfigure(1, weight=1)
 
@@ -613,28 +614,98 @@ class MainApplication(ctk.CTk):
         self.search_button.grid(row=0, column=2, sticky="w", padx=10)
         # endregion
 
-        self.info_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
-        self.info_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(10, 10), padx=15
+        self.info_frame = ctk.CTkFrame(
+            self.advced_frame_top,
+            fg_color=("gray86", "gray20"),
+            corner_radius=15,
+            height=110,
         )
+        self.info_frame.pack(
+            side="top",
+            fill="x",
+            expand=True,
+            padx=15,
+        )
+        self.info_frame.pack_propagate(False)
 
+        #! Thumbnail image
+        # region
         self.thumbnail_frame = ctk.CTkFrame(
             self.info_frame,
             fg_color="transparent",
-            border_width=2,
-            border_color=("#D03434", "#A11D1D"),
+            width=160,
+            height=90,
         )
-        self.thumbnail_frame.pack(side="left", expand=True)
+        self.thumbnail_frame.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="w")
+        self.thumbnail_frame.grid_propagate(False)
 
-        self.thumbnail_img = ctk.CTkImage(
-            Image.open(get_image_path("photo_icon.png")), size=(160, 90)
-        )
+        self.default_thumbnail = Image.open(get_image_path("photo_icon.png"))
+        self.thumbnail_img = ctk.CTkImage(self.default_thumbnail, size=(160, 90))
+
         self.thumbnail_label = ctk.CTkLabel(
             self.thumbnail_frame,
             text="",
             image=self.thumbnail_img,
         )
-        self.thumbnail_label.pack()
+        self.thumbnail_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        # endregion
+
+        #! Texto e detalhes
+        self.info_search_frame = ctk.CTkFrame(
+            self.info_frame,
+            fg_color="transparent",
+        )
+        self.info_search_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.info_frame.columnconfigure(1, weight=1)
+
+        self.info_search_frame.grid_propagate(False)
+
+        # Titulo
+        self.details_search_frame = ctk.CTkFrame(
+            self.info_search_frame,
+            fg_color="transparent",
+        )
+        self.details_search_frame.pack(expand=True, fill="both")
+
+        self.details_title_label = ctk.CTkLabel(
+            self.details_search_frame,
+            text=self.translator.get_text("search_title"),
+            font=ctk.CTkFont(weight="bold"),
+            wraplength=420,
+            justify="left",
+            anchor="w",
+        )
+        self.details_title_label.pack(side="top", fill="x", anchor="w")
+
+        # Linha com canal e visualizações
+        self.channel_and_views_frame = ctk.CTkFrame(
+            self.details_search_frame,
+            fg_color="transparent",
+        )
+        self.channel_and_views_frame.pack(side="top", fill="x", pady=(2, 0))
+
+        self.details_channel_label = ctk.CTkLabel(
+            self.channel_and_views_frame,
+            text=self.translator.get_text("search_channel"),
+            anchor="w",
+        )
+        self.details_channel_label.pack(side="left", fill="x", expand=True)
+
+        self.view_icon = ctk.CTkImage(
+            light_image=Image.open(get_image_path("view_light.png")),
+            dark_image=Image.open(get_image_path("view_dark.png")),
+            size=(16, 16),
+        )
+
+        self.details_view_label = ctk.CTkLabel(
+            self.channel_and_views_frame,
+            text="0 ",
+            anchor="e",
+            image=self.view_icon,
+            compound="right",
+        )
+        self.details_view_label.pack(side="right")
 
         # endregion
 
@@ -1114,7 +1185,6 @@ class MainApplication(ctk.CTk):
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-    # TODO Work in Progress (Advanced)
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -1221,6 +1291,26 @@ class MainApplication(ctk.CTk):
         self.download_path_button.configure(
             text=self.translator.get_text("select_folder")
         )
+
+        # endregion
+
+        # region Traduzir Avançado
+
+        self.search_button.configure(text=self.translator.get_text("search"))
+
+        if self.details_title_label.cget("text") in self.translator.get_translates(
+            "search_title"
+        ):
+            self.details_title_label.configure(
+                text=self.translator.get_text("search_title")
+            )
+
+        if self.details_channel_label.cget("text") in self.translator.get_translates(
+            "search_channel"
+        ):
+            self.details_channel_label.configure(
+                text=self.translator.get_text("search_channel")
+            )
 
         # endregion
 
@@ -1407,13 +1497,25 @@ class MainApplication(ctk.CTk):
             self.info_presets = self.yt_dlp.info_presets
             self.audio_id = self.yt_dlp.audio_id
 
+            thumbnail_url = self.info_preview["thumbnail_url"]
+            duration_url = self.info_preview["duration"]
+
+            if thumbnail_url in "youtube":
+                thumbnail_url = f"https://img.youtube.com/vi/{thumbnail_url.split("?v=", 1)[1]}/mqdefault.jpg"
+
             print(self.info_preview)
 
             self.thumbnail_img.configure(
-                light_image=Image.open(
-                    get_thumbnail_img(self.info_preview["thumbnail_url"])
-                )
+                light_image=get_thumbnail_img(thumbnail_url, duration_url)
             )
+
+            titulo = self.truncate_text(self.info_preview["title"])
+
+            self.details_title_label.configure(text=titulo)
+            self.details_channel_label.configure(text=self.info_preview["uploader"])
+
+            view_count = self.format_views(self.info_preview["view_count"])
+            self.details_view_label.configure(text=f"{view_count} ")
 
         self.yt_dlp.start_search(url, on_complete=on_search_complete)
 
@@ -1581,6 +1683,17 @@ class MainApplication(ctk.CTk):
                 100,
                 lambda: self.show_checkmark(self.translator.get_text("reset_success")),
             )
+
+    def truncate_text(self, text, max_chars=100):
+        return text[: max_chars - 3] + "..." if len(text) > max_chars else text
+
+    def format_views(self, count):
+        if count >= 1_000_000:
+            return f"{count / 1_000_000:.2f}M"
+        elif count >= 1_000:
+            return f"{count / 1_000:.2f}K"
+        else:
+            return str(count)
 
     def run(self):
         self.mainloop()

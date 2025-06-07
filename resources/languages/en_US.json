@@ -97,5 +97,7 @@
         "Yes": "yes",
         "No": "no"
     },
-    "reset_success": "Settings reset successfully!"
+    "reset_success": "Settings reset successfully!",
+    "search_title": "Title",
+    "search_channel": "Channel"
 }

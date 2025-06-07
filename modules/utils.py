@@ -6,7 +6,7 @@ import re
 import subprocess
 import threading
 import winsound
-from PIL import Image, ImageTk
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import urllib.request
 from typing import Literal
@@ -302,7 +302,105 @@ def get_ffmpeg_path() -> str:
     return None
 
 
-def get_thumbnail_img(url):
+def get_thumbnail_img(url, duration=None):
     with urllib.request.urlopen(url) as u:
         raw_data = u.read()
-    return BytesIO(raw_data)
+    img = Image.open(BytesIO(raw_data)).convert("RGBA")
+    img = img.resize((160, 90), Image.Resampling.LANCZOS)
+
+    # Se for passado o tempo, adiciona sobre a imagem
+    if duration:
+        overlay = Image.new("RGBA", img.size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Tenta usar Arial ou fallback para fonte padrão
+        try:
+            font = ImageFont.truetype("arial.ttf", 12)
+        except:
+            font = ImageFont.load_default()
+
+        # Formata o tempo
+        tempo_texto = format_time(int(duration))
+        bbox = draw.textbbox((0, 0), tempo_texto, font=font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
+
+        padding = 5
+        margin = 5
+
+        x = img.width - text_w - 2 * padding - margin
+        y = img.height - text_h - 2 * padding - margin
+
+        # Fundo arredondado opcional:
+        draw.rounded_rectangle(
+            [x, y, x + text_w + 2 * padding, y + text_h + 2 * padding],
+            radius=4,
+            fill=(0, 0, 0, 200),
+        )
+
+        # Texto centralizado dentro do fundo
+        draw.text(
+            (x + padding, y + padding - bbox[1]),
+            tempo_texto,
+            font=font,
+            fill=(255, 255, 255, 255),
+        )
+
+        # Combina o overlay com a imagem original
+        img = Image.alpha_composite(img, overlay)
+
+    rounded_img = create_rounded_image(img)
+    return rounded_img
+
+
+def create_rounded_image(image_path_or_object, corner_radius=10):
+    """
+    Cria uma imagem com cantos arredondados
+
+    Args:
+        image_path_or_object: Caminho para imagem ou objeto PIL Image
+        corner_radius: Raio dos cantos arredondados
+        size: Tamanho final da imagem (width, height)
+
+    Returns:
+        Objeto PIL Image com cantos arredondados
+    """
+    from PIL import Image, ImageDraw
+
+    # Abrir a imagem se um caminho foi fornecido
+    if isinstance(image_path_or_object, str):
+        img = Image.open(image_path_or_object)
+    else:
+        img = image_path_or_object
+
+    # Criar uma imagem vazia com canal alfa (transparência)
+    width, height = img.size
+    mask = Image.new("L", (width, height), 0)
+    draw = ImageDraw.Draw(mask)
+
+    # Desenhar um retângulo com cantos arredondados
+    draw.rounded_rectangle([(0, 0), (width, height)], corner_radius, fill=255)
+
+    # Aplicar a máscara
+    result = img.copy()
+    result.putalpha(mask)
+
+    return result
+
+
+def format_time(seconds: int):
+    """Formata o tempo em segundos para minutos e horas
+
+    Args:
+        seconds (int): Tempo do video em segundos
+
+    Returns:
+        Retorna o valor em horas ou minutos
+    """
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    if hours > 0:
+        return f"{hours}:{minutes:02}:{seconds:02}"
+    else:
+        return f"{minutes}:{seconds:02}"

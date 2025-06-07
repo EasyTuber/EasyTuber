@@ -103,5 +103,7 @@
         "Sí": "yes",
         "No": "no"
     },
-    "reset_success": "¡Configuración restablecida con éxito!"
+    "reset_success": "¡Configuración restablecida con éxito!",
+    "search_title": "Título",
+    "search_channel": "Canal"
 } 
