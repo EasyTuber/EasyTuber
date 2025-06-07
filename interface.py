@@ -575,20 +575,10 @@ class MainApplication(ctk.CTk):
         self.advced_frame = ctk.CTkFrame(self.tab2, fg_color="transparent")
         self.advced_frame.pack(fill="both", expand=True, pady=10)
 
-        self.advced_frame_top = ctk.CTkFrame(self.advced_frame, fg_color="transparent")
-        self.advced_frame_top.pack(side="top", fill="both")
-
-        self.advced_frame_bottom = ctk.CTkFrame(
-            self.advced_frame, fg_color="transparent"
-        )
-        self.advced_frame_bottom.pack(side="bottom", fill="x")
-
         #! Frame de url
         # region
-        self.url2_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
-        self.url2_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=10, padx=15
-        )
+        self.url2_frame = ctk.CTkFrame(self.advced_frame, fg_color="transparent")
+        self.url2_frame.pack(side="top", fill="x", expand=True, ipadx=5, padx=15)
         self.url2_frame.columnconfigure(1, weight=1)
 
         self.url2_label = ctk.CTkLabel(self.url2_frame, text="Url:", font=("Arial", 14))
@@ -614,8 +604,20 @@ class MainApplication(ctk.CTk):
         self.search_button.grid(row=0, column=2, sticky="w", padx=10)
         # endregion
 
+        self.info_scrollframe = ctk.CTkScrollableFrame(
+            self.advced_frame,
+            fg_color="transparent",
+        )
+        self.info_scrollframe.pack(
+            side="top",
+            fill="both",
+            expand=True,
+            padx=10,
+        )
+
+        # region Informações da url
         self.info_frame = ctk.CTkFrame(
-            self.advced_frame_top,
+            self.info_scrollframe,
             fg_color=("gray86", "gray20"),
             corner_radius=15,
             height=110,
@@ -624,7 +626,7 @@ class MainApplication(ctk.CTk):
             side="top",
             fill="x",
             expand=True,
-            padx=15,
+            padx=5,
         )
         self.info_frame.pack_propagate(False)
 
@@ -706,6 +708,35 @@ class MainApplication(ctk.CTk):
             compound="right",
         )
         self.details_view_label.pack(side="right")
+        # endregion
+
+        self.format_frame = ctk.CTkFrame(
+            self.info_scrollframe,
+            fg_color=("gray86", "gray20"),
+            corner_radius=15,
+        )
+        self.format_frame.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+
+        self.format_presets_frame = ctk.CTkFrame(
+            self.format_frame, fg_color="transparent"
+        )
+        self.format_presets_frame.pack(side="top", expand=True, padx=5)
+
+        self.format_presets_label = ctk.CTkLabel(
+            self.format_presets_frame, text=self.translator.get_text("formats_detected")
+        )
+        self.format_presets_label.grid(row=0, column=0, padx=(0, 5), sticky="ew")
+
+        self.format_presets_var = ctk.StringVar(value=None)
+        self.format_presets_OptionMenu = ctk.CTkOptionMenu(
+            self.format_presets_frame,
+            dynamic_resizing=False,
+            values="",
+            variable=self.format_presets_var,
+            width=180,
+            state="disabled",
+        )
+        self.format_presets_OptionMenu.grid(row=0, column=1, sticky="ew")
 
         # endregion
 
@@ -1312,6 +1343,20 @@ class MainApplication(ctk.CTk):
                 text=self.translator.get_text("search_channel")
             )
 
+        self.format_presets_label.configure(
+            text=self.translator.get_text("formats_detected")
+        )
+
+        format_presets_values = self.format_presets_OptionMenu.cget("values")
+        if format_presets_values:
+            format_presets_values[0] = self.translator.get_text("formats_custom")
+            self.format_presets_OptionMenu.configure(values=format_presets_values)
+
+            if self.format_presets_var.get() in self.translator.get_translates(
+                "formats_custom"
+            ):
+                self.format_presets_var.set(self.translator.get_text("formats_custom"))
+
         # endregion
 
         # region Traduzir Config
@@ -1503,8 +1548,6 @@ class MainApplication(ctk.CTk):
             if thumbnail_url in "youtube":
                 thumbnail_url = f"https://img.youtube.com/vi/{thumbnail_url.split("?v=", 1)[1]}/mqdefault.jpg"
 
-            print(self.info_preview)
-
             self.thumbnail_img.configure(
                 light_image=get_thumbnail_img(thumbnail_url, duration_url)
             )
@@ -1516,6 +1559,15 @@ class MainApplication(ctk.CTk):
 
             view_count = self.format_views(self.info_preview["view_count"])
             self.details_view_label.configure(text=f"{view_count} ")
+
+            desc_list = [self.translator.get_text("formats_custom")] + [
+                item["desc"] for item in self.info_presets
+            ]
+            self.format_presets_OptionMenu.configure(
+                values=desc_list,
+                state="normal",
+            )
+            self.format_presets_var.set(desc_list[1])
 
         self.yt_dlp.start_search(url, on_complete=on_search_complete)
 

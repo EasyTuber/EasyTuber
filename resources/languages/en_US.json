@@ -99,5 +99,7 @@
     },
     "reset_success": "Settings reset successfully!",
     "search_title": "Title",
-    "search_channel": "Channel"
+    "search_channel": "Channel",
+    "formats_detected": "Detected Formats",
+    "formats_custom": "Custom..."
 }

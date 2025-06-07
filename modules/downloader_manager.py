@@ -138,7 +138,7 @@ class YoutubeDownloader:
             }
 
             video_format["desc"] = (
-                f"{video_format['resolucao']}p_{video_format['vcodec']}_{video_format['FPS']}FPS.{video_format['ext']}"
+                f"{video_format['resolucao']}p {video_format['vcodec']} {video_format['FPS']}FPS.{video_format['ext']}"
             )
             presets.append(video_format)
 
