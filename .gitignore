@@ -7,3 +7,4 @@ config/user_preferences.json
 ytdlp_test.py
 tests/
 downloads/
+Testes.ipynb

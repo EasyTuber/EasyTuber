@@ -21,4 +21,9 @@ sys.path.append(libs_path)
 from ctk_components import CTkAlert, CTkNotification, CTkProgressPopup
 """
 
-from .ctk_components.ctk_components import CTkAlert, CTkNotification, CTkProgressPopup
+from .ctk_components.ctk_components import (
+    CTkAlert,
+    CTkNotification,
+    CTkProgressPopup,
+    CTkLoader,
+)
