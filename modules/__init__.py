@@ -7,5 +7,7 @@ from .utils import (
     get_ffmpeg_path,
     play_sound,
     center_window,
+    get_thumbnail_img,
+    create_rounded_image,
 )
 from .update_checker import UpdateChecker

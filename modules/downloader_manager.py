@@ -1,8 +1,9 @@
+import json
 import os
 from yt_dlp import YoutubeDL
 import threading
 from modules.utils import get_ffmpeg_path, play_sound
-from libs import CTkProgressPopup, CTkNotification
+from libs import CTkProgressPopup, CTkNotification, CTkLoader
 import time
 
 
@@ -20,7 +21,6 @@ class YoutubeDownloader:
         self.translator = root.translator
         self.ydl_opts = {}
         self.resolutions_available = set()
-        self.info = []
         self.resolutions_list = []
         self.options_ydlp = {}
         self.url = ""
@@ -29,6 +29,12 @@ class YoutubeDownloader:
         self.total_videos = 0
         self.current_video = 0
 
+        # Constantes para o avançado
+        self.info_preview = []
+        self.info_presets = []
+        self.audio_id = None
+        self.search_concluded = False
+
         # Flag para controlar o cancelamento
         self.cancel_download = threading.Event()
         self.download_thread = None
@@ -36,6 +42,7 @@ class YoutubeDownloader:
     def start_download(self, type: str):
 
         self.type_download = type
+        print(f"tipo: {self.type_download}")
 
         # Janela para mostrar o donwload
         self.progress_popup = None
@@ -59,6 +66,87 @@ class YoutubeDownloader:
             target=self.download_process, daemon=True
         )
         self.download_thread.start()
+
+    def start_search(self, url, on_complete=None):
+        self.info_preview.clear()
+        self.info_presets.clear()
+        self.audio_id = None
+        self.url = url
+        self.search_concluded = False
+
+        loader = CTkLoader(self.root)
+
+        def search_thread_func():
+            self.search_process()
+            self.root.after(0, lambda: loader.stop_loader())
+
+            if self.search_concluded:
+                self.root.after(0, on_complete)
+
+        search_thread = threading.Thread(target=search_thread_func, daemon=True)
+        search_thread.start()
+
+    def search_process(self):
+        ydl_opts = {"skip_download": True, "quiet": True, "no_warnings": True}
+
+        with YoutubeDL(ydl_opts) as ydl:
+            data = ydl.extract_info(self.url, download=False)
+
+            # Criar um dicionário com as informações para preview
+            preview_data = {
+                "title": data.get("title", "Sem título"),
+                "duration": data.get("duration", 0),
+                "uploader": data.get("uploader", "Desconhecido"),
+                "thumbnail_url": data.get("thumbnail", None),
+                "view_count": data.get("view_count", 0),
+            }
+            self.info_preview = preview_data
+            self.extract_video_formats(data)
+            self.search_concluded = True
+
+    def extract_video_formats(self, data):
+        codec_map = {"vp09": "VP9", "avc": "H.264", "av01": "AV1", "vp8": "VP8"}
+
+        audio_id = None
+        for item in data.get("formats", []):
+            if (
+                item.get("resolution") == "audio only"
+                and item.get("format_note") == "Default, high"
+            ):
+                audio_id = item.get("format_id")
+                break
+
+        presets = []
+        for item in data.get("formats", []):
+            if item.get("video_ext") == "none":
+                continue
+
+            vcodec_id = item.get("vcodec", "")
+            vcodec = next(
+                (codec_map[key] for key in codec_map if key in vcodec_id), "Unknown"
+            )
+
+            if not all(k in item for k in ["format_id", "height", "video_ext", "fps"]):
+                continue
+
+            video_format = {
+                "id": item["format_id"],
+                "resolucao": int(item["height"]),
+                "ext": item["video_ext"],
+                "vcodec": vcodec,
+                "FPS": int(item["fps"]),
+            }
+
+            video_format["desc"] = (
+                f"{video_format['resolucao']}p {video_format['vcodec']} {video_format['FPS']}FPS.{video_format['ext']}"
+            )
+            presets.append(video_format)
+
+        # Ordenar por resolução (decrescente) e FPS (decrescente)
+        presets.sort(key=lambda x: (x["resolucao"], x["FPS"]), reverse=True)
+
+        self.info_presets = presets
+        self.audio_id = audio_id
 
     def download_process(self):
         try:
