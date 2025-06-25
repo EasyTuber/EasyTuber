@@ -254,7 +254,6 @@ class MainApplication(ctk.CTk):
         self.tab1 = self.tabview.add(
             "download", self.translator.get_text("download")
         )  # Download
-        # TODO Work in Progress (Advanced)
         self.tab2 = self.tabview.add(
             "advanced_options", self.translator.get_text("advanced_options")
         )  # Advanced
@@ -744,6 +743,8 @@ class MainApplication(ctk.CTk):
             state="disabled",
         )
         self.format_presets_OptionMenu.grid(row=0, column=1, sticky="ew")
+        
+        self.format_frame.pack_forget()
 
         # endregion
 
@@ -1575,6 +1576,8 @@ class MainApplication(ctk.CTk):
                 state="normal",
             )
             self.format_presets_var.set(desc_list[1])
+            
+            self.format_frame.pack(side="top", fill="both", expand=True, padx=5, pady=5)
 
         self.yt_dlp.start_search(url, on_complete=on_search_complete)
 
