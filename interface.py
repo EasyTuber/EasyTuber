@@ -1,6 +1,7 @@
+import sys
 import webbrowser
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
@@ -196,7 +197,13 @@ class MainApplication(ctk.CTk):
         self.resizable(False, False)
         self.lift()
 
-        self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
+
+        if sys.platform.startswith("win"):
+            self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
+        else:
+            icon = ImageTk.PhotoImage(file=get_image_path("logo.png"))
+            self.after(250, lambda: self.wm_iconphoto(True, icon))
+        
 
         # Outras variaveis
         self.download_options = {}

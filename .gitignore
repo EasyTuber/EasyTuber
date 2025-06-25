@@ -8,3 +8,4 @@ ytdlp_test.py
 tests/
 downloads/
 Testes.ipynb
+.venv

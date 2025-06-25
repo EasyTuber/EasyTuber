@@ -5,11 +5,16 @@ import sys
 import re
 import subprocess
 import threading
-import winsound
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import urllib.request
 from typing import Literal
+
+import platform
+if platform.system() == "Windows":
+    import winsound
+else:
+    winsound = None
 
 
 def center_window(root, width: int, height: int) -> None:
@@ -28,12 +33,17 @@ def center_window(root, width: int, height: int) -> None:
 
 
 def play_sound(success: bool) -> None:
-    """Plays a notification sound.
+    """Plays a notification sound. (only on Windows)
 
     Args:
         success (bool): If True, plays the 'SystemAsterisk' sound.
                         If False, plays the 'SystemHand' sound.
     """
+    
+    if winsound is None:
+        print("Som não suportado neste sistema.")
+        return
+    
     sound = "SystemAsterisk" if success else "SystemHand"
 
     def play_in_thread():
