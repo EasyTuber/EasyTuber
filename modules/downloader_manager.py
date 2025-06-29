@@ -17,7 +17,7 @@ class YoutubeDownloader:
         root : ctk.CTk
             The main application window
         """
-        self.root = root
+        self.app = root
         self.translator = root.translator
         self.ydl_opts = {}
         self.resolutions_available = set()
@@ -39,15 +39,16 @@ class YoutubeDownloader:
         self.cancel_download = threading.Event()
         self.download_thread = None
 
-    def start_download(self, type: str):
+    def start_download(self, type: str, download_options: dict = None):
 
         self.type_download = type
-        print(f"tipo: {self.type_download}")
+        self.options_ydlp.clear()
+        self.options_ydlp = download_options
 
         # Janela para mostrar o donwload
         self.progress_popup = None
         self.progress_popup = CTkProgressPopup(
-            master=self.root,
+            master=self.app,
             title=self.translator.get_text("downloading"),
             label=self.translator.get_text("status")[1],
             message="",
@@ -74,14 +75,14 @@ class YoutubeDownloader:
         self.url = url
         self.search_concluded = False
 
-        loader = CTkLoader(self.root)
+        loader = CTkLoader(self.app)
 
         def search_thread_func():
             self.search_process()
-            self.root.after(0, lambda: loader.stop_loader())
+            self.app.after(0, lambda: loader.stop_loader())
 
             if self.search_concluded:
-                self.root.after(0, on_complete)
+                self.app.after(0, on_complete)
 
         search_thread = threading.Thread(target=search_thread_func, daemon=True)
         search_thread.start()
@@ -180,7 +181,7 @@ class YoutubeDownloader:
                         )
                     self.progress_popup.update_progress(0.01)
                     self.progress_popup.update_message("")
-                    self.root.update_idletasks()
+                    self.app.update_idletasks()
 
                     return original_extract_info(url, download, *args, **kwargs)
 
@@ -202,9 +203,6 @@ class YoutubeDownloader:
 
     def config_options(self):
         self.ydl_opts.clear()
-        self.options_ydlp.clear()
-
-        self.options_ydlp = self.root.download_options
 
         # Configurações base comuns
         self.ydl_opts = {
@@ -282,7 +280,7 @@ class YoutubeDownloader:
             self.progress_popup.update_message(message)
             self.progress_popup.update_progress(1)
 
-        self.root.update_idletasks()
+        self.app.update_idletasks()
 
     # Atualiza a barra de progresso e o status de download
     def progress_hooks(self, d):
@@ -359,7 +357,7 @@ class YoutubeDownloader:
 
                     self.progress_popup.update_message(status_text)
 
-                self.root.update_idletasks()
+                self.app.update_idletasks()
             except Exception as e:
                 # TODO ver isso aqui
                 print(f"Erro ao atualizar progresso: {str(e)}")
@@ -382,15 +380,15 @@ class YoutubeDownloader:
             # TODO configurar caso erro
             self.progress_popup.update_label(self.translator.get_text("status")[3])
             self.progress_popup.update_progress(0)
-            self.root.download_button.configure(state="normal")
-            self.root.after(1000, lambda: self.progress_popup.cancel_task())
+            self.app.download_button.configure(state="normal")
+            self.app.after(1000, lambda: self.progress_popup.cancel_task())
 
     def update_ui_after_download(self, success=False, cancelled=False, error=None):
         # Executa na thread principal
         def update():
             if cancelled:
                 CTkNotification(
-                    master=self.root,
+                    master=self.app,
                     state="info",
                     message=self.translator.get_text("download_cancelled"),
                     side="right_bottom",
@@ -398,23 +396,23 @@ class YoutubeDownloader:
             elif success:
                 self.progress_popup.close_progress_popup()
                 # Resetar a variavel
-                if self.root.clear_url_var.get():
-                    self.root.url1_var.set("")
-                if self.root.open_folder_var.get():
+                if self.app.settings_tab.clear_url_var.get():
+                    self.app.url1_var.set("")
+                if self.app.open_folder_var.get():
                     os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
-                if self.root.notify_completed_var.get():
-                    self.root.show_checkmark(self.translator.get_text("success")[0])
+                if self.app.notify_completed_var.get():
+                    self.app.show_checkmark(self.translator.get_text("success")[0])
 
             else:
                 self.progress_popup.close_progress_popup()
-                if self.root.sound_notification_var.get():
+                if self.app.settings_tab.sound_notification_var.get():
                     play_sound(False)
-                self.root.show_error(f"Erro: {error}")
+                self.app.show_error(f"Erro: {error}")
 
             self.progress_popup = None
-            self.root.restore_button()
+            self.app.download_tab.restore_button()
 
-        self.root.after(0, update)
+        self.app.after(0, update)
 
     def cleanup_partial_downloads(self):
         """
