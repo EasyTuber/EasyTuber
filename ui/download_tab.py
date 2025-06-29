@@ -1,4 +1,3 @@
-
 import customtkinter as ctk
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
@@ -16,8 +15,20 @@ from modules import (
     play_sound,
 )
 
+
 class DownloadTab(ctk.CTkFrame):
-    def __init__(self, master, app: 'MainApplication', translator, user_prefer, yt_dlp, default_config, advanced_tab: 'AdvancedTab', settings_tab: 'SettingsTab', **kwargs):
+    def __init__(
+        self,
+        master,
+        app: "MainApplication",
+        translator,
+        user_prefer,
+        yt_dlp,
+        default_config,
+        advanced_tab: "AdvancedTab",
+        settings_tab: "SettingsTab",
+        **kwargs
+    ):
         super().__init__(master, **kwargs)
 
         self.translator = translator
@@ -27,7 +38,7 @@ class DownloadTab(ctk.CTkFrame):
         self.app = app
         self.advanced_tab = advanced_tab
         self.settings_tab = settings_tab
-        
+
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.pack(fill="both", expand=True, pady=10)
 
@@ -333,7 +344,7 @@ class DownloadTab(ctk.CTkFrame):
         )
         self.download_path_reset.pack(side="left", padx=(2, 0))
         # endregion
-    
+
     def call_download(self, type: str):
         self.disable_button()
 
@@ -374,7 +385,7 @@ class DownloadTab(ctk.CTkFrame):
                 }
             )
             self.yt_dlp.start_download(type, download_options)
-            
+
     def media_selected(self, valor, init=False):
         if valor == self.translator.get_text("video"):
             self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
@@ -388,7 +399,7 @@ class DownloadTab(ctk.CTkFrame):
             if not init:
                 self.user_prefer.set("last_format_video", self.formato_var.get())
                 self.formato_var.set(self.user_prefer.get("last_format_audio"))
-                
+
     def toggle_playlist_options(self):
         """Controla a visibilidade das opções avançadas de playlist"""
         if self.playlist_check_var.get():
@@ -397,7 +408,7 @@ class DownloadTab(ctk.CTkFrame):
             )
         else:
             self.playlist_options_frame.pack_forget()
-            
+
     def toggle_playlist_reverse(self):
         if self.playlist_reverse_var.get():
             self.playlist_random_check.configure(
@@ -417,12 +428,13 @@ class DownloadTab(ctk.CTkFrame):
             self.playlist_reverse_check.configure(
                 state="normal", border_color=["#3E454A", "#949A9F"]
             )
-            
+
     def reset_download_path(self):
         path = self.settings_tab.default_download_path_entry.get()
         self.download_path_entry.delete(0, "end")
         self.download_path_entry.insert(0, path)
 
+    # region Update Language
     def update_language(self):
         self.playlist_check.configure(text=self.translator.get_text("playlist"))
         self.playlist_check_tooltip.configure(
@@ -430,6 +442,9 @@ class DownloadTab(ctk.CTkFrame):
         )
         self.playlist_items_label.configure(
             text=self.translator.get_text("playlist_items")
+        )
+        self.playlist_items_entry.configure(
+            placeholder_text=self.translator.get_text("playlist_placeholder")
         )
         self.playlist_reverse_check.configure(
             text=self.translator.get_text("playlist_reverse")
@@ -470,7 +485,7 @@ class DownloadTab(ctk.CTkFrame):
         self.download_path_button.configure(
             text=self.translator.get_text("select_folder")
         )
-        
+
     def restore_button(self):
         self.download_button.configure(state="normal")
 
