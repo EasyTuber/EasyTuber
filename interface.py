@@ -266,11 +266,11 @@ class MainApplication(ctk.CTk):
         )  # About
         # endregion
         
-        self.advanced_tab = AdvancedTab(self.tab2, app=self, translator=self.translator, yt_dlp=self.yt_dlp, fg_color="transparent")
-        self.advanced_tab.pack(fill="both", expand=True)
-        
         self.settings_tab = SettingsTab(self.tab3, app=self, translator=self.translator, user_prefer=self.user_prefer, fg_color="transparent")
         self.settings_tab.pack(fill="both", expand=True)
+        
+        self.advanced_tab = AdvancedTab(self.tab2, app=self, translator=self.translator, yt_dlp=self.yt_dlp, settings_tab=self.settings_tab, fg_color="transparent")
+        self.advanced_tab.pack(fill="both", expand=True)
         
         self.about_tab = AboutTab(self.tab4, app=self, translator=self.translator, default_config=self.default_config, fg_color="transparent")
         self.about_tab.pack(fill="both", expand=True)
