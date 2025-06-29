@@ -7,6 +7,7 @@ from modules import (
     get_ffmpeg_path,
 )
 
+
 class SettingsTab(ctk.CTkFrame):
     def __init__(self, master, app, translator, user_prefer, **kwargs):
         super().__init__(master, **kwargs)
@@ -14,7 +15,7 @@ class SettingsTab(ctk.CTkFrame):
         self.translator = translator
         self.user_prefer = user_prefer
         self.app = app
-        
+
         self.settings_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.settings_frame.pack(fill="both", expand=True, pady=10)
 
@@ -95,7 +96,7 @@ class SettingsTab(ctk.CTkFrame):
             anchor="e",
         )
         self.language_label.pack(side="left")
-        
+
         self.available_languages = self.app.available_languages
 
         self.language_var = ctk.StringVar(
@@ -104,7 +105,7 @@ class SettingsTab(ctk.CTkFrame):
 
         self.language_dropdown = ctk.CTkOptionMenu(
             self.language_frame,
-            values=list(self.available_languages.values()),
+            values=sorted(list(self.available_languages.values())),
             variable=self.language_var,
             command=self.app.change_language,
             width=140,
@@ -321,7 +322,7 @@ class SettingsTab(ctk.CTkFrame):
         )
         self.reset_settings_button.pack(side="bottom", pady=10)
         # endregion
-        
+
     def ffmpeg_path_select(self):
         file_path = filedialog.askopenfilename(
             filetypes=[
@@ -332,7 +333,7 @@ class SettingsTab(ctk.CTkFrame):
         if file_path:
             self.ffmpeg_path_entry.delete(0, "end")
             self.ffmpeg_path_entry.insert(0, file_path)
-            
+
     def reset_settings(self):
         """Reseta todas as configurações para os valores padrão"""
         title = self.translator.get_text("popup_reset_title")
@@ -457,4 +458,3 @@ class SettingsTab(ctk.CTkFrame):
         self.reset_settings_button.configure(
             text=self.translator.get_text("reset_settings")
         )
-
