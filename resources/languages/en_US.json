@@ -49,7 +49,8 @@
         "Downloading information...",
         "Downloading information item {index} of {count}",
         "File completed",
-        "Item {index} of {count} completed"
+        "Item {index} of {count} completed",
+        "This may take a few minutes."
     ],
     "download_path": "Download Path:",
     "folder_path": "Folder path...",
@@ -101,5 +102,16 @@
     "search_title": "Title",
     "search_channel": "Channel",
     "formats_detected": "Detected Formats",
-    "formats_custom": "Custom..."
+    "formats_custom": "Custom...",
+    "codec_video": "Video Codec",
+    "codec_audio": "Audio Codec",
+    "compression_quality": "Compression Quality (CRF)",
+    "compression_quality_tooltip": "CRF compression value for the video. A lower value means better quality but larger file size.",
+    "compression_quality_values": ["High", "Medium", "Low"],
+    "encoding_speed": "Encoding Speed",
+    "encoding_speed_tooltip": "Sets the encoding speed for the video. A slower speed results in better quality but takes longer to process.",
+    "encoding_speed_values_h264": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_h265": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_av1": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_vp9": ["Fast", "Medium (Recommended)", "Slow"]
 }

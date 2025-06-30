@@ -55,7 +55,8 @@
         "Descargando información...",
         "Descargando información elemento {index} de {count}",
         "Archivo finalizado",
-        "Elemento {index} de {count} finalizado"
+        "Elemento {index} de {count} finalizado",
+        "Esto puede llevar algunos minutos."
     ],
     "download_path": "Ruta de Descarga:",
     "folder_path": "Ruta de la carpeta...",
@@ -107,5 +108,16 @@
     "search_title": "Título",
     "search_channel": "Canal",
     "formats_detected": "Formatos Detectados",
-    "formats_custom": "Personalizado..."
+    "formats_custom": "Personalizado...",
+    "video_codec": "Codec de Video",
+    "audio_codec": "Codec de Audio",
+    "compression_quality": "Compresión de Calidad (CRF)",
+    "compression_quality_tooltip": "Valor de compresión CRF para el video. Un valor más bajo significa mejor calidad, pero mayor tamaño de archivo.",
+    "compression_quality_values": ["Alta", "Media", "Baja"],
+    "encoding_speed": "Velocidad de Codificación",
+    "encoding_speed_tooltip": "Velocidad de codificación del video. Valores más bajos significan mejor calidad, pero mayor tiempo de codificación.",
+    "encoding_speed_values_h264": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_h265": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_av1": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_vp9": ["Rápido", "Medio (recomendado)", "Lento"]
 } 

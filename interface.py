@@ -22,6 +22,7 @@ from modules import (
 
 from ui import DownloadTab, AdvancedTab, SettingsTab, AboutTab
 
+
 class CustomTabview(ctk.CTkFrame):
     """
     Custom tab view widget with dynamic button and content frames.
@@ -198,13 +199,11 @@ class MainApplication(ctk.CTk):
         self.resizable(False, False)
         self.lift()
 
-
         if sys.platform.startswith("win"):
             self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
         else:
             icon = ImageTk.PhotoImage(file=get_image_path("logo.png"))
             self.after(250, lambda: self.wm_iconphoto(True, icon))
-        
 
         # Outras variaveis
         self.download_options = {}
@@ -265,17 +264,46 @@ class MainApplication(ctk.CTk):
             "about", self.translator.get_text("about")
         )  # About
         # endregion
-        
-        self.settings_tab = SettingsTab(self.tab3, app=self, translator=self.translator, user_prefer=self.user_prefer, fg_color="transparent")
+
+        self.settings_tab = SettingsTab(
+            self.tab3,
+            app=self,
+            translator=self.translator,
+            user_prefer=self.user_prefer,
+            fg_color="transparent",
+        )
         self.settings_tab.pack(fill="both", expand=True)
-        
-        self.advanced_tab = AdvancedTab(self.tab2, app=self, translator=self.translator, yt_dlp=self.yt_dlp, settings_tab=self.settings_tab, fg_color="transparent")
+
+        self.advanced_tab = AdvancedTab(
+            self.tab2,
+            app=self,
+            translator=self.translator,
+            yt_dlp=self.yt_dlp,
+            settings_tab=self.settings_tab,
+            fg_color="transparent",
+        )
         self.advanced_tab.pack(fill="both", expand=True)
-        
-        self.about_tab = AboutTab(self.tab4, app=self, translator=self.translator, default_config=self.default_config, fg_color="transparent")
+
+        self.about_tab = AboutTab(
+            self.tab4,
+            app=self,
+            translator=self.translator,
+            default_config=self.default_config,
+            fg_color="transparent",
+        )
         self.about_tab.pack(fill="both", expand=True)
 
-        self.download_tab = DownloadTab(self.tab1, app=self, translator=self.translator, user_prefer=self.user_prefer, yt_dlp=self.yt_dlp, default_config=self.default_config, advanced_tab=self.advanced_tab, settings_tab=self.settings_tab, fg_color="transparent")
+        self.download_tab = DownloadTab(
+            self.tab1,
+            app=self,
+            translator=self.translator,
+            user_prefer=self.user_prefer,
+            yt_dlp=self.yt_dlp,
+            default_config=self.default_config,
+            advanced_tab=self.advanced_tab,
+            settings_tab=self.settings_tab,
+            fg_color="transparent",
+        )
         self.download_tab.pack(fill="both", expand=True)
 
         # Quando a janela é fechada, ele executa a função
@@ -326,7 +354,9 @@ class MainApplication(ctk.CTk):
 
     def save_current_settings(self):
         """Salva as configurações atuais"""
-        self.user_prefer.set("last_download_path", self.download_tab.download_path_entry.get())
+        self.user_prefer.set(
+            "last_download_path", self.download_tab.download_path_entry.get()
+        )
         self.user_prefer.set(
             "default_download_path", self.settings_tab.default_download_path_entry.get()
         )
@@ -348,12 +378,17 @@ class MainApplication(ctk.CTk):
             ),
         )
         self.user_prefer.set(
-            "language", self.available_languages_inverted[self.settings_tab.language_var.get()]
+            "language",
+            self.available_languages_inverted[self.settings_tab.language_var.get()],
         )
-        self.user_prefer.set("sound_notification", self.settings_tab.sound_notification_var.get())
+        self.user_prefer.set(
+            "sound_notification", self.settings_tab.sound_notification_var.get()
+        )
         self.user_prefer.set("clear_url", self.settings_tab.clear_url_var.get())
         self.user_prefer.set("open_folder", self.settings_tab.open_folder_var.get())
-        self.user_prefer.set("notify_completed", self.settings_tab.notify_completed_var.get())
+        self.user_prefer.set(
+            "notify_completed", self.settings_tab.notify_completed_var.get()
+        )
 
     def on_closing(self):
         """Chamado quando a janela é fechada"""
@@ -370,7 +405,7 @@ class MainApplication(ctk.CTk):
             message=message,
             icon="check",
             wraplength=400,
-            sound=self.sound_notification_var.get(),
+            sound=self.settings_tab.sound_notification_var.get(),
         )
         msg.get()
 
@@ -420,7 +455,7 @@ class MainApplication(ctk.CTk):
             self.open_link(
                 "https://github.com/EasyTuber/EasyTuber?tab=readme-ov-file#-pr%C3%A9-requisitos"
             )
-            
+
     def open_link(self, url):
         webbrowser.open(url)
 
