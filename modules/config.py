@@ -23,8 +23,8 @@ class DefaultConfig:
         self.MIN_WINDOW_HEIGHT = 500
 
         # Configurações de Valores
-        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]  # TODO adicionar mais formatos
-        self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]  # TODO adicionar mais formatos
+        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm", "mov", "avi"]
+        self.FORMAT_AUDIOS = ["mp3", "aac", "ogg", "flac", "wav"]
 
 
 class UserPreferences:

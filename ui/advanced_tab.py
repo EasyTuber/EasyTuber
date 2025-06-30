@@ -14,9 +14,6 @@ if TYPE_CHECKING:
     from interface import MainApplication
 
 
-# TODO: mudar o pady dos frames, está muito espaçado
-
-
 class AdvancedTab(ctk.CTkFrame):
     def __init__(
         self,
@@ -34,8 +31,22 @@ class AdvancedTab(ctk.CTkFrame):
         self.app = app
         self.settings_tab = settings_tab
 
+        self.format_map = {
+            "mp4": ["H.264", "H.265"],
+            "mkv": ["H.264", "H.265", "VP9", "AV1"],
+            "webm": ["VP9", "AV1"],
+            "mov": ["H.264", "H.265"],
+            "avi": ["H.264"],
+        }
+        self.codecs_map = {
+            "H.264": "h264",
+            "H.265": "h265",
+            "VP9": "vp9",
+            "AV1": "av1",
+        }
+
         self.advced_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.advced_frame.pack(fill="both", expand=True, pady=10)
+        self.advced_frame.pack(fill="both", expand=True, pady=5)
 
         #! Frame de url
         # region URL Entry
@@ -183,7 +194,7 @@ class AdvancedTab(ctk.CTkFrame):
             width=200,
             font=ctk.CTkFont(size=14),
         )
-        self.download_advanced_button.pack(side="top", pady=(10, 5))
+        self.download_advanced_button.pack(side="top", pady=5)
         self.download_advanced_button.pack_forget()
         # endregion
 
@@ -194,7 +205,7 @@ class AdvancedTab(ctk.CTkFrame):
             fg_color=("gray86", "gray20"),
             corner_radius=15,
         )
-        self.format_frame.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        self.format_frame.pack(side="top", fill="both", expand=True, padx=5)
 
         #! Formato Presets
         # region Formato Presets
@@ -215,7 +226,7 @@ class AdvancedTab(ctk.CTkFrame):
             values="",
             variable=self.format_presets_var,
             width=180,
-            command=self.format_selected,
+            command=self.format_custom_selected,
             state="disabled",
         )
         self.format_presets_OptionMenu.grid(row=0, column=1, sticky="ew")
@@ -258,8 +269,18 @@ class AdvancedTab(ctk.CTkFrame):
             variable=self.format_custom_container_var,
             width=80,
             state="disabled",
+            command=self.format_custom,
         )
         self.format_custom_container_OptionMenu.grid(row=1, column=0, sticky="ew")
+        self.format_custom_container_tooltip = CTkToolTip(
+            self.format_custom_container_OptionMenu,
+            message=self.translator.get_text("format_tooltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
         # endregion
 
         #! Qualidade do Vídeo
@@ -308,6 +329,15 @@ class AdvancedTab(ctk.CTkFrame):
             command=self.codec_selected,
         )
         self.video_codec_OptionMenu.grid(row=1, column=0, sticky="ew")
+        self.video_codec_tooltip = CTkToolTip(
+            self.video_codec_OptionMenu,
+            message=self.translator.get_text("video_codec_tooltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
         # endregion
 
         #! Codecs de Áudio
@@ -331,6 +361,15 @@ class AdvancedTab(ctk.CTkFrame):
             state="disabled",
         )
         self.audio_codec_OptionMenu.grid(row=1, column=0, sticky="ew")
+        self.audio_codec_tooltip = CTkToolTip(
+            self.audio_codec_OptionMenu,
+            message=self.translator.get_text("audio_codec_tooltip"),
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+        )
         # endregion
 
         #! Qualidade de Compressão (CRF)
@@ -517,8 +556,18 @@ class AdvancedTab(ctk.CTkFrame):
         self.format_custom_container_label.configure(
             text=self.translator.get_text("format")
         )
+        self.format_custom_container_tooltip.configure(
+            message=self.translator.get_text("format_tooltip")
+        )
         self.video_quality_label.configure(text=self.translator.get_text("quality"))
         self.video_codec_label.configure(text=self.translator.get_text("video_codec"))
+        self.video_codec_tooltip.configure(
+            message=self.translator.get_text("video_codec_tooltip")
+        )
+        self.audio_codec_label.configure(text=self.translator.get_text("audio_codec"))
+        self.audio_codec_tooltip.configure(
+            message=self.translator.get_text("audio_codec_tooltip")
+        )
         self.compression_quality_label.configure(
             text=self.translator.get_text("compression_quality")
         )
@@ -554,21 +603,15 @@ class AdvancedTab(ctk.CTkFrame):
         )
 
         codec = self.video_codec_var.get()
-        codecs_map = {
-            "H.264": "h264",
-            "H.265": "hevc",
-            "VP9": "vp9",
-            "AV1": "av1",
-        }
         self.encoding_speed_OptionMenu.configure(
             values=self.translator.get_text(
-                f"encoding_speed_values_{codecs_map[codec]}"
+                f"encoding_speed_values_{self.codecs_map[codec]}"
             )
         )
 
         encoding_speed_value = self.encoding_speed_var.get()
         encoding_speed_values = self.translator.get_translates(
-            f"encoding_speed_values_{codecs_map[codec]}"
+            f"encoding_speed_values_{self.codecs_map[codec]}"
         )
 
         logical_levels = list(zip(*encoding_speed_values))
@@ -582,12 +625,12 @@ class AdvancedTab(ctk.CTkFrame):
         )
         if index is not None:
             translated_values = self.translator.get_text(
-                f"encoding_speed_values_{codecs_map[codec]}"
+                f"encoding_speed_values_{self.codecs_map[codec]}"
             )
             self.encoding_speed_var.set(translated_values[index])
 
     # region Format Selected
-    def format_selected(self, value):
+    def format_custom_selected(self, value):
         if value == self.translator.get_text("formats_custom"):
             self.video_quality_OptionMenu.configure(state="normal")
             self.format_custom_container_OptionMenu.configure(state="normal")
@@ -606,15 +649,9 @@ class AdvancedTab(ctk.CTkFrame):
 
     # region Codec Selected
     def codec_selected(self, value):
-        codecs_map = {
-            "H.264": "h264",
-            "H.265": "h265",
-            "VP9": "vp9",
-            "AV1": "av1",
-        }
 
         enconding_speed_values = self.translator.get_text(
-            f"encoding_speed_values_{codecs_map[value]}"
+            f"encoding_speed_values_{self.codecs_map[value]}"
         )
 
         self.encoding_speed_OptionMenu.configure(values=enconding_speed_values)
@@ -661,13 +698,7 @@ class AdvancedTab(ctk.CTkFrame):
     def get_custom_format_options(self):
 
         codec = self.video_codec_var.get()
-        codecs_map = {
-            "H.264": "h264",
-            "H.265": "h265",
-            "VP9": "vp9",
-            "AV1": "av1",
-        }
-        video_codec = codecs_map.get(codec, "h264")
+        video_codec = self.codecs_map.get(codec, "h264")
         print("Video Codec:", video_codec)
 
         compression_quality_value = self.compression_quality_var.get()
@@ -690,7 +721,7 @@ class AdvancedTab(ctk.CTkFrame):
 
         encoding_speed_value = self.encoding_speed_var.get()
         encoding_speed_values = self.translator.get_translates(
-            f"encoding_speed_values_{codecs_map[codec]}"
+            f"encoding_speed_values_{self.codecs_map[codec]}"
         )
 
         logical_levels = list(zip(*encoding_speed_values))
@@ -718,6 +749,10 @@ class AdvancedTab(ctk.CTkFrame):
         return {
             "custom_format": custom_format,
         }
+
+    def format_custom(self, value):
+        self.video_codec_OptionMenu.configure(values=self.format_map[value])
+        self.video_codec_var.set(self.format_map[value][0])
 
     def restore_button(self):
         self.download_advanced_button.configure(state="normal")

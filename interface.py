@@ -331,7 +331,6 @@ class MainApplication(ctk.CTk):
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
 
-    # TODO Work in Progress (Language)
     def change_language(self, language_name):
         # Obter código do idioma
         language_code = self.available_languages_inverted[language_name]
