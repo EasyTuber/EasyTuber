@@ -9,5 +9,6 @@ from .utils import (
     center_window,
     get_thumbnail_img,
     create_rounded_image,
+    internet_connection,
 )
 from .update_checker import UpdateChecker

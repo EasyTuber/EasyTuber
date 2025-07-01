@@ -449,6 +449,13 @@ class AdvancedTab(ctk.CTkFrame):
 
     # region Search
     def search(self):
+
+        if self.app.url2_var.get() == "":
+            self.app.show_error(self.translator.get_text("errors")[0])
+            return
+        if not self.app.check_errors(self.app.url2_var.get(), "search", self):
+            return
+
         self.info_preview = {}
         self.info_presets = {}
         self.audio_id = None
@@ -456,6 +463,9 @@ class AdvancedTab(ctk.CTkFrame):
         url = self.app.url2_var.get()
 
         def on_search_complete():
+
+            self.app.check_errors(url, "search", self)
+
             self.info_preview = self.yt_dlp.info_preview
             self.info_presets = self.yt_dlp.info_presets
             self.audio_id = self.yt_dlp.audio_id
@@ -661,8 +671,12 @@ class AdvancedTab(ctk.CTkFrame):
             ]  # Set to the middle value
         )
 
+    # region Call Download
     def call_download(self):
         self.disable_button()
+
+        if not self.app.check_errors(self.app.url2_var.get(), "advanced", self):
+            return
 
         if not self.info_preview:
             return

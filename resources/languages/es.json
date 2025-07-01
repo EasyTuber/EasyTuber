@@ -90,6 +90,7 @@
     "check_notify_completed_tooltip": "Notificar cuando se complete.",
     "check_clear_url": "Limpiar campo URL",
     "sound_notification": "Notificación sonora",
+    "sound_notification_tooltip": "¡Solo Windows por ahora!\nReproducir un sonido cuando la descarga se complete.",
     "download_cancelled": "Descarga cancelada",
     "popup_update_title": "Actualización Disponible",
     "popup_update_msg": "Una nueva versión de EasyTuber está disponible: {version}.\n¿Deseas actualizar ahora?",
@@ -122,5 +123,14 @@
     "encoding_speed_values_h264": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
     "encoding_speed_values_h265": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
     "encoding_speed_values_av1": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
-    "encoding_speed_values_vp9": ["Rápido", "Medio (recomendado)", "Lento"]
+    "encoding_speed_values_vp9": ["Rápido", "Medio (recomendado)", "Lento"],
+    "internet_connection_errors": [
+        "Conexión inestable",
+        "Timeout - conexión muy lenta",
+        "Sin conexión a Internet",
+        "Error de conexión: {e}",
+        "Problema con DNS",
+        "{domain} respondió con estado {response.status_code}",
+        "Problema al conectar con {domain}: {e}"
+    ]
 } 

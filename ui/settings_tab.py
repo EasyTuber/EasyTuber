@@ -127,6 +127,15 @@ class SettingsTab(ctk.CTkFrame):
             offvalue=False,
         )
         self.sound_notification_checkbox.pack(side="left", expand=True, padx=5)
+        self.sound_notification_tooltip = CTkToolTip(
+            self.sound_notification_checkbox,
+            justify="left",
+            padding=(10, 10),
+            border_width=1,
+            x_offset=-50,
+            follow=False,
+            message=self.translator.get_text("sound_notification_tooltip"),
+        )
 
         # endregion
 

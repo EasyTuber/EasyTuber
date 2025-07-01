@@ -9,8 +9,11 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import urllib.request
 from typing import Literal
+from urllib.parse import urlparse
+import requests
 
 import platform
+
 if platform.system() == "Windows":
     import winsound
 else:
@@ -39,11 +42,11 @@ def play_sound(success: bool) -> None:
         success (bool): If True, plays the 'SystemAsterisk' sound.
                         If False, plays the 'SystemHand' sound.
     """
-    
+
     if winsound is None:
         print("Som não suportado neste sistema.")
         return
-    
+
     sound = "SystemAsterisk" if success else "SystemHand"
 
     def play_in_thread():
@@ -414,3 +417,55 @@ def format_time(seconds: int):
         return f"{hours}:{minutes:02}:{seconds:02}"
     else:
         return f"{minutes}:{seconds:02}"
+
+
+def internet_connection(url=None, translator=None, timeout: int = 10):
+
+    message = ""
+
+    # Teste 1: Internet básica
+    try:
+        response = requests.get("https://httpbin.org/ip", timeout=timeout)
+        if response.status_code == 200:
+            pass
+        else:
+            message = translator.get_text("internet_connection_errors")[0]
+            return message
+    except requests.exceptions.Timeout:
+        message = translator.get_text("internet_connection_errors")[1]
+        return message
+    except requests.exceptions.ConnectionError:
+        message = translator.get_text("internet_connection_errors")[2]
+        return message
+    except Exception as e:
+        message = translator.get_text("internet_connection_errors")[3].format(e=e)
+        return message
+
+    # Teste 2: DNS
+    try:
+        import socket
+
+        socket.gethostbyname("google.com")
+    except socket.gaierror:
+        message = translator.get_text("internet_connection_errors")[4]
+        return message
+
+    # Teste 3: Conectividade com o site específico (se URL fornecida)
+    if url:
+        try:
+            domain = urlparse(url).netloc
+            response = requests.head(f"https://{domain}", timeout=timeout)
+            if response.status_code < 400:
+                pass
+            else:
+                message = translator.get_text("internet_connection_errors")[5].format(
+                    domain=domain, response=response.status_code
+                )
+                return message
+        except Exception as e:
+            message = translator.get_text("internet_connection_errors")[6].format(
+                domain=domain, e=e
+            )
+            return message
+
+    return None  # Retorna None se tudo estiver OK, ou uma mensagem de erro se houver problemas

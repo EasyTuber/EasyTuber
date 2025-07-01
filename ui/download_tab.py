@@ -348,20 +348,7 @@ class DownloadTab(ctk.CTkFrame):
     def call_download(self, type: str):
         self.disable_button()
 
-        erros = []
-        if not self.url1_entry.get():
-            erros.append(self.translator.get_text("errors")[0])
-        if not self.download_path_entry.get():
-            erros.append(self.translator.get_text("errors")[1])
-        if not self.settings_tab.ffmpeg_path_entry.get():
-            self.app.ffmpeg_popup()
-
-        if erros:
-            for erro in erros:
-                if self.settings_tab.sound_notification_var.get():
-                    play_sound(False)
-                self.app.show_error(erro)  # Exibir cada erro
-            self.restore_button()
+        if not self.app.check_errors(self.url1_entry.get(), "basic", self):
             return
         else:
             download_options = {

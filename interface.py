@@ -18,6 +18,7 @@ from modules import (
     center_window,
     get_thumbnail_img,
     create_rounded_image,
+    internet_connection,
 )
 
 from ui import DownloadTab, AdvancedTab, SettingsTab, AboutTab
@@ -309,6 +310,7 @@ class MainApplication(ctk.CTk):
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+    # region Sincronização de URL
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -331,6 +333,7 @@ class MainApplication(ctk.CTk):
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
 
+    # region Alteração de idioma
     def change_language(self, language_name):
         # Obter código do idioma
         language_code = self.available_languages_inverted[language_name]
@@ -342,6 +345,7 @@ class MainApplication(ctk.CTk):
 
             self.last_language = language_code
 
+    # region Atualização de textos da interface
     def update_interface_texts(self):
         self.save_current_settings()
         self.tabview.update_button_text()
@@ -351,6 +355,7 @@ class MainApplication(ctk.CTk):
         self.settings_tab.update_language()
         self.about_tab.update_language()
 
+    # region Salvar configurações atuais
     def save_current_settings(self):
         """Salva as configurações atuais"""
         self.user_prefer.set(
@@ -389,12 +394,14 @@ class MainApplication(ctk.CTk):
             "notify_completed", self.settings_tab.notify_completed_var.get()
         )
 
+    # region Ao fehar a janela
     def on_closing(self):
         """Chamado quando a janela é fechada"""
         self.save_current_settings()
         self.user_prefer.save_preferences()
         self.quit()
 
+    # region Exibição de mensagens
     def show_error(self, message):
         CTkMessagebox(title="Error", message=message, icon="cancel")
 
@@ -408,6 +415,7 @@ class MainApplication(ctk.CTk):
         )
         msg.get()
 
+    # region Exibir mensagem de atualização disponível
     def show_update_available(self, update_info):
         title = self.translator.get_text("popup_update_title")
         message = self.translator.get_text("popup_update_msg").format(
@@ -429,6 +437,7 @@ class MainApplication(ctk.CTk):
         if response == option[0]:
             self.open_link(update_info["release_url"])
 
+    # region Exibir mensagem do FFmpeg
     def ffmpeg_popup(self):
         title = self.translator.get_text("popup_ffmpeg_title")
         text = self.translator.get_text("popup_ffmpeg_msg")
@@ -455,8 +464,62 @@ class MainApplication(ctk.CTk):
                 "https://github.com/EasyTuber/EasyTuber?tab=readme-ov-file#-pr%C3%A9-requisitos"
             )
 
+    # region Verificar erros antes de iniciar o download
+    def check_errors(self, url: str, type: str, tab):
+
+        if type == "basic":
+            errors = []
+            if not self.download_tab.url1_entry.get():
+                errors.append(self.translator.get_text("errors")[0])
+            if not self.download_tab.download_path_entry.get():
+                errors.append(self.translator.get_text("errors")[1])
+            if not self.settings_tab.ffmpeg_path_entry.get():
+                self.ffmpeg_popup()
+
+            if errors:
+                for error in errors:
+                    if self.settings_tab.sound_notification_var.get():
+                        play_sound(False)
+                    self.show_error(error)  # Exibir cada erro
+                tab.restore_button()
+                return False
+
+        elif type == "advanced":
+            errors = []
+            if not self.advanced_tab.url2_entry.get():
+                self.show_error(self.translator.get_text("errors")[0])
+            if not self.settings_tab.default_download_path_entry.get():
+                self.show_error(self.translator.get_text("errors")[1])
+            if not self.settings_tab.ffmpeg_path_entry.get():
+                self.ffmpeg_popup()
+
+            if errors:
+                for error in errors:
+                    if self.settings_tab.sound_notification_var.get():
+                        play_sound(False)
+                    self.show_error(error)  # Exibir cada erro
+                tab.restore_button()
+                return False
+
+        internet_status = internet_connection(url, tab.translator)
+        if internet_status:
+            if self.settings_tab.sound_notification_var.get():
+                play_sound(False)
+            self.show_error(internet_status)
+            if type != "search":
+                tab.restore_button()
+            return False
+        else:
+            return True
+
+    def restore_button(self):
+        self.download_tab.restore_button()
+        self.advanced_tab.restore_button()
+
+    # region Abrir link
     def open_link(self, url):
         webbrowser.open(url)
 
+    # region Executar a aplicação
     def run(self):
         self.mainloop()
