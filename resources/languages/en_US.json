@@ -51,7 +51,8 @@
         "Downloading information...",
         "Downloading information item {index} of {count}",
         "File completed",
-        "Item {index} of {count} completed"
+        "Item {index} of {count} completed",
+        "This may take a few minutes."
     ],
     "download_path": "Download Path:",
     "folder_path": "Folder path...",
@@ -85,6 +86,7 @@
     "check_notify_completed_tooltip":"Notify when completed",
     "check_clear_url":"Clear URL field",
     "sound_notification":"Sound notification",
+    "sound_notification_tooltip": "Only Windows for now!\nPlay a sound when the download is completed.",
     "download_cancelled":"Download cancelled",
     "popup_update_title":"Update Available",
     "popup_update_msg":"A new version of EasyTuber is available: {version}.\nDo you want to update now?",
@@ -99,5 +101,32 @@
         "Yes": "yes",
         "No": "no"
     },
-    "reset_success": "Settings reset successfully!"
+    "reset_success": "Settings reset successfully!",
+    "search_title": "Title",
+    "search_channel": "Channel",
+    "formats_detected": "Detected Formats",
+    "formats_custom": "Custom...",
+    "format_tooltip": "Choose the video output format.\n • MP4: Widely compatible format, ideal for most devices\n • MKV: Supports multiple audio tracks and subtitles, good for long videos\n • WebM: Open format, good for online videos\n • MOV: Apple format, good for video editing",
+    "video_codec": "Video Codec",
+    "video_codec_tooltip": "The video codec to be used for encoding the video\n • H.264: Compatible with most devices and browsers\n • H.265: Better compression but less compatible\n • VP9: Open codec, good for high-resolution videos\n • AV1: Next-generation codec, better compression but slower",
+    "audio_codec": "Audio Codec",
+    "audio_codec_tooltip": "The audio codec to be used for encoding the audio\n • AAC: Widely compatible and efficient\n • MP3: Popular format, good compatibility\n • Opus: High quality, good for streaming\n • Vorbis: Open codec, good for online videos",
+    "compression_quality": "Compression Quality (CRF)",
+    "compression_quality_tooltip": "CRF compression value for the video. A lower value means better quality but larger file size.",
+    "compression_quality_values": ["High", "Medium", "Low"],
+    "encoding_speed": "Encoding Speed",
+    "encoding_speed_tooltip": "Sets the encoding speed for the video. A slower speed results in better quality but takes longer to process.",
+    "encoding_speed_values_h264": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_h265": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_av1": ["Ultra Fast", "Fast", "Medium (Recommended)", "Slow", "Very Slow"],
+    "encoding_speed_values_vp9": ["Fast", "Medium (Recommended)", "Slow"],
+    "internet_connection_errors": [
+        "Unstable connection",
+        "Timeout - very slow connection",
+        "No internet connection",
+        "Connection error: {e}",
+        "DNS problem",
+        "{domain} responded with status {response.status_code}",
+        "Problem connecting to {domain}: {e}"
+    ]
 }

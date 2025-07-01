@@ -5,10 +5,19 @@ import sys
 import re
 import subprocess
 import threading
-import winsound
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+import urllib.request
 from typing import Literal
+from urllib.parse import urlparse
+import requests
+
+import platform
+
+if platform.system() == "Windows":
+    import winsound
+else:
+    winsound = None
 
 
 def center_window(root, width: int, height: int) -> None:
@@ -27,12 +36,17 @@ def center_window(root, width: int, height: int) -> None:
 
 
 def play_sound(success: bool) -> None:
-    """Plays a notification sound.
+    """Plays a notification sound. (only on Windows)
 
     Args:
         success (bool): If True, plays the 'SystemAsterisk' sound.
                         If False, plays the 'SystemHand' sound.
     """
+
+    if winsound is None:
+        print("Som não suportado neste sistema.")
+        return
+
     sound = "SystemAsterisk" if success else "SystemHand"
 
     def play_in_thread():
@@ -299,3 +313,159 @@ def get_ffmpeg_path() -> str:
 
     # If the executable is still not found, return None
     return None
+
+
+def get_thumbnail_img(url, duration=None):
+    with urllib.request.urlopen(url) as u:
+        raw_data = u.read()
+    img = Image.open(BytesIO(raw_data)).convert("RGBA")
+    img = img.resize((160, 90), Image.Resampling.LANCZOS)
+
+    # Se for passado o tempo, adiciona sobre a imagem
+    if duration:
+        overlay = Image.new("RGBA", img.size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Tenta usar Arial ou fallback para fonte padrão
+        try:
+            font = ImageFont.truetype("arial.ttf", 12)
+        except:
+            font = ImageFont.load_default()
+
+        # Formata o tempo
+        tempo_texto = format_time(int(duration))
+        bbox = draw.textbbox((0, 0), tempo_texto, font=font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
+
+        padding = 5
+        margin = 5
+
+        x = img.width - text_w - 2 * padding - margin
+        y = img.height - text_h - 2 * padding - margin
+
+        # Fundo arredondado opcional:
+        draw.rounded_rectangle(
+            [x, y, x + text_w + 2 * padding, y + text_h + 2 * padding],
+            radius=4,
+            fill=(0, 0, 0, 200),
+        )
+
+        # Texto centralizado dentro do fundo
+        draw.text(
+            (x + padding, y + padding - bbox[1]),
+            tempo_texto,
+            font=font,
+            fill=(255, 255, 255, 255),
+        )
+
+        # Combina o overlay com a imagem original
+        img = Image.alpha_composite(img, overlay)
+
+    rounded_img = create_rounded_image(img)
+    return rounded_img
+
+
+def create_rounded_image(image_path_or_object, corner_radius=10):
+    """
+    Cria uma imagem com cantos arredondados
+
+    Args:
+        image_path_or_object: Caminho para imagem ou objeto PIL Image
+        corner_radius: Raio dos cantos arredondados
+        size: Tamanho final da imagem (width, height)
+
+    Returns:
+        Objeto PIL Image com cantos arredondados
+    """
+    from PIL import Image, ImageDraw
+
+    # Abrir a imagem se um caminho foi fornecido
+    if isinstance(image_path_or_object, str):
+        img = Image.open(image_path_or_object)
+    else:
+        img = image_path_or_object
+
+    # Criar uma imagem vazia com canal alfa (transparência)
+    width, height = img.size
+    mask = Image.new("L", (width, height), 0)
+    draw = ImageDraw.Draw(mask)
+
+    # Desenhar um retângulo com cantos arredondados
+    draw.rounded_rectangle([(0, 0), (width, height)], corner_radius, fill=255)
+
+    # Aplicar a máscara
+    result = img.copy()
+    result.putalpha(mask)
+
+    return result
+
+
+def format_time(seconds: int):
+    """Formata o tempo em segundos para minutos e horas
+
+    Args:
+        seconds (int): Tempo do video em segundos
+
+    Returns:
+        Retorna o valor em horas ou minutos
+    """
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    if hours > 0:
+        return f"{hours}:{minutes:02}:{seconds:02}"
+    else:
+        return f"{minutes}:{seconds:02}"
+
+
+def internet_connection(url=None, translator=None, timeout: int = 10):
+
+    message = ""
+
+    # Teste 1: Internet básica
+    try:
+        response = requests.get("https://httpbin.org/ip", timeout=timeout)
+        if response.status_code == 200:
+            pass
+        else:
+            message = translator.get_text("internet_connection_errors")[0]
+            return message
+    except requests.exceptions.Timeout:
+        message = translator.get_text("internet_connection_errors")[1]
+        return message
+    except requests.exceptions.ConnectionError:
+        message = translator.get_text("internet_connection_errors")[2]
+        return message
+    except Exception as e:
+        message = translator.get_text("internet_connection_errors")[3].format(e=e)
+        return message
+
+    # Teste 2: DNS
+    try:
+        import socket
+
+        socket.gethostbyname("google.com")
+    except socket.gaierror:
+        message = translator.get_text("internet_connection_errors")[4]
+        return message
+
+    # Teste 3: Conectividade com o site específico (se URL fornecida)
+    if url:
+        try:
+            domain = urlparse(url).netloc
+            response = requests.head(f"https://{domain}", timeout=timeout)
+            if response.status_code < 400:
+                pass
+            else:
+                message = translator.get_text("internet_connection_errors")[5].format(
+                    domain=domain, response=response.status_code
+                )
+                return message
+        except Exception as e:
+            message = translator.get_text("internet_connection_errors")[6].format(
+                domain=domain, e=e
+            )
+            return message
+
+    return None  # Retorna None se tudo estiver OK, ou uma mensagem de erro se houver problemas

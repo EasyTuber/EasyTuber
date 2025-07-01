@@ -1,6 +1,7 @@
+import sys
 import webbrowser
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
@@ -15,7 +16,12 @@ from modules import (
     get_ffmpeg_path,
     play_sound,
     center_window,
+    get_thumbnail_img,
+    create_rounded_image,
+    internet_connection,
 )
+
+from ui import DownloadTab, AdvancedTab, SettingsTab, AboutTab
 
 
 class CustomTabview(ctk.CTkFrame):
@@ -103,7 +109,7 @@ class CustomTabview(ctk.CTkFrame):
         tab_frame = ctk.CTkFrame(
             self.content_frame,
             corner_radius=10,
-            fg_color=("gray95", "gray17"),
+            fg_color=("gray90", "gray17"),
         )
 
         # Store references
@@ -182,12 +188,9 @@ class MainApplication(ctk.CTk):
         self.url1_var = ctk.StringVar()
         self.url2_var = ctk.StringVar()
 
-        # TODO Work in Progress (Advanced)
-        """
         # Registrar os traces iniciais (com escopo global para poder removê-los)
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
         self.trace_url2 = self.url2_var.trace_add("write", self.sync_var2_to_var1)
-        """
 
         self.title(f"{self.default_config.APP_NAME} v{self.default_config.APP_VERSION}")
 
@@ -197,10 +200,17 @@ class MainApplication(ctk.CTk):
         self.resizable(False, False)
         self.lift()
 
-        self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
+        if sys.platform.startswith("win"):
+            self.after(250, lambda: self.iconbitmap(get_image_path("icon.ico")))
+        else:
+            icon = ImageTk.PhotoImage(file=get_image_path("logo.png"))
+            self.after(250, lambda: self.wm_iconphoto(True, icon))
 
         # Outras variaveis
         self.download_options = {}
+        self.info_preview = {}
+        self.info_presets = {}
+        self.audio_id = None
 
         # endregion
 
@@ -245,12 +255,9 @@ class MainApplication(ctk.CTk):
         self.tab1 = self.tabview.add(
             "download", self.translator.get_text("download")
         )  # Download
-        # TODO Work in Progress (Advanced)
-        """
         self.tab2 = self.tabview.add(
             "advanced_options", self.translator.get_text("advanced_options")
         )  # Advanced
-        """
         self.tab3 = self.tabview.add(
             "settings", self.translator.get_text("settings")
         )  # Settings
@@ -259,864 +266,51 @@ class MainApplication(ctk.CTk):
         )  # About
         # endregion
 
-        #! Área principal do conteúdo
-        # region Área principal do conteúdo
-        self.main_frame = ctk.CTkFrame(self.tab1, fg_color="transparent")
-        self.main_frame.pack(fill="both", expand=True, pady=10)
-
-        self.main_frame_top = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.main_frame_top.pack(side="top", fill="both")
-
-        self.main_frame_bottom = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.main_frame_bottom.pack(side="bottom", fill="x")
-
-        # * Frame configuração de download
-        self.config_download_frame = ctk.CTkFrame(
-            self.main_frame_top, fg_color="transparent"
-        )
-        self.config_download_frame.pack(side="top", expand=True, fill="x", padx=15)
-
-        self.config_download_frame_top = ctk.CTkFrame(
-            self.config_download_frame, fg_color="transparent"
-        )
-        self.config_download_frame_top.pack(side="top", fill="x")
-
-        self.config_download_frame_bottom = ctk.CTkFrame(
-            self.config_download_frame, fg_color="transparent"
-        )
-        self.config_download_frame_bottom.pack(side="bottom", fill="x")
-
-        #! Tipo de Mídia
-        # region Tipo de Mídia
-        self.media_frame = ctk.CTkFrame(
-            self.config_download_frame_top, fg_color="transparent"
-        )
-        self.media_frame.pack(side="left", expand=True, padx=5)
-
-        self.media_label = ctk.CTkLabel(
-            self.media_frame, text=self.translator.get_text("media_type")
-        )
-        self.media_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
-
-        self.media_var = ctk.StringVar(
-            value=self.translator.get_text("media_values")[
-                self.user_prefer.get("media")
-            ]
-        )
-        self.media_SegButton = ctk.CTkSegmentedButton(
-            self.media_frame,
-            values=list(self.translator.get_text("media_values").values()),
-            variable=self.media_var,
-            command=self.media_selected,
-        )
-        self.media_SegButton.grid(row=1, column=0, sticky="ew")
-        # endregion
-
-        #! Formato do arquivo
-        # region Formato
-        self.formato_frame = ctk.CTkFrame(
-            self.config_download_frame_top, fg_color="transparent"
-        )
-        self.formato_frame.pack(side="left", expand=True, padx=5)
-
-        self.formato_label = ctk.CTkLabel(
-            self.formato_frame, text=self.translator.get_text("format")
-        )
-        self.formato_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
-
-        self.formato_var = ctk.StringVar(value=self.user_prefer.get("format"))
-        self.formato_OptionMenu = ctk.CTkOptionMenu(
-            self.formato_frame,
-            dynamic_resizing=False,
-            values=["mp4", "mkv", "webm"],
-            variable=self.formato_var,
-            width=80,
-        )
-        self.formato_OptionMenu.grid(row=1, column=0, sticky="ew")
-        # endregion
-
-        #! Qualidade do Video
-        # region Qualidade do Video
-        self.qualidade_frame = ctk.CTkFrame(
-            self.config_download_frame_top, fg_color="transparent"
-        )
-        self.qualidade_frame.pack(side="left", expand=True, padx=5)
-
-        self.qualidade_var = ctk.StringVar(value=self.user_prefer.get("quality"))
-        self.qualidade_label = ctk.CTkLabel(
-            self.qualidade_frame, text=self.translator.get_text("quality")
-        )
-        self.qualidade_label.grid(row=0, column=0, pady=(0, 1), sticky="ew")
-
-        self.qualidade_menu = ctk.CTkOptionMenu(
-            self.qualidade_frame,
-            dynamic_resizing=False,
-            values=["1080p", "720p", "480p", "360p"],
-            variable=self.qualidade_var,
-            width=80,
-        )
-        self.qualidade_menu.grid(row=1, column=0, sticky="ew")
-        self.media_selected(self.media_var.get(), True)
-        # endregion
-
-        #! Playlist
-        # region Playlist
-
-        self.playlist_check_var = ctk.BooleanVar(value=False)
-        self.playlist_check = ctk.CTkCheckBox(
-            self.config_download_frame_bottom,
-            text=self.translator.get_text("playlist"),
-            width=1,
-            variable=self.playlist_check_var,
-            onvalue=True,
-            offvalue=False,
-            command=self.toggle_playlist_options,
-        )
-        self.playlist_check.pack(side="top", pady=(10, 5))
-
-        self.playlist_check_tooltip = CTkToolTip(
-            self.playlist_check,
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-            message=self.translator.get_text("playlist_check_tooltip"),
-        )
-
-        self.playlist_options_frame = ctk.CTkFrame(
-            self.config_download_frame_bottom,
+        self.settings_tab = SettingsTab(
+            self.tab3,
+            app=self,
+            translator=self.translator,
+            user_prefer=self.user_prefer,
             fg_color="transparent",
-            border_width=2,
-            border_color=("#D03434", "#A11D1D"),
-            corner_radius=10,
         )
-        self.playlist_options_frame.pack(side="top", fill="x", expand=True)
-
-        # Playlist Items
-        self.playlist_items_frame = ctk.CTkFrame(
-            self.playlist_options_frame, fg_color="transparent"
-        )
-        self.playlist_items_frame.pack(side="left", expand=True)
-
-        self.playlist_items_label = ctk.CTkLabel(
-            self.playlist_items_frame, text=self.translator.get_text("playlist_items")
-        )
-        self.playlist_items_label.pack(side="left", padx=(0, 5))
-
-        self.playlist_items_entry = ctk.CTkEntry(
-            self.playlist_items_frame,
-            width=100,
-            placeholder_text=self.translator.get_text("playlist_placeholder"),
-        )
-        self.playlist_items_entry.pack(side="left")
-
-        self.playlist_items_tooltip = CTkToolTip(
-            self.playlist_items_entry,
-            message=self.translator.get_text("playlist_items_tooltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-70,
-            follow=False,
-        )
-
-        # Playlist Reverse
-        self.playlist_reverse_var = ctk.BooleanVar(value=False)
-        self.playlist_reverse_check = ctk.CTkCheckBox(
-            self.playlist_options_frame,
-            text=self.translator.get_text("playlist_reverse"),
-            variable=self.playlist_reverse_var,
-            command=self.toggle_playlist_reverse,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.playlist_reverse_check.pack(side="left", expand=True)
-
-        self.playlist_reverse_tooltip = CTkToolTip(
-            self.playlist_reverse_check,
-            message=self.translator.get_text("playlist_reverse_tooltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-        )
-
-        # Playlist Random
-        self.playlist_random_var = ctk.BooleanVar(value=False)
-        self.playlist_random_check = ctk.CTkCheckBox(
-            self.playlist_options_frame,
-            text=self.translator.get_text("playlist_random"),
-            variable=self.playlist_random_var,
-            command=self.toggle_playlist_random,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.playlist_random_check.pack(side="left", expand=True)
-
-        self.playlist_random_tooltip = CTkToolTip(
-            self.playlist_random_check,
-            message=self.translator.get_text("playlist_random_tooltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-        )
-
-        # Playlist Folder
-        self.playlist_folder_var = ctk.BooleanVar(value=False)
-        self.playlist_folder_check = ctk.CTkCheckBox(
-            self.playlist_options_frame,
-            text=self.translator.get_text("playlist_folder"),
-            variable=self.playlist_folder_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.playlist_folder_check.pack(side="left", expand=True)
-
-        self.playlist_folder_tooltip = CTkToolTip(
-            self.playlist_folder_check,
-            message=self.translator.get_text("playlist_folder_tooltip"),
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-        )
-
-        # Inicialmente esconde as opções
-        self.playlist_options_frame.pack_forget()
-        # endregion
-
-        #! Frame de url
-        # region URL entry
-        self.url1_frame = ctk.CTkFrame(self.main_frame_top, fg_color="transparent")
-        self.url1_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, padx=15, pady=10
-        )
-        self.url1_frame.columnconfigure(1, weight=1)
-
-        self.url1_label = ctk.CTkLabel(self.url1_frame, text="Url:", font=("Arial", 14))
-        self.url1_label.grid(row=0, column=0, sticky="e", padx=(0, 10))
-
-        self.url1_entry = ctk.CTkEntry(
-            self.url1_frame,
-            textvariable=self.url1_var,
-            placeholder_text=self.translator.get_text("url_placeholder"),
-        )
-        self.url1_entry.grid(row=0, column=1, sticky="nsew")
-        # endregion
-
-        #! Botão de Download
-        # region Botão Download
-        self.download_button = ctk.CTkButton(
-            self.main_frame_top,
-            text=self.translator.get_text("download_button"),
-            command=lambda: self.call_download("basic"),
-            width=200,
-            font=ctk.CTkFont(size=14),
-        )
-        self.download_button.pack(side="top")
-        # endregion
-
-        #! Frame para seleção de pasta de donwload
-        # region Download Path
-        self.download_path_frame = ctk.CTkFrame(
-            self.main_frame_bottom, fg_color="transparent"
-        )
-        self.download_path_frame.pack(
-            side="top",
-            fill="x",
-            pady=(0, 5),
-            padx=10,
-        )
-
-        self.download_path_frame_top = ctk.CTkFrame(
-            self.download_path_frame, fg_color="transparent"
-        )
-        self.download_path_frame_top.pack(side="top", fill="x")
-
-        self.download_path_frame_buttom = ctk.CTkFrame(
-            self.download_path_frame, fg_color="transparent"
-        )
-        self.download_path_frame_buttom.pack(side="top", fill="x")
-
-        self.download_path_label = ctk.CTkLabel(
-            self.download_path_frame_top,
-            width=130,
-            anchor="w",
-            text=self.translator.get_text("download_path"),
-        )
-        self.download_path_label.pack(side="left", fill="x")
-
-        self.download_path_entry = ctk.CTkEntry(
-            self.download_path_frame_buttom,
-            placeholder_text=self.translator.get_text("folder_path"),
-        )
-        self.download_path_entry.pack(side="left", expand=True, fill="x", padx=(0, 5))
-
-        last_download_path = self.user_prefer.get("last_download_path")
-        if last_download_path:
-            self.download_path_entry.insert(0, last_download_path)
-        else:
-            self.download_path_entry.insert(
-                0, self.user_prefer.get("default_download_path")
-            )
-
-        self.download_path_button = ctk.CTkButton(
-            self.download_path_frame_buttom,
-            text=self.translator.get_text("select_folder"),
-            command=lambda: self.download_path_select(self.download_path_entry),
-        )
-        self.download_path_button.pack(side="left")
-
-        self.download_path_reset_icon = ctk.CTkImage(
-            Image.open(get_image_path("reset_icon.png")),
-            size=(16, 16),
-        )
-
-        self.download_path_reset = ctk.CTkButton(
-            self.download_path_frame_buttom,
-            text="",
-            image=self.download_path_reset_icon,
-            command=lambda: self.reset_download_path(),
-            width=28,
-            corner_radius=5,
-        )
-        self.download_path_reset.pack(side="left", padx=(2, 0))
-        # endregion
-
-        # endregion
-
-        #! Advanced Options
-        # TODO Work in Progress (Advanced)
-        """ 
-        # region Janela de Opções Avançadas
-        self.advced_frame = ctk.CTkFrame(self.tab2, fg_color="transparent")
-        self.advced_frame.pack(fill="both", expand=True, pady=10)
-
-        self.advced_frame_top = ctk.CTkFrame(self.advced_frame, fg_color="transparent")
-        self.advced_frame_top.pack(side="top", fill="both")
-
-        self.advced_frame_bottom = ctk.CTkFrame(
-            self.advced_frame, fg_color="transparent"
-        )
-        self.advced_frame_bottom.pack(side="bottom", fill="x")
-
-        #! Frame de url
-        # region
-        self.url2_frame = ctk.CTkFrame(self.advced_frame_top, fg_color="transparent")
-        self.url2_frame.pack(
-            side="top", fill="x", expand=True, ipadx=5, ipady=5, pady=(10, 10), padx=15
-        )
-        self.url2_frame.columnconfigure(1, weight=1)
-
-        self.url2_label = ctk.CTkLabel(self.url2_frame, text="Url:", font=("Arial", 14))
-        self.url2_label.grid(row=0, column=0, sticky="e", padx=10)
-
-        self.url2_entry = ctk.CTkEntry(
-            self.url2_frame,
-            textvariable=self.url2_var,
-            placeholder_text=self.translator.get_text("url_placeholder"),
-        )
-        self.url2_entry.grid(row=0, column=1, sticky="nsew")
-        # endregion
-
-        #! Botão de Pesquisar
-        # region
-        self.search_button = ctk.CTkButton(
-            self.url2_frame,
-            text=self.translator.get_text("search"),
-            command=self.call_download,
-            width=100,
-            font=ctk.CTkFont(size=14),
-        )
-        self.search_button.grid(row=0, column=2, sticky="w", padx=10)
-        # endregion
-
-        # endregion
-        """
-
-        #! Settings
-        # region Janela Configurações
-        self.settings_frame = ctk.CTkFrame(self.tab3, fg_color="transparent")
-        self.settings_frame.pack(fill="both", expand=True, pady=10)
-
-        self.settings_frame_top = ctk.CTkFrame(
-            self.settings_frame, fg_color="transparent"
-        )
-        self.settings_frame_top.pack(side="top", fill="both", padx=15)
-
-        self.settings_frame_bottom = ctk.CTkFrame(
-            self.settings_frame, fg_color="transparent"
-        )
-        self.settings_frame_bottom.pack(side="bottom", fill="x")
-
-        #! interface
-        # region INTERFACE
-        self.interface_label = ctk.CTkLabel(
-            self.settings_frame_top,
-            text=self.translator.get_text("interface"),
-            font=ctk.CTkFont(size=16, weight="bold"),
-        )
-        self.interface_label.pack(side="top")
-
-        self.interface_div = ctk.CTkFrame(
-            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
-        )
-        self.interface_div.pack(side="top", fill="x")
-
-        self.interface_frame = ctk.CTkFrame(
-            self.settings_frame_top, fg_color="transparent"
-        )
-        self.interface_frame.pack(side="top", fill="x", pady=10)
-
-        #! Aparência
-        # region APARÊNCIA
-        self.appearance_frame = ctk.CTkFrame(
-            self.interface_frame, fg_color="transparent"
-        )
-        self.appearance_frame.pack(side="left", expand=True)
-
-        self.appearance_label = ctk.CTkLabel(
-            self.appearance_frame,
-            # width=100,
-            text=self.translator.get_text("appearance") + ":",
-            anchor="e",
-        )
-        self.appearance_label.pack(side="left")
-
-        self.appearance_var = ctk.StringVar(
-            value=self.translator.get_text("appearance_values")[
-                self.user_prefer.get("appearance")
-            ]
-        )
-
-        self.appearance_dropdown = ctk.CTkOptionMenu(
-            self.appearance_frame,
-            values=list(self.translator.get_text("appearance_values").values()),
-            variable=self.appearance_var,
-            command=lambda choice: ctk.set_appearance_mode(
-                self.translator.get_key_by_value(
-                    self.translator.get_text("appearance_values"), choice
-                )
-            ),
-            width=100,
-        )
-        self.appearance_dropdown.pack(side="left", padx=(5, 0))
-
-        # endregion
-
-        #! Idioma
-        # region IDIOMA
-        self.language_frame = ctk.CTkFrame(self.interface_frame, fg_color="transparent")
-        self.language_frame.pack(side="left", expand=True)
-
-        self.language_label = ctk.CTkLabel(
-            self.language_frame,
-            # width=100,
-            text=self.translator.get_text("language") + ":",
-            anchor="e",
-        )
-        self.language_label.pack(side="left")
-
-        self.language_var = ctk.StringVar(
-            value=self.available_languages[self.user_prefer.get("language")]
-        )
-
-        self.language_dropdown = ctk.CTkOptionMenu(
-            self.language_frame,
-            values=list(self.available_languages.values()),
-            variable=self.language_var,
-            command=self.change_language,
-            width=140,
-        )
-        self.language_dropdown.pack(side="left", padx=(5, 0))
-
-        # endregion
-
-        #! Notificação Sonora
-        # region NOTIFICAÇÂO SONORA
-        self.sound_notification_var = ctk.BooleanVar(
-            value=self.user_prefer.get("sound_notification")
-        )
-        self.sound_notification_checkbox = ctk.CTkCheckBox(
-            self.interface_frame,
-            text=self.translator.get_text("sound_notification"),
-            variable=self.sound_notification_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.sound_notification_checkbox.pack(side="left", expand=True, padx=5)
-
-        # endregion
-
-        # endregion
-
-        #! Pós download
-        # region Pós-Download
-        self.post_download_label = ctk.CTkLabel(
-            self.settings_frame_top,
-            text=self.translator.get_text("post_download"),
-            font=ctk.CTkFont(size=16, weight="bold"),
-        )
-        self.post_download_label.pack(side="top")
-
-        self.post_download_div = ctk.CTkFrame(
-            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
-        )
-        self.post_download_div.pack(side="top", fill="x")
-
-        self.post_download_frame = ctk.CTkFrame(
-            self.settings_frame_top, fg_color="transparent"
-        )
-        self.post_download_frame.pack(side="top", fill="x", pady=10)
-
-        self.clear_url_var = ctk.BooleanVar(value=self.user_prefer.get("clear_url"))
-        self.open_folder_var = ctk.BooleanVar(value=self.user_prefer.get("open_folder"))
-        self.notify_completed_var = ctk.BooleanVar(
-            value=self.user_prefer.get("notify_completed")
-        )
-
-        # Limpar url
-        self.clear_url_checkbox = ctk.CTkCheckBox(
-            self.post_download_frame,
-            text=self.translator.get_text("check_clear_url"),
-            variable=self.clear_url_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.clear_url_checkbox.pack(side="left", expand=True, padx=5)
-
-        # Abrir pasta
-        self.open_folder_checkbox = ctk.CTkCheckBox(
-            self.post_download_frame,
-            text=self.translator.get_text("check_open_folder"),
-            variable=self.open_folder_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.open_folder_checkbox.pack(side="left", expand=True, padx=5)
-
-        self.open_folder_tooltip = CTkToolTip(
-            self.open_folder_checkbox,
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-            message=self.translator.get_text("check_open_folder_tooltip"),
-        )
-
-        # Notificar quando concluido
-        self.notify_completed_checkbox = ctk.CTkCheckBox(
-            self.post_download_frame,
-            text=self.translator.get_text("check_notify_completed"),
-            variable=self.notify_completed_var,
-            onvalue=True,
-            offvalue=False,
-        )
-        self.notify_completed_checkbox.pack(side="left", expand=True, padx=5)
-
-        self.notify_completed_tooltip = CTkToolTip(
-            self.notify_completed_checkbox,
-            justify="left",
-            padding=(10, 10),
-            border_width=1,
-            x_offset=-50,
-            follow=False,
-            message=self.translator.get_text("check_notify_completed_tooltip"),
-        )
-
-        # endregion
-
-        #! Caminhos Padrão
-        # region Default Paths
-        self.default_label = ctk.CTkLabel(
-            self.settings_frame_top,
-            text=self.translator.get_text("default_paths"),
-            font=ctk.CTkFont(size=16, weight="bold"),
-        )
-        self.default_label.pack(side="top")
-
-        self.default_div = ctk.CTkFrame(
-            self.settings_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
-        )
-        self.default_div.pack(side="top", fill="x")
-
-        self.default_frame = ctk.CTkFrame(
-            self.settings_frame_top, fg_color="transparent"
-        )
-        self.default_frame.pack(side="top", fill="x", pady=10)
-
-        #! Frame para seleção de arquivo .exe
-        # region FFMPEG
-        self.ffmpeg_path_frame = ctk.CTkFrame(
-            self.default_frame, fg_color="transparent"
-        )
-        self.ffmpeg_path_frame.pack(side="top", expand=True, fill="x", pady=(0, 10))
-
-        self.ffmpeg_path_label = ctk.CTkLabel(
-            self.ffmpeg_path_frame,
-            text="FFmpeg:",
-            anchor="w",
-        )
-        self.ffmpeg_path_label.pack(side="left")
-
-        self.ffmpeg_path_entry = ctk.CTkEntry(
-            self.ffmpeg_path_frame,
-            placeholder_text=self.translator.get_text("exe_path"),
-        )
-        self.ffmpeg_path_entry.pack(side="left", expand=True, fill="x", padx=5)
-
-        self.ffmpeg_path_button = ctk.CTkButton(
-            self.ffmpeg_path_frame,
-            text=self.translator.get_text("search_ffmpeg"),
-            command=self.ffmpeg_path_select,
-        )
-        self.ffmpeg_path_button.pack(side="left")
-
-        ffmpeg_path = self.user_prefer.get("ffmpeg_path")
-        if not ffmpeg_path:
-            ffmpeg_path = get_ffmpeg_path()
-            if ffmpeg_path:
-                self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
-            else:
-                self.ffmpeg_popup()
-        else:
-            self.ffmpeg_path_entry.insert(0, ffmpeg_path)
-        # endregion
-
-        #! Frame para seleção de pasta de donwload
-        # region Download Default
-        self.default_download_path_frame = ctk.CTkFrame(
-            self.default_frame, fg_color="transparent"
-        )
-        self.default_download_path_frame.pack(side="top", expand=True, fill="x")
-
-        self.default_download_path_label = ctk.CTkLabel(
-            self.default_download_path_frame,
-            text="Download:",
-            width=50,
-            anchor="w",
-        )
-        self.default_download_path_label.pack(side="left")
-
-        self.default_download_path_entry = ctk.CTkEntry(
-            self.default_download_path_frame,
-            placeholder_text=self.translator.get_text("folder_path"),
-        )
-        self.default_download_path_entry.pack(
-            side="left", expand=True, fill="x", padx=5
-        )
-        self.default_download_path_entry.insert(
-            0, self.user_prefer.get("default_download_path")
-        )
-
-        self.default_download_tooltip = CTkToolTip(
-            self.default_download_path_entry,
-            justify="left",
-            padding=(5, 5),
-            border_width=1,
-            x_offset=-50,
-            y_offset=-55,
-            follow=False,
-            message=self.translator.get_text("donwload_path_tooltip"),
-        )
-
-        self.default_download_path_button = ctk.CTkButton(
-            self.default_download_path_frame,
-            text=self.translator.get_text("select_folder"),
-            command=lambda: self.download_path_select(self.default_download_path_entry),
-        )
-        self.default_download_path_button.pack(side="left")
-        # endregion
-
-        #! Botão de Reset
-        # region Reset Button
-        self.reset_settings_button = ctk.CTkButton(
-            self.settings_frame_bottom,
-            text=self.translator.get_text("reset_settings"),
-            command=self.reset_settings,
-            width=200,
-            font=ctk.CTkFont(size=14),
-        )
-        self.reset_settings_button.pack(side="bottom", pady=10)
-        # endregion
-
-        # endregion
-
-        # endregion
-
-        #! About
-        # region Janela Sobre
-        self.about_frame = ctk.CTkFrame(self.tab4, fg_color="transparent")
-        self.about_frame.pack(fill="both", expand=True, pady=10)
-
-        self.about_frame_top = ctk.CTkFrame(self.about_frame, fg_color="transparent")
-        self.about_frame_top.pack(side="top", fill="both", padx=15)
-
-        self.about_frame_bottom = ctk.CTkFrame(self.about_frame, fg_color="transparent")
-        self.about_frame_bottom.pack(side="bottom", fill="x")
-
-        #! Informações do Desenvolvedor
-        # region DESENVOLVEDOR
-        self.dev_label = ctk.CTkLabel(
-            self.about_frame_top,
-            text=self.translator.get_text("developed_by"),
-            font=ctk.CTkFont(size=16, weight="bold"),
-        )
-        self.dev_label.pack(side="top", pady=(0, 5))
-
-        self.dev_div = ctk.CTkFrame(
-            self.about_frame_top, height=2, fg_color=("#D03434", "#A11D1D")
-        )
-        self.dev_div.pack(side="top", fill="x")
-        # endregion
-
-        #! Versão
-        # region VERSÃO
-        self.version_label = ctk.CTkLabel(
-            self.about_frame_top,
-            text=self.translator.get_text("version").format(
-                version=self.default_config.APP_VERSION
-            ),
-            font=ctk.CTkFont(size=14),
-        )
-        self.version_label.pack(side="top", pady=(20, 5))
-        # endregion
-
-        #! Links
-        # region Links
-        self.github_button = ctk.CTkButton(
-            self.about_frame_top,
-            text="GitHub",
-            command=lambda: self.open_link(self.default_config.APP_WEBSITE),
-            width=120,
-            font=ctk.CTkFont(size=13),
-        )
-        self.github_button.pack(side="top", pady=5)
-        # endregion
-
-        #! Ferramentas
-        # region Ferramentas
-        self.tools_label = ctk.CTkLabel(
-            self.about_frame_top,
-            text=self.translator.get_text("tools"),
-            font=ctk.CTkFont(size=14, weight="bold"),
-        )
-        self.tools_label.pack(side="top", pady=(20, 5))
-
-        #! Principais
-        # region Principais
-        self.main_tools_frame = ctk.CTkFrame(
-            self.about_frame_top, fg_color="transparent"
-        )
-        self.main_tools_frame.pack(side="top", fill="x", pady=5)
-
-        self.python_logo = ctk.CTkImage(
-            light_image=Image.open(get_image_path("python_logo.png")),
-            dark_image=Image.open(get_image_path("python_logo.png")),
-            size=(80, 25),  # Mantém proporção original de 498x155
-        )
-
-        self.python_button = ctk.CTkButton(
-            self.main_tools_frame,
-            text="",
-            image=self.python_logo,
-            command=lambda: self.open_link("https://www.python.org/"),
-            width=150,
-            font=ctk.CTkFont(size=14, weight="bold"),
-        )
-        self.python_button.pack(side="left", padx=5, expand=True)
-
-        self.ytdlp_logo = ctk.CTkImage(
-            light_image=Image.open(get_image_path("ytdlp_logo.png")),
-            dark_image=Image.open(get_image_path("ytdlp_logo.png")),
-            size=(25, 25),
-        )
-
-        self.ytdlp_button = ctk.CTkButton(
-            self.main_tools_frame,
-            text="yt-dlp",
-            image=self.ytdlp_logo,
-            command=lambda: self.open_link("https://github.com/yt-dlp/yt-dlp"),
-            width=150,
-        )
-        self.ytdlp_button.pack(side="left", padx=5, expand=True)
-
-        self.customtkinter_logo = ctk.CTkImage(
-            light_image=Image.open(get_image_path("customtkinter_logo.png")),
-            dark_image=Image.open(get_image_path("customtkinter_logo.png")),
-            size=(116, 25),  # Mantém proporção original de 1231x264
-        )
-
-        self.customtkinter_button = ctk.CTkButton(
-            self.main_tools_frame,
-            text="",
-            image=self.customtkinter_logo,
-            command=lambda: self.open_link(
-                "https://github.com/TomSchimansky/CustomTkinter"
-            ),
-            width=150,
-            font=ctk.CTkFont(size=14, weight="bold"),
-        )
-        self.customtkinter_button.pack(side="left", padx=5, expand=True)
-        # endregion
-
-        #! Componentes
-        # region Componentes
-        self.tools_frame = ctk.CTkFrame(self.about_frame_top, fg_color="transparent")
-        self.tools_frame.pack(side="top", fill="x", pady=5)
-
-        self.ctkmsg_button = ctk.CTkButton(
-            self.tools_frame,
-            text="CTkMessagebox",
-            command=lambda: self.open_link("https://github.com/Akascape/CTkMessagebox"),
-            width=120,
-            font=ctk.CTkFont(size=13),
-        )
-        self.ctkmsg_button.pack(side="left", padx=5, expand=True)
-
-        self.ctktool_button = ctk.CTkButton(
-            self.tools_frame,
-            text="CTkToolTip",
-            command=lambda: self.open_link("https://github.com/Akascape/CTkToolTip"),
-            width=120,
-            font=ctk.CTkFont(size=13),
-        )
-        self.ctktool_button.pack(side="left", padx=5, expand=True)
-
-        self.ctktheme_button = ctk.CTkButton(
-            self.tools_frame,
-            text="CTkThemesPack",
-            command=lambda: self.open_link("https://github.com/a13xe/CTkThemesPack"),
-            width=120,
-            font=ctk.CTkFont(size=13),
-        )
-        self.ctktheme_button.pack(side="left", padx=5, expand=True)
-
-        self.ctkcomp_button = ctk.CTkButton(
-            self.tools_frame,
-            text="ctk_components",
-            command=lambda: self.open_link(
-                "https://github.com/rudymohammadbali/ctk_components"
-            ),
-            width=120,
-            font=ctk.CTkFont(size=13),
-        )
-        self.ctkcomp_button.pack(side="left", padx=5, expand=True)
-        # endregion
-        # endregion
-        # endregion
+        self.settings_tab.pack(fill="both", expand=True)
+
+        self.advanced_tab = AdvancedTab(
+            self.tab2,
+            app=self,
+            translator=self.translator,
+            yt_dlp=self.yt_dlp,
+            settings_tab=self.settings_tab,
+            fg_color="transparent",
+        )
+        self.advanced_tab.pack(fill="both", expand=True)
+
+        self.about_tab = AboutTab(
+            self.tab4,
+            app=self,
+            translator=self.translator,
+            default_config=self.default_config,
+            fg_color="transparent",
+        )
+        self.about_tab.pack(fill="both", expand=True)
+
+        self.download_tab = DownloadTab(
+            self.tab1,
+            app=self,
+            translator=self.translator,
+            user_prefer=self.user_prefer,
+            yt_dlp=self.yt_dlp,
+            default_config=self.default_config,
+            advanced_tab=self.advanced_tab,
+            settings_tab=self.settings_tab,
+            fg_color="transparent",
+        )
+        self.download_tab.pack(fill="both", expand=True)
 
         # Quando a janela é fechada, ele executa a função
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-    # TODO Work in Progress (Advanced)
-    """
+    # region Sincronização de URL
     # Função para atualizar var2 quando var1 mudar (sem causar loop infinito)
     def sync_var1_to_var2(self, *args):
         # Temporariamente remover o trace de var2 para evitar loop
@@ -1138,29 +332,8 @@ class MainApplication(ctk.CTk):
 
         # Reativar o trace
         self.trace_url1 = self.url1_var.trace_add("write", self.sync_var1_to_var2)
-    """
 
-    def toggle_playlist_reverse(self):
-        if self.playlist_reverse_var.get():
-            self.playlist_random_check.configure(
-                state="disabled", border_color=["#A7B4B9", "#55595D"]
-            )
-        else:
-            self.playlist_random_check.configure(
-                state="normal", border_color=["#3E454A", "#949A9F"]
-            )
-
-    def toggle_playlist_random(self):
-        if self.playlist_random_var.get():
-            self.playlist_reverse_check.configure(
-                state="disabled", border_color=["#A7B4B9", "#55595D"]
-            )
-        else:
-            self.playlist_reverse_check.configure(
-                state="normal", border_color=["#3E454A", "#949A9F"]
-            )
-
-    # TODO Work in Progress (Language)
+    # region Alteração de idioma
     def change_language(self, language_name):
         # Obter código do idioma
         language_code = self.available_languages_inverted[language_name]
@@ -1172,279 +345,77 @@ class MainApplication(ctk.CTk):
 
             self.last_language = language_code
 
+    # region Atualização de textos da interface
     def update_interface_texts(self):
         self.save_current_settings()
         self.tabview.update_button_text()
 
-        # region Traduzir Download
+        self.download_tab.update_language()
+        self.advanced_tab.update_language()
+        self.settings_tab.update_language()
+        self.about_tab.update_language()
 
-        self.playlist_check.configure(text=self.translator.get_text("playlist"))
-        self.playlist_check_tooltip.configure(
-            message=self.translator.get_text("playlist_check_tooltip")
-        )
-        self.playlist_items_label.configure(
-            text=self.translator.get_text("playlist_items")
-        )
-        self.playlist_reverse_check.configure(
-            text=self.translator.get_text("playlist_reverse")
-        )
-        self.playlist_random_check.configure(
-            text=self.translator.get_text("playlist_random")
-        )
-        self.playlist_folder_check.configure(
-            text=self.translator.get_text("playlist_folder")
-        )
-        self.playlist_items_tooltip.configure(
-            message=self.translator.get_text("playlist_items_tooltip")
-        )
-        self.playlist_reverse_tooltip.configure(
-            message=self.translator.get_text("playlist_reverse_tooltip")
-        )
-        self.playlist_random_tooltip.configure(
-            message=self.translator.get_text("playlist_random_tooltip")
-        )
-        self.playlist_folder_tooltip.configure(
-            message=self.translator.get_text("playlist_folder_tooltip")
-        )
-
-        self.media_label.configure(text=self.translator.get_text("media_type"))
-
-        self.media_var.set(
-            self.translator.get_text("media_values")[self.user_prefer.get("media")]
-        )
-        self.media_SegButton.configure(
-            values=list(self.translator.get_text("media_values").values())
-        )
-        self.formato_label.configure(text=self.translator.get_text("format"))
-        self.qualidade_label.configure(text=self.translator.get_text("quality"))
-        self.url1_entry.configure(
-            placeholder_text=self.translator.get_text("url_placeholder")
-        )
-        self.download_button.configure(text=self.translator.get_text("download_button"))
-        self.download_path_label.configure(
-            text=self.translator.get_text("download_path")
-        )
-        self.download_path_entry.configure(
-            placeholder_text=self.translator.get_text("folder_path")
-        )
-        self.download_path_button.configure(
-            text=self.translator.get_text("select_folder")
-        )
-
-        # endregion
-
-        # region Traduzir Config
-        self.language_label.configure(text=self.translator.get_text("language") + ":")
-        self.appearance_label.configure(
-            text=self.translator.get_text("appearance") + ":"
-        )
-        self.appearance_dropdown.configure(
-            values=list(self.translator.get_text("appearance_values").values())
-        )
-
-        self.appearance_var.set(
-            self.translator.get_text("appearance_values")[
-                self.user_prefer.get("appearance")
-            ]
-        )
-
-        self.sound_notification_checkbox.configure(
-            text=self.translator.get_text("sound_notification")
-        )
-
-        self.post_download_label.configure(
-            text=self.translator.get_text("post_download")
-        )
-        self.clear_url_checkbox.configure(
-            text=self.translator.get_text("check_clear_url")
-        )
-        self.open_folder_checkbox.configure(
-            text=self.translator.get_text("check_open_folder")
-        )
-        self.open_folder_tooltip.configure(
-            message=self.translator.get_text("check_open_folder_tooltip")
-        )
-        self.notify_completed_checkbox.configure(
-            text=self.translator.get_text("check_notify_completed")
-        )
-        self.notify_completed_tooltip.configure(
-            message=self.translator.get_text("check_notify_completed_tooltip")
-        )
-
-        self.default_label.configure(text=self.translator.get_text("default_paths"))
-        self.ffmpeg_path_entry.configure(
-            placeholder_text=self.translator.get_text("exe_path")
-        )
-        self.ffmpeg_path_button.configure(
-            text=self.translator.get_text("search_ffmpeg")
-        )
-        self.default_download_path_entry.configure(
-            placeholder_text=self.translator.get_text("folder_path")
-        )
-        self.default_download_path_button.configure(
-            text=self.translator.get_text("select_folder")
-        )
-        self.default_download_tooltip.configure(
-            message=self.translator.get_text("donwload_path_tooltip")
-        )
-
-        self.dev_label.configure(text=self.translator.get_text("developed_by"))
-        self.version_label.configure(
-            text=self.translator.get_text("version").format(
-                version=self.default_config.APP_VERSION
-            )
-        )
-        self.tools_label.configure(text=self.translator.get_text("tools"))
-
-        # endregion
-
-        self.reset_settings_button.configure(
-            text=self.translator.get_text("reset_settings")
-        )
-
+    # region Salvar configurações atuais
     def save_current_settings(self):
         """Salva as configurações atuais"""
-        self.user_prefer.set("last_download_path", self.download_path_entry.get())
         self.user_prefer.set(
-            "default_download_path", self.default_download_path_entry.get()
+            "last_download_path", self.download_tab.download_path_entry.get()
         )
-        self.user_prefer.set("ffmpeg_path", self.ffmpeg_path_entry.get())
+        self.user_prefer.set(
+            "default_download_path", self.settings_tab.default_download_path_entry.get()
+        )
+        self.user_prefer.set("ffmpeg_path", self.settings_tab.ffmpeg_path_entry.get())
         self.user_prefer.set(
             "media",
             self.translator.get_key_by_value(
                 self.translator.get_text("media_values", self.last_language),
-                self.media_var.get(),
+                self.download_tab.media_var.get(),
             ),
         )
-        self.user_prefer.set("format", self.formato_var.get())
-        self.user_prefer.set("quality", self.qualidade_var.get())
+        self.user_prefer.set("format", self.download_tab.formato_var.get())
+        self.user_prefer.set("quality", self.download_tab.qualidade_var.get())
         self.user_prefer.set(
             "appearance",
             self.translator.get_key_by_value(
                 self.translator.get_text("appearance_values", self.last_language),
-                self.appearance_var.get(),
+                self.settings_tab.appearance_var.get(),
             ),
         )
         self.user_prefer.set(
-            "language", self.available_languages_inverted[self.language_var.get()]
+            "language",
+            self.available_languages_inverted[self.settings_tab.language_var.get()],
         )
-        self.user_prefer.set("sound_notification", self.sound_notification_var.get())
-        self.user_prefer.set("clear_url", self.clear_url_var.get())
-        self.user_prefer.set("open_folder", self.open_folder_var.get())
-        self.user_prefer.set("notify_completed", self.notify_completed_var.get())
+        self.user_prefer.set(
+            "sound_notification", self.settings_tab.sound_notification_var.get()
+        )
+        self.user_prefer.set("clear_url", self.settings_tab.clear_url_var.get())
+        self.user_prefer.set("open_folder", self.settings_tab.open_folder_var.get())
+        self.user_prefer.set(
+            "notify_completed", self.settings_tab.notify_completed_var.get()
+        )
 
+    # region Ao fehar a janela
     def on_closing(self):
         """Chamado quando a janela é fechada"""
         self.save_current_settings()
         self.user_prefer.save_preferences()
         self.quit()
 
-    def reset_download_path(self):
-        path = self.default_download_path_entry.get()
-        self.download_path_entry.delete(0, "end")
-        self.download_path_entry.insert(0, path)
-
-    def media_selected(self, valor, init=False):
-        if valor == self.translator.get_text("video"):
-            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_VIDEOS)
-            self.qualidade_menu.configure(state="normal")
-            if not init:
-                self.user_prefer.set("last_format_audio", self.formato_var.get())
-                self.formato_var.set(self.user_prefer.get("last_format_video"))
-        elif valor == self.translator.get_text("audio"):
-            self.formato_OptionMenu.configure(values=self.default_config.FORMAT_AUDIOS)
-            self.qualidade_menu.configure(state="disabled")
-            if not init:
-                self.user_prefer.set("last_format_video", self.formato_var.get())
-                self.formato_var.set(self.user_prefer.get("last_format_audio"))
-
-    def call_download(self, type: str):
-        self.disable_button()
-
-        erros = []
-        if not self.url1_entry.get():
-            erros.append(self.translator.get_text("errors")[0])
-        if not self.download_path_entry.get():
-            erros.append(self.translator.get_text("errors")[1])
-        if not self.ffmpeg_path_entry.get():
-            self.ffmpeg_popup()
-
-        if erros:
-            for erro in erros:
-                if self.sound_notification_var.get():
-                    play_sound(False)
-                self.show_error(erro)  # Exibir cada erro
-            self.restore_button()
-            return
-        else:
-            self.download_options.clear()
-            self.download_options = {
-                "url": self.url1_entry.get(),
-                "download_path": self.download_path_entry.get(),
-                "ffmpeg_path": self.ffmpeg_path_entry.get(),
-            }
-            if type == "basic":
-                self.download_options.update(
-                    {
-                        "media": self.media_var.get(),
-                        "format": self.formato_var.get(),
-                        "quality": self.qualidade_var.get().replace("p", ""),
-                        "playlist": self.playlist_check_var.get(),
-                        "playlist_items": (
-                            self.playlist_items_entry.get()
-                            if self.playlist_check_var.get()
-                            else ""
-                        ),
-                        "playlist_reverse": bool(self.playlist_reverse_var.get()),
-                        "playlist_random": bool(self.playlist_random_var.get()),
-                        "playlist_folder": bool(self.playlist_folder_var.get()),
-                    }
-                )
-            elif type == "advanced":
-                # TODO Work in Progress (Advanced)
-                pass
-            self.yt_dlp.start_download(type)
-
-    def restore_button(self):
-        self.download_button.configure(state="normal")
-
-    def disable_button(self):
-        self.download_button.configure(state="disabled")
-
-    # Copia o caminho da pasta selecionada
-    def download_path_select(self, path_entry):
-        folder_path = filedialog.askdirectory()
-        if folder_path:
-            path_entry.delete(0, "end")
-            path_entry.insert(0, folder_path)
-
-    # Copia o caminho do .exe selecionado
-    def ffmpeg_path_select(self):
-        file_path = filedialog.askopenfilename(
-            filetypes=[
-                (self.translator.get_text("filetypes")[0], "*.exe"),
-                (self.translator.get_text("filetypes")[1], "*.*"),
-            ]
-        )
-        if file_path:
-            self.ffmpeg_path_entry.delete(0, "end")
-            self.ffmpeg_path_entry.insert(0, file_path)
-
-    # Mostra mensagem de erro
+    # region Exibição de mensagens
     def show_error(self, message):
         CTkMessagebox(title="Error", message=message, icon="cancel")
 
-    # Mostra mensagem de sucesso
     def show_checkmark(self, message):
         msg = CTkMessagebox(
             title=self.translator.get_text("success")[1],
             message=message,
             icon="check",
             wraplength=400,
-            sound=self.sound_notification_var.get(),
+            sound=self.settings_tab.sound_notification_var.get(),
         )
         msg.get()
 
+    # region Exibir mensagem de atualização disponível
     def show_update_available(self, update_info):
         title = self.translator.get_text("popup_update_title")
         message = self.translator.get_text("popup_update_msg").format(
@@ -1466,6 +437,7 @@ class MainApplication(ctk.CTk):
         if response == option[0]:
             self.open_link(update_info["release_url"])
 
+    # region Exibir mensagem do FFmpeg
     def ffmpeg_popup(self):
         title = self.translator.get_text("popup_ffmpeg_title")
         text = self.translator.get_text("popup_ffmpeg_msg")
@@ -1484,7 +456,7 @@ class MainApplication(ctk.CTk):
         response = msg.get()
 
         if response == option["ffmpeg_path"]:
-            self.ffmpeg_path_select()
+            self.settings_tab.ffmpeg_path_select()
         elif response == option["chocolatey"]:
             self.open_link("https://community.chocolatey.org/packages/ffmpeg")
         elif response == option["manually"]:
@@ -1492,83 +464,62 @@ class MainApplication(ctk.CTk):
                 "https://github.com/EasyTuber/EasyTuber?tab=readme-ov-file#-pr%C3%A9-requisitos"
             )
 
+    # region Verificar erros antes de iniciar o download
+    def check_errors(self, url: str, type: str, tab):
+
+        if type == "basic":
+            errors = []
+            if not self.download_tab.url1_entry.get():
+                errors.append(self.translator.get_text("errors")[0])
+            if not self.download_tab.download_path_entry.get():
+                errors.append(self.translator.get_text("errors")[1])
+            if not self.settings_tab.ffmpeg_path_entry.get():
+                self.ffmpeg_popup()
+
+            if errors:
+                for error in errors:
+                    if self.settings_tab.sound_notification_var.get():
+                        play_sound(False)
+                    self.show_error(error)  # Exibir cada erro
+                tab.restore_button()
+                return False
+
+        elif type == "advanced":
+            errors = []
+            if not self.advanced_tab.url2_entry.get():
+                self.show_error(self.translator.get_text("errors")[0])
+            if not self.settings_tab.default_download_path_entry.get():
+                self.show_error(self.translator.get_text("errors")[1])
+            if not self.settings_tab.ffmpeg_path_entry.get():
+                self.ffmpeg_popup()
+
+            if errors:
+                for error in errors:
+                    if self.settings_tab.sound_notification_var.get():
+                        play_sound(False)
+                    self.show_error(error)  # Exibir cada erro
+                tab.restore_button()
+                return False
+
+        internet_status = internet_connection(url, tab.translator)
+        if internet_status:
+            if self.settings_tab.sound_notification_var.get():
+                play_sound(False)
+            self.show_error(internet_status)
+            if type != "search":
+                tab.restore_button()
+            return False
+        else:
+            return True
+
+    def restore_button(self):
+        self.download_tab.restore_button()
+        self.advanced_tab.restore_button()
+
+    # region Abrir link
     def open_link(self, url):
         webbrowser.open(url)
 
-    def toggle_playlist_options(self):
-        """Controla a visibilidade das opções avançadas de playlist"""
-        if self.playlist_check_var.get():
-            self.playlist_options_frame.pack(
-                side="top", fill="x", expand=True, ipadx=5, ipady=5
-            )
-        else:
-            self.playlist_options_frame.pack_forget()
-
-    def reset_settings(self):
-        """Reseta todas as configurações para os valores padrão"""
-        title = self.translator.get_text("popup_reset_title")
-        message = self.translator.get_text("popup_reset_msg")
-        option = list(self.translator.get_text("popup_reset_options").keys())
-
-        msg = CTkMessagebox(
-            width=440,
-            title=title,
-            message=message,
-            icon="warning",
-            wraplength=360,
-            option_1=option[0],
-            option_2=option[1],
-        )
-        response = msg.get()
-
-        if response == option[0]:
-            # Resetar todas as configurações para o padrão
-            self.save_current_settings()
-            self.user_prefer.reset_preferences(self.translator)
-
-            # Atualizar a interface com os valores padrão
-            self.media_var.set(
-                self.translator.get_text("media_values")[self.user_prefer.get("media")]
-            )
-            self.formato_var.set(self.user_prefer.get("format"))
-            self.qualidade_var.set(self.user_prefer.get("quality"))
-            self.appearance_var.set(
-                self.translator.get_text("appearance_values")[
-                    self.user_prefer.get("appearance")
-                ]
-            )
-            self.language_var.set(
-                self.available_languages[self.user_prefer.get("language")]
-            )
-            self.sound_notification_var.set(self.user_prefer.get("sound_notification"))
-            self.clear_url_var.set(self.user_prefer.get("clear_url"))
-            self.open_folder_var.set(self.user_prefer.get("open_folder"))
-            self.notify_completed_var.set(self.user_prefer.get("notify_completed"))
-
-            # Atualizar os caminhos
-            self.ffmpeg_path_entry.delete(0, "end")
-            ffmpeg_path = get_ffmpeg_path()
-            if ffmpeg_path:
-                self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
-
-            self.default_download_path_entry.delete(0, "end")
-            self.default_download_path_entry.insert(
-                0, self.user_prefer.get("default_download_path")
-            )
-
-            self.download_path_entry.delete(0, "end")
-            self.download_path_entry.insert(
-                0, self.user_prefer.get("default_download_path")
-            )
-
-            # Atualizar aparência
-            ctk.set_appearance_mode(self.user_prefer.get("appearance"))
-
-            # Mostrar mensagem de sucesso após um pequeno delay
-            self.after(
-                100,
-                lambda: self.show_checkmark(self.translator.get_text("reset_success")),
-            )
-
+    # region Executar a aplicação
     def run(self):
         self.mainloop()

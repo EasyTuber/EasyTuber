@@ -57,7 +57,8 @@
         "Descargando información...",
         "Descargando información elemento {index} de {count}",
         "Archivo finalizado",
-        "Elemento {index} de {count} finalizado"
+        "Elemento {index} de {count} finalizado",
+        "Esto puede llevar algunos minutos."
     ],
     "download_path": "Ruta de Descarga:",
     "folder_path": "Ruta de la carpeta...",
@@ -91,6 +92,7 @@
     "check_notify_completed_tooltip": "Notificar cuando se complete.",
     "check_clear_url": "Limpiar campo URL",
     "sound_notification": "Notificación sonora",
+    "sound_notification_tooltip": "¡Solo Windows por ahora!\nReproducir un sonido cuando la descarga se complete.",
     "download_cancelled": "Descarga cancelada",
     "popup_update_title": "Actualización Disponible",
     "popup_update_msg": "Una nueva versión de EasyTuber está disponible: {version}.\n¿Deseas actualizar ahora?",
@@ -105,5 +107,32 @@
         "Sí": "yes",
         "No": "no"
     },
-    "reset_success": "¡Configuración restablecida con éxito!"
+    "reset_success": "¡Configuración restablecida con éxito!",
+    "search_title": "Título",
+    "search_channel": "Canal",
+    "formats_detected": "Formatos Detectados",
+    "formats_custom": "Personalizado...",
+    "format_tooltip": "Elige el formato de salida del video.\n • MP4: Formato ampliamente compatible, ideal para la mayoría de los dispositivos\n • MKV: Soporta múltiples pistas de audio y subtítulos, bueno para videos largos\n • WebM: Formato abierto, bueno para videos en línea\n • MOV: Formato de Apple, bueno para edición de video",
+    "video_codec": "Codec de Video",
+    "video_codec_tooltip": "El codec de video a utilizar para codificar el video\n • H.264: Compatible con la mayoría de dispositivos y navegadores\n • H.265: Mejor compresión, pero menos compatible\n • VP9: Codec abierto, bueno para videos en alta resolución\n • AV1: Codec de próxima generación, mejor compresión, pero más lento",
+    "audio_codec": "Codec de Audio",
+    "audio_codec_tooltip": "El codec de audio a utilizar para codificar el audio\n • AAC: Ampliamente compatible y eficiente\n • MP3: Formato popular, buena compatibilidad\n • Opus: Alta calidad, bueno para streaming\n • Vorbis: Codec abierto, bueno para videos en línea",
+    "compression_quality": "Compresión de Calidad (CRF)",
+    "compression_quality_tooltip": "Valor de compresión CRF para el video. Un valor más bajo significa mejor calidad, pero mayor tamaño de archivo.",
+    "compression_quality_values": ["Alta", "Media", "Baja"],
+    "encoding_speed": "Velocidad de Codificación",
+    "encoding_speed_tooltip": "Velocidad de codificación del video. Valores más bajos significan mejor calidad, pero mayor tiempo de codificación.",
+    "encoding_speed_values_h264": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_h265": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_av1": ["Ultra Rápido", "Rápido", "Medio (Recomendado)", "Lento", "Muy Lento"],
+    "encoding_speed_values_vp9": ["Rápido", "Medio (recomendado)", "Lento"],
+    "internet_connection_errors": [
+        "Conexión inestable",
+        "Timeout - conexión muy lenta",
+        "Sin conexión a Internet",
+        "Error de conexión: {e}",
+        "Problema con DNS",
+        "{domain} respondió con estado {response.status_code}",
+        "Problema al conectar con {domain}: {e}"
+    ]
 } 

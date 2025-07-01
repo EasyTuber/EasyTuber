@@ -1,9 +1,12 @@
+import json
 import os
 from yt_dlp import YoutubeDL
 import threading
 from modules.utils import get_ffmpeg_path, play_sound
-from libs import CTkProgressPopup, CTkNotification
+from libs import CTkProgressPopup, CTkNotification, CTkLoader
 import time
+import subprocess
+import platform
 
 
 class YoutubeDownloader:
@@ -16,11 +19,10 @@ class YoutubeDownloader:
         root : ctk.CTk
             The main application window
         """
-        self.root = root
+        self.app = root
         self.translator = root.translator
         self.ydl_opts = {}
         self.resolutions_available = set()
-        self.info = []
         self.resolutions_list = []
         self.options_ydlp = {}
         self.url = ""
@@ -29,18 +31,27 @@ class YoutubeDownloader:
         self.total_videos = 0
         self.current_video = 0
 
+        # Constantes para o avançado
+        self.info_preview = []
+        self.info_presets = []
+        self.info_formats = []
+        self.audio_id = None
+        self.search_concluded = False
+
         # Flag para controlar o cancelamento
         self.cancel_download = threading.Event()
         self.download_thread = None
 
-    def start_download(self, type: str):
+    def start_download(self, type: str, download_options: dict = None):
 
         self.type_download = type
+        self.options_ydlp.clear()
+        self.options_ydlp = download_options
 
         # Janela para mostrar o donwload
         self.progress_popup = None
         self.progress_popup = CTkProgressPopup(
-            master=self.root,
+            master=self.app,
             title=self.translator.get_text("downloading"),
             label=self.translator.get_text("status")[1],
             message="",
@@ -60,6 +71,93 @@ class YoutubeDownloader:
         )
         self.download_thread.start()
 
+    # region Iniciar busca
+    def start_search(self, url, on_complete=None):
+        self.info_preview.clear()
+        self.info_presets.clear()
+        self.info_formats.clear()
+        self.audio_id = None
+        self.url = url
+        self.search_concluded = False
+
+        loader = CTkLoader(self.app)
+
+        def search_thread_func():
+            self.search_process()
+            self.app.after(0, lambda: loader.stop_loader())
+
+            if self.search_concluded:
+                self.app.after(0, on_complete)
+
+        search_thread = threading.Thread(target=search_thread_func, daemon=True)
+        search_thread.start()
+
+    # region Procurar vídeo
+    def search_process(self):
+        ydl_opts = {"skip_download": True, "quiet": True, "no_warnings": True}
+
+        with YoutubeDL(ydl_opts) as ydl:
+            data = ydl.extract_info(self.url, download=False)
+
+            # Criar um dicionário com as informações para preview
+            preview_data = {
+                "title": data.get("title", "Sem título"),
+                "duration": data.get("duration", 0),
+                "uploader": data.get("uploader", "Desconhecido"),
+                "thumbnail_url": data.get("thumbnail", None),
+                "view_count": data.get("view_count", 0),
+            }
+            self.info_preview = preview_data
+            self.extract_video_formats(data)
+            self.search_concluded = True
+
+    # region Extrair informações do vídeo
+    def extract_video_formats(self, data):
+        codec_map = {"vp09": "VP9", "avc": "H.264", "av01": "AV1", "vp8": "VP8"}
+
+        audio_id = None
+        for item in data.get("formats", []):
+            if (
+                item.get("resolution") == "audio only"
+                and item.get("format_note") == "Default, high"
+            ):
+                audio_id = item.get("format_id")
+                break
+
+        presets = []
+        for item in data.get("formats", []):
+            if item.get("video_ext") == "none":
+                continue
+
+            vcodec_id = item.get("vcodec", "")
+            vcodec = next(
+                (codec_map[key] for key in codec_map if key in vcodec_id), "Unknown"
+            )
+
+            if not all(k in item for k in ["format_id", "height", "video_ext", "fps"]):
+                continue
+
+            video_format = {
+                "id": item["format_id"],
+                "resolucao": int(item["height"]),
+                "ext": item["video_ext"],
+                "vcodec": vcodec,
+                "FPS": int(item["fps"]),
+            }
+
+            video_format["desc"] = (
+                f"{video_format['resolucao']}p {video_format['vcodec']} {video_format['FPS']}FPS.{video_format['ext']}"
+            )
+            presets.append(video_format)
+
+        # Ordenar por resolução (decrescente) e FPS (decrescente)
+        presets.sort(key=lambda x: (x["resolucao"], x["FPS"]), reverse=True)
+
+        self.info_formats = data.get("formats", [])
+        self.info_presets = presets
+        self.audio_id = audio_id
+
+    # region Download do vídeo
     def download_process(self):
         try:
             self.config_options()
@@ -92,7 +190,7 @@ class YoutubeDownloader:
                         )
                     self.progress_popup.update_progress(0.01)
                     self.progress_popup.update_message("")
-                    self.root.update_idletasks()
+                    self.app.update_idletasks()
 
                     return original_extract_info(url, download, *args, **kwargs)
 
@@ -112,11 +210,9 @@ class YoutubeDownloader:
             else:
                 self.update_ui_after_download(success=False, error=str(e))
 
+    # region Configurações do ydl
     def config_options(self):
         self.ydl_opts.clear()
-        self.options_ydlp.clear()
-
-        self.options_ydlp = self.root.download_options
 
         # Configurações base comuns
         self.ydl_opts = {
@@ -125,61 +221,196 @@ class YoutubeDownloader:
             "ffmpeg_location": self.options_ydlp["ffmpeg_path"],
             "quiet": True,  # Desabilita o modo quieto para receber as mensagens
             "no_warnings": True,  # Permite receber avisos
-            "outtmpl": os.path.join(
-                self.options_ydlp["download_path"], "%(title)s.%(ext)s"
-            ),
         }
 
-        # TODO Work in Progress (Advanced)
+        if self.type_download == "basic":
+            # Configurações específicas para playlist
+            if self.options_ydlp["playlist"]:
+                self.ydl_opts.update(
+                    {
+                        "outtmpl": os.path.join(
+                            self.options_ydlp["download_path"],
+                            "%(playlist)s/%(playlist_autonumber)s - %(title)s.%(ext)s",
+                        ),  # Cria pasta com nome da playlist # TODO colocar como opcional
+                        "ignoreerrors": True,  # Continua mesmo se um vídeo falhar
+                        "playlist": True,
+                        "yes_playlist": True,
+                    }
+                )
+                # Se especificado os itens da playlist
+                if self.options_ydlp["playlist_items"]:
+                    self.ydl_opts["playlist_items"] = self.options_ydlp[
+                        "playlist_items"
+                    ]
+                # Se especificado o reverso da playlist
+                if self.options_ydlp["playlist_reverse"]:
+                    self.ydl_opts["playlistreverse"] = self.options_ydlp[
+                        "playlist_reverse"
+                    ]
+                # Se especificado o aleatório da playlist
+                if self.options_ydlp["playlist_random"]:
+                    self.ydl_opts["playlistrandom"] = self.options_ydlp[
+                        "playlist_random"
+                    ]
 
-        # Configurações específicas para playlist
-        if self.options_ydlp["playlist"]:
-            self.ydl_opts.update(
-                {
-                    "ignoreerrors": True,  # Continua mesmo se um vídeo falhar
-                    "playlist": True,
-                    "yes_playlist": True,
-                }
-            )
-            # Se especificado os itens da playlist
-            if self.options_ydlp["playlist_items"]:
-                self.ydl_opts["playlist_items"] = self.options_ydlp["playlist_items"]
-            # Se especificado o reverso da playlist
-            if self.options_ydlp["playlist_reverse"]:
-                self.ydl_opts["playlistreverse"] = self.options_ydlp["playlist_reverse"]
-            # Se especificado o aleatório da playlist
-            if self.options_ydlp["playlist_random"]:
-                self.ydl_opts["playlistrandom"] = self.options_ydlp["playlist_random"]
-            if self.options_ydlp["playlist_folder"]:
-                self.ydl_opts["outtmpl"] = (
-                    os.path.join(
-                        self.options_ydlp["download_path"],
-                        "%(playlist)s/%(title)s.%(ext)s",
-                    ),
-                )  # Cria pasta com nome da playlist
+            else:
+                self.ydl_opts["outtmpl"] = os.path.join(
+                    self.options_ydlp["download_path"], "%(title)s.%(ext)s"
+                )
 
-        # Se é audio
-        if self.options_ydlp["media"] in self.translator.get_text("audio"):
-            self.ydl_opts.update(
-                {
-                    "format": "bestaudio/best",
-                    "postprocessors": [
-                        {
-                            "key": "FFmpegExtractAudio",
-                            "preferredcodec": self.options_ydlp["format"],
-                            "preferredquality": "192",
-                        }
-                    ],
-                }
-            )
-        else:  # Se é video
-            self.ydl_opts.update(
-                {
-                    "format": f'bestvideo[height<={self.options_ydlp["quality"]}]+bestaudio/best[height<={self.options_ydlp["quality"]}]',
-                    "merge_output_format": self.options_ydlp["format"],
-                }
+            # Se é audio
+            if self.options_ydlp["media"] in self.translator.get_text("audio"):
+                self.ydl_opts.update(
+                    {
+                        "format": "bestaudio/best",
+                        "postprocessors": [
+                            {
+                                "key": "FFmpegExtractAudio",
+                                "preferredcodec": self.options_ydlp["format"],
+                                "preferredquality": "192",
+                            }
+                        ],
+                    }
+                )
+            else:  # Se é video
+                self.ydl_opts.update(
+                    {
+                        "format": f'bestvideo[height<={self.options_ydlp["quality"]}]+bestaudio/best[height<={self.options_ydlp["quality"]}]',
+                        "merge_output_format": self.options_ydlp["format"],
+                    }
+                )
+        elif self.type_download == "advanced":
+            # Configurações avançadas
+
+            self.ydl_opts["outtmpl"] = os.path.join(
+                self.options_ydlp["download_path"], "%(title)s.%(ext)s"
             )
 
+            if not self.options_ydlp.get("custom_format"):
+                self.ydl_opts["format"] = f"{self.options_ydlp['format_id']}+bestaudio"
+            else:
+                custom_format = self.options_ydlp["custom_format"]
+
+                # Encontrar melhores formatos
+                formatos = self.find_best_video_format(
+                    int(custom_format["video_quality"]),
+                    custom_format["video_codec"],
+                    custom_format["container"],
+                )
+
+                """
+                if formatos:
+                    melhor = formatos[0]
+                    print(f"Melhor match encontrado:")
+                    print(f"  Format ID: {melhor['format_id']}")
+                    print(
+                        f"  Resolução: {melhor['height']}p {'✓' if melhor['resolucao_match'] else '✗'}"
+                    )
+                    print(
+                        f"  Codec: {melhor['vcodec']} {'✓' if melhor['codec_match'] else '✗'}"
+                    )
+                    print(
+                        f"  Formato: {melhor['ext']} {'✓' if melhor['formato_match'] else '✗'}"
+                    )
+                    print(f"  Score: {melhor['score']}")
+                else:
+                    print("Nenhum formato encontrado com os critérios especificados")
+                """
+
+                # Construir format string
+                format_string = self.construir_format_string(formatos)
+
+                self.ydl_opts.update(
+                    {
+                        "format": format_string,
+                        "postprocessors": [
+                            {
+                                "key": "FFmpegVideoConvertor",
+                                "preferedformat": custom_format["container"],
+                            }
+                        ],
+                        "postprocessor_args": {
+                            "FFmpegVideoConvertor": self.postprocessor_args(
+                                custom_format
+                            ),
+                        },
+                    }
+                )
+
+    def postprocessor_args(self, custom_format):
+        """
+        Gera os argumentos do postprocessador com base nas configurações avançadas do usuário.
+
+        Args:
+            custom_format (dict): Dicionário contendo as configurações personalizadas do usuário.
+
+        Returns:
+            list: Lista de argumentos para o postprocessador.
+        """
+        args = []
+
+        # Codec de vídeo
+        codec_map = {
+            "h264": "libx264",
+            "h265": "libx265",
+            "vp9": "libvpx-vp9",
+            "av1": "libaom-av1",
+        }
+
+        codec = codec_map.get(custom_format["video_codec"], "libx264")
+        args.extend(["-codec:v", codec])
+
+        # Codec de áudio
+        args.extend(["-codec:a", custom_format["audio_codec"]])
+
+        # Qualidade de compressão
+        crf_map = {
+            "libx264": {"1": "18", "2": "23", "3": "28"},  # H.264
+            "libx265": {"1": "22", "2": "28", "3": "32"},  # H.265
+            "libvpx-vp9": {"1": "24", "2": "30", "3": "36"},  # VP9
+            "libaom-av1": {"1": "23", "2": "30", "3": "37"},  # AV1
+        }
+
+        if codec and custom_format["compression_quality"] in crf_map[codec]:
+            crf_value = crf_map[codec][custom_format["compression_quality"]]
+            args.extend(["-crf", crf_value])
+
+        # Velocidade de codificação
+        encoding_map = {
+            "libx264": {
+                "0": "ultrafast",
+                "1": "fast",
+                "2": "medium",
+                "3": "slow",
+                "4": "veryslow",
+            },
+            "libx265": {
+                "0": "ultrafast",
+                "1": "fast",
+                "2": "medium",
+                "3": "slow",
+                "4": "veryslow",
+            },
+            "libvpx-vp9": {"0": "realtime", "1": "good", "2": "best"},
+            "libaom-av1": {"0": "2", "1": "3", "2": "4", "3": "6", "4": "8"},
+        }
+        encoding_type = {
+            "libx264": "preset",
+            "libx265": "preset",
+            "libvpx-vp9": "deadline",
+            "libaom-av1": "cpu-used",
+        }
+
+        enconding_speed = encoding_map.get(codec, {}).get(
+            str(custom_format["encoding_speed"]), "medium"
+        )
+
+        args.extend(["-" + encoding_type[codec], enconding_speed])
+
+        print("Postprocessor args:", args)
+        return args
+
+    # region Pós-processamento do download
     def postprocessor_hook(self, d):
         if self.cancel_download.is_set():
             raise Exception("download cancelled")
@@ -190,13 +421,14 @@ class YoutubeDownloader:
                     index=self.current_video, count=self.total_videos
                 )
             else:
-                message = self.translator.get_text("status")[10]
+                message = self.translator.get_text("status")[12]
 
             self.progress_popup.update_message(message)
             self.progress_popup.update_progress(1)
 
-        self.root.update_idletasks()
+        self.app.update_idletasks()
 
+    # region Progress do download
     # Atualiza a barra de progresso e o status de download
     def progress_hooks(self, d):
         if self.cancel_download.is_set():
@@ -272,7 +504,7 @@ class YoutubeDownloader:
 
                     self.progress_popup.update_message(status_text)
 
-                self.root.update_idletasks()
+                self.app.update_idletasks()
             except Exception as e:
                 # TODO ver isso aqui
                 print(f"Erro ao atualizar progresso: {str(e)}")
@@ -295,15 +527,16 @@ class YoutubeDownloader:
             # TODO configurar caso erro
             self.progress_popup.update_label(self.translator.get_text("status")[3])
             self.progress_popup.update_progress(0)
-            self.root.download_button.configure(state="normal")
-            self.root.after(1000, lambda: self.progress_popup.cancel_task())
+            self.app.download_button.configure(state="normal")
+            self.app.after(1000, lambda: self.progress_popup.cancel_task())
 
+    # region Atualizar UI após download
     def update_ui_after_download(self, success=False, cancelled=False, error=None):
         # Executa na thread principal
         def update():
             if cancelled:
                 CTkNotification(
-                    master=self.root,
+                    master=self.app,
                     state="info",
                     message=self.translator.get_text("download_cancelled"),
                     side="right_bottom",
@@ -311,24 +544,32 @@ class YoutubeDownloader:
             elif success:
                 self.progress_popup.close_progress_popup()
                 # Resetar a variavel
-                if self.root.clear_url_var.get():
-                    self.root.url1_var.set("")
-                if self.root.open_folder_var.get():
-                    os.startfile(os.path.realpath(self.options_ydlp["download_path"]))
-                if self.root.notify_completed_var.get():
-                    self.root.show_checkmark(self.translator.get_text("success")[0])
+                if self.app.settings_tab.clear_url_var.get():
+                    self.app.url1_var.set("")
+                if self.app.settings_tab.open_folder_var.get():
+                    download_path = os.path.realpath(self.options_ydlp["download_path"])
+                    if platform.system() == "Windows":
+                        os.startfile(download_path)
+                    elif platform.system() == "Darwin":  # macOS
+                        subprocess.run(["open", download_path])
+                    else:  # Linux
+                        subprocess.run(["xdg-open", download_path])
+                if self.app.settings_tab.notify_completed_var.get():
+                    self.app.show_checkmark(self.translator.get_text("success")[0])
 
             else:
                 self.progress_popup.close_progress_popup()
-                if self.root.sound_notification_var.get():
+                if self.app.settings_tab.sound_notification_var.get():
                     play_sound(False)
-                self.root.show_error(f"Erro: {error}")
+                self.app.show_error(f"Erro: {error}")
 
             self.progress_popup = None
-            self.root.restore_button()
+            self.app.download_tab.restore_button()
+            self.app.advanced_tab.restore_button()
 
-        self.root.after(0, update)
+        self.app.after(0, update)
 
+    # region Limpar downloads parciais
     def cleanup_partial_downloads(self):
         """
         Remove arquivos parciais do diretório de download.
@@ -337,6 +578,8 @@ class YoutubeDownloader:
         - Arquivos .part (downloads parciais)
         - Arquivos .ytdl (arquivos temporários do YouTube-DL)
         - Arquivos vazios (0 bytes)
+
+        A limpeza ajuda a evitar o acúmulo de downloads incompletos.
         """
 
         def try_remove_file(filepath, max_attempts=5):
@@ -373,3 +616,97 @@ class YoutubeDownloader:
                     try_remove_file(full_path)
         except Exception as error:
             print(f"Erro ao limpar downloads: {error}")
+
+    # region Encontrar o melhor formato de vídeo
+    def find_best_video_format(
+        self, resolucao_desejada, codec_desejado, formato_desejado
+    ):
+        """
+        Encontra o melhor format_id baseado nas preferências do usuário
+
+        Args:
+            resolucao_desejada: int (ex: 1080, 720, 480)
+            codec_desejado: str ('h264', 'h265', 'vp9', 'av1')
+            formato_desejado: str ('mp4', 'mkv', 'webm')
+        """
+
+        # Mapeamento de codecs para identificação
+        codec_map = {
+            "h264": ["avc", "h264"],
+            "h265": ["hev", "h265", "hevc"],
+            "vp9": ["vp9"],
+            "av1": ["av01", "av1"],
+        }
+
+        formatos_validos = []
+
+        for fmt in self.info_formats:
+            vcodec = fmt.get("vcodec", "").lower()
+            altura = fmt.get("height", 0)
+            ext = fmt.get("ext", "").lower()
+
+            # Skip formatos só de áudio
+            if vcodec == "none" or not altura:
+                continue
+
+            # Verificar se atende aos critérios
+            codec_match = False
+            if codec_desejado.lower() in codec_map:
+                for codec_termo in codec_map[codec_desejado.lower()]:
+                    if codec_termo in vcodec:
+                        codec_match = True
+                        break
+
+            resolucao_match = altura == resolucao_desejada
+            formato_match = ext == formato_desejado.lower()
+
+            # Calcular pontuação (priorizar matches exatos)
+            score = 0
+            if resolucao_match:
+                score += 100
+            if codec_match:
+                score += 50
+            if formato_match:
+                score += 25
+
+            # Adicionar pontos por qualidade geral
+            score += altura * 0.01  # Pequeno bonus por resolução
+
+            if score > 0:  # Pelo menos um critério deve ser atendido
+                formatos_validos.append(
+                    {
+                        "format_id": fmt.get("format_id"),
+                        "height": altura,
+                        "vcodec": vcodec,
+                        "ext": ext,
+                        "score": score,
+                        "resolucao_match": resolucao_match,
+                        "codec_match": codec_match,
+                        "formato_match": formato_match,
+                    }
+                )
+
+            # Ordenar por pontuação (maior primeiro)
+            formatos_validos.sort(key=lambda x: x["score"], reverse=True)
+
+        return formatos_validos
+
+    # region Construir a string de formato
+    def construir_format_string(self, formatos_ordenados, incluir_audio=True):
+        """Constrói a string de format baseada nos melhores matches"""
+
+        if not formatos_ordenados:
+            return "best"
+
+        # Pegar os top 3 melhores formatos como fallback
+        top_formats = [f["format_id"] for f in formatos_ordenados[:3]]
+
+        if incluir_audio:
+            # Combinar com áudio
+            format_string = "+bestaudio/".join(top_formats) + "+bestaudio"
+            format_string += "/" + "/".join(top_formats)  # Fallback sem áudio
+            format_string += "/best"  # Fallback final
+        else:
+            format_string = "/".join(top_formats) + "/best"
+
+        return format_string

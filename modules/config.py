@@ -7,7 +7,7 @@ class DefaultConfig:
 
         # Informações do aplicativo
         self.APP_NAME = "EasyTuber"
-        self.APP_VERSION = "2.3.0"
+        self.APP_VERSION = "3.0.0"
         self.APP_AUTHOR = "Gabriel Frais"
         self.APP_DESCRIPTION = "EasyTuber é um aplicativo intuitivo que permite baixar vídeos e áudios do YouTube com facilidade. Com uma interface simples e eficiente, você pode salvar seus conteúdos favoritos em poucos cliques, sem complicações."
         self.APP_LICENSE = "GPLv3"
@@ -23,8 +23,8 @@ class DefaultConfig:
         self.MIN_WINDOW_HEIGHT = 500
 
         # Configurações de Valores
-        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm"]  # TODO adicionar mais formatos
-        self.FORMAT_AUDIOS = ["mp3", "m4a", "aac"]  # TODO adicionar mais formatos
+        self.FORMAT_VIDEOS = ["mp4", "mkv", "webm", "mov", "avi"]
+        self.FORMAT_AUDIOS = ["mp3", "aac", "ogg", "flac", "wav"]
 
 
 class UserPreferences:

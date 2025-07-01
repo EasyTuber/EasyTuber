@@ -25,6 +25,11 @@ a = Analysis(
         'modules.config',
         'modules.update_checker',
         'modules',
+        'ui.about_tab',
+        'ui.advanced_tab',
+        'ui.download_tab',
+        'ui.settings_tab',
+        'ui'
         'libs',
         'libs.ctk_components',
         'libs.ctk_components.ctk_components',
