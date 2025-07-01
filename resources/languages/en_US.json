@@ -12,7 +12,7 @@
     "default_paths" : "Default Paths",
     "popup_ffmpeg_title": "FFmpeg not found!",
     "popup_ffmpeg_msg": "FFmpeg not found. Choose one of the options below:\n\n • Specify path: If FFmpeg is already installed, indicate the location of the executable\n • Install via Chocolatey: Install automatically using the package manager\n • Download manually: Open the official website for download and installation\n\nAfter installation, you'll need to specify the path in the settings.",
-    "popup_ffmpeg_options": {"ffmpeg_path": "Search for ffmpeg.exe", "chocolatey": "Chocolatey", "manually": "Manually"},
+    "popup_ffmpeg_options": {"ffmpeg_path": "Search for ffmpeg", "chocolatey": "Chocolatey", "manually": "Manually"},
     "download": "Download",
     "advanced_options": "Advanced Options",
     "settings": "Settings",
@@ -59,7 +59,7 @@
     "select_folder": "Select Folder",
     "ffmpeg_path":"FFMPEG path:",
     "exe_path":"Executable path...",
-    "search_ffmpeg":"Search for ffmpeg.exe",
+    "search_ffmpeg":"Search for ffmpeg",
     "downloading_progress": [
         "{percent} | {speed} MB/s | Time Remaining: {eta_min}min {eta_sec}s",
         "{percent} | {speed} MB/s",
@@ -68,7 +68,7 @@
     "errors": [
         "Please enter a valid URL.",
         "Please enter a valid folder.",
-        "Please enter a valid path to ffmpeg.exe."
+        "Please enter a valid path to ffmpeg."
     ],
     "success": [
         "Download completed",

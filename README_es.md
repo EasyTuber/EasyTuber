@@ -50,7 +50,7 @@
 ### 🔹 **Ejecutar desde el Código Fuente** _(Opcional)_  
 Si prefieres ejecutar desde el código fuente:  
 ```bash
-git clone https://github.com/your-username/EasyTuber.git
+git clone https://github.com/EasyTuber/EasyTuber.git
 cd EasyTuber
 pip install -r requirements.txt
 python easytuber.py

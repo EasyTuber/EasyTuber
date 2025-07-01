@@ -270,7 +270,7 @@ class SettingsTab(ctk.CTkFrame):
             if ffmpeg_path:
                 self.ffmpeg_path_entry.insert(0, ffmpeg_path.replace("\\", "/"))
             else:
-                self.ffmpeg_popup()
+                self.app.after(10, self.app.ffmpeg_popup)
         else:
             self.ffmpeg_path_entry.insert(0, ffmpeg_path)
         # endregion
@@ -315,7 +315,7 @@ class SettingsTab(ctk.CTkFrame):
         self.default_download_path_button = ctk.CTkButton(
             self.default_download_path_frame,
             text=self.translator.get_text("select_folder"),
-            command=lambda: self.download_path_select(self.default_download_path_entry),
+            command=lambda: self.app.download_path_select(self.default_download_path_entry),
         )
         self.default_download_path_button.pack(side="left")
         # endregion
@@ -366,11 +366,11 @@ class SettingsTab(ctk.CTkFrame):
             self.user_prefer.reset_preferences(self.translator)
 
             # Atualizar a interface com os valores padrão
-            self.media_var.set(
+            self.app.media_var.set(
                 self.translator.get_text("media_values")[self.user_prefer.get("media")]
             )
-            self.formato_var.set(self.user_prefer.get("format"))
-            self.qualidade_var.set(self.user_prefer.get("quality"))
+            self.app.formato_var.set(self.user_prefer.get("format"))
+            self.app.qualidade_var.set(self.user_prefer.get("quality"))
             self.appearance_var.set(
                 self.translator.get_text("appearance_values")[
                     self.user_prefer.get("appearance")

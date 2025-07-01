@@ -515,6 +515,12 @@ class MainApplication(ctk.CTk):
     def restore_button(self):
         self.download_tab.restore_button()
         self.advanced_tab.restore_button()
+        
+    def download_path_select(self, path_entry):
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            path_entry.delete(0, "end")
+            path_entry.insert(0, folder_path)
 
     # region Abrir link
     def open_link(self, url):

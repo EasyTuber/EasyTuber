@@ -325,7 +325,7 @@ class DownloadTab(ctk.CTkFrame):
         self.download_path_button = ctk.CTkButton(
             self.download_path_frame_buttom,
             text=self.translator.get_text("select_folder"),
-            command=lambda: self.download_path_select(self.download_path_entry),
+            command=lambda: self.app.download_path_select(self.download_path_entry),
         )
         self.download_path_button.pack(side="left")
 
