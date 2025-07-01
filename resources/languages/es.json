@@ -33,6 +33,8 @@
     "playlist_reverse_tooltip": "Descargar los elementos de la playlist en orden inverso",
     "playlist_random": "Orden aleatorio",
     "playlist_random_tooltip": "Descargar los elementos de la playlist en orden aleatorio",
+    "playlist_folder": "Crear carpeta",
+    "playlist_folder_tooltip": "Crear una carpeta con el nombre de la lista de reproducción y los elementos que contiene",
     "media_type": "Tipo de Medio",
     "media_values": {"Video":"Video", "Audio":"Audio"},
     "video": "Video",

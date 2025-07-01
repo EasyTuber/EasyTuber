@@ -27,6 +27,8 @@
     "playlist_reverse_tooltip": "Download the playlist items in reverse order",
     "playlist_random": "Random order",
     "playlist_random_tooltip": "Download the playlist items in random order",
+    "playlist_folder": "Create folder",
+    "playlist_folder_tooltip": "Create a folder with the playlist name and the items inside",
     "media_type": "Media Type",
     "media_values": {"Video":"Video", "Audio":"Audio"},
     "video": "Video",
