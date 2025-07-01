@@ -6,6 +6,7 @@ Version: 1.7
 
 import platform
 import typing
+from typing import Any
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -410,8 +411,6 @@ if IS_WINDOWS:
 
 else:
     # Ambiente não-Windows (Linux, macOS...)
-    
-    from typing import Any
 
     def set_opacity(*args, **kwargs):
         print("[INFO] set_opacity ignorado — exclusivo do Windows.")

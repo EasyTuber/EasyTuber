@@ -50,7 +50,7 @@
 ### 🔹 **Running from Source** _(Optional)_  
 If you prefer to run from source:  
 ```bash
-git clone https://github.com/your-username/EasyTuber.git
+git clone https://github.com/EasyTuber/EasyTuber.git
 cd EasyTuber
 pip install -r requirements.txt
 python easytuber.py
